@@ -736,8 +736,8 @@ func (m *Manager) Tabs(ctx context.Context, object runtime.Object) ([]component.
 	var tabs []component.Tab
 
 	go func() {
-		for tab := range ch {
-			tabs = append(tabs, tab)
+		for t := range ch {
+			tabs = append(tabs, t...)
 		}
 
 		done <- true

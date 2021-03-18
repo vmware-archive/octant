@@ -24,7 +24,7 @@ type Runners interface {
 	Print(ManagerStore) (DefaultRunner, chan PrintResponse)
 	// Tab returns a runner for tabs. The caller should close
 	// the channel when they are done with it.
-	Tab(ManagerStore) (DefaultRunner, chan component.Tab)
+	Tab(ManagerStore) (DefaultRunner, chan []component.Tab)
 	// ObjectStatus returns a runner for object status. The caller should
 	// close the channel when they are done with it.
 	ObjectStatus(ManagerStore) (DefaultRunner, chan ObjectStatusResponse)
@@ -43,8 +43,8 @@ func (dr *defaultRunners) Print(store ManagerStore) (DefaultRunner, chan PrintRe
 	return PrintRunner(store, ch), ch
 }
 
-func (dr *defaultRunners) Tab(store ManagerStore) (DefaultRunner, chan component.Tab) {
-	ch := make(chan component.Tab)
+func (dr *defaultRunners) Tab(store ManagerStore) (DefaultRunner, chan []component.Tab) {
+	ch := make(chan []component.Tab)
 	return TabRunner(store, ch), ch
 }
 
@@ -161,7 +161,7 @@ func printObject(ctx context.Context, store ManagerStore, pluginName string, obj
 }
 
 // TabRunner is a runner for tabs.
-func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
+func TabRunner(store ManagerStore, ch chan<- []component.Tab) DefaultRunner {
 	runner := DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if IsJavaScriptPlugin(name) {
@@ -174,12 +174,16 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 					return nil
 				}
 
-				resp, err := jsPlugin.PrintTab(ctx, object)
+				responses, err := jsPlugin.PrintTabs(ctx, object)
 				if err != nil {
 					return fmt.Errorf("printing tabResponse for plugin: %q: %w", name, err)
 				}
 
-				ch <- *resp.Tab
+				var jsTabs []component.Tab
+				for _, resp := range responses {
+					jsTabs = append(jsTabs, *resp.Tab)
+				}
+				ch <- jsTabs
 				return nil
 			}
 
@@ -201,12 +205,17 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 				return err
 			}
 
-			tabResponse, err := service.PrintTab(ctx, object)
+			tabResponses, err := service.PrintTabs(ctx, object)
 			if err != nil {
 				return fmt.Errorf("printing tabResponse for plugin %q: %w", name, err)
 			}
 
-			ch <- *tabResponse.Tab
+			var tabs []component.Tab
+			for _, tabResponse := range tabResponses {
+				tabs = append(tabs, *tabResponse.Tab)
+			}
+
+			ch <- tabs
 
 			return nil
 		},

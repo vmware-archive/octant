@@ -78,10 +78,10 @@ func (p *Handler) Print(ctx context.Context, object runtime.Object) (plugin.Prin
 	return p.HandlerFuncs.Print(request)
 }
 
-// PrintTab prints a tab for an object.
-func (p *Handler) PrintTab(ctx context.Context, object runtime.Object) (plugin.TabResponse, error) {
-	if p.HandlerFuncs.PrintTab == nil {
-		return plugin.TabResponse{}, nil
+// PrintTabs prints one or more tabs for an object.
+func (p *Handler) PrintTabs(ctx context.Context, object runtime.Object) ([]plugin.TabResponse, error) {
+	if p.HandlerFuncs.PrintTabs == nil {
+		return []plugin.TabResponse{}, nil
 	}
 
 	request := &PrintRequest{
@@ -91,7 +91,15 @@ func (p *Handler) PrintTab(ctx context.Context, object runtime.Object) (plugin.T
 		ClientID:        ocontext.WebsocketClientIDFrom(ctx),
 	}
 
-	return p.HandlerFuncs.PrintTab(request)
+	var tabResponses []plugin.TabResponse
+	for _, handlerFunc := range p.HandlerFuncs.PrintTabs {
+		resp, err := handlerFunc(request)
+		if err != nil {
+			return []plugin.TabResponse{}, err
+		}
+		tabResponses = append(tabResponses, resp)
+	}
+	return tabResponses, nil
 }
 
 // ObjectStatus creates status for an object.

@@ -75,7 +75,7 @@ type JSPlugin interface {
 	Navigation(ctx context.Context) (navigation.Navigation, error)
 	Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error)
 	Print(ctx context.Context, object runtime.Object) (PrintResponse, error)
-	PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error)
+	PrintTabs(ctx context.Context, object runtime.Object) ([]TabResponse, error)
 	ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error)
 	HandleAction(ctx context.Context, actionName string, payload action.Payload) error
 	Content(ctx context.Context, contentPath string) (component.ContentResponse, error)
@@ -361,24 +361,24 @@ func (t *jsPlugin) Register(_ context.Context, _ string) (Metadata, error) {
 	return Metadata{}, fmt.Errorf("not implemented")
 }
 
-// PrintTab returns the tab response from a JavaScript plugins tab handler.
-func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
+// PrintTabs returns the tab(s) response from a JavaScript plugins tab handler.
+func (t *jsPlugin) PrintTabs(ctx context.Context, object runtime.Object) ([]TabResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
 	tabResponse, err := t.objectRequestCall(ctx, "tabHandler", object)
 	if err != nil {
-		return TabResponse{}, err
+		return []TabResponse{}, err
 	}
 
 	tab := tabResponse.Get("tab")
 	if tab == goja.Undefined() {
-		return TabResponse{}, fmt.Errorf("tab property not found")
+		return []TabResponse{}, fmt.Errorf("tab property not found")
 	}
 
 	contents, ok := tab.Export().(map[string]interface{})
 	if !ok {
-		return TabResponse{}, fmt.Errorf("unable to export tab contents")
+		return []TabResponse{}, fmt.Errorf("unable to export tab contents")
 	}
 
 	cTab := &component.Tab{}
@@ -390,14 +390,16 @@ func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResp
 	if contents, ok := contents["contents"]; ok {
 		realComponent, err := javascript.ConvertToComponent("tab contents", contents)
 		if err != nil {
-			return TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
+			return []TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
 		}
 		realFlexLayout := *realComponent.(*component.FlexLayout)
 		cTab.Contents.Config = realFlexLayout.Config
 	}
 
-	return TabResponse{
-		Tab: cTab,
+	return []TabResponse{
+		{
+			Tab: cTab,
+		},
 	}, nil
 }
 

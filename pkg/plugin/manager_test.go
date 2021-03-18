@@ -166,11 +166,12 @@ func TestManager_Tabs(t *testing.T) {
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
-	ch := make(chan component.Tab)
+	ch := make(chan []component.Tab)
 	tabRunner := dashPlugin.DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
-			ch <- component.Tab{Name: name}
-
+			ch <- []component.Tab{
+				{Name: name},
+			}
 			return nil
 		},
 	}

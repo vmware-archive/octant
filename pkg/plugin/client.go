@@ -94,7 +94,7 @@ type Metadata struct {
 type Service interface {
 	Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error)
 	Print(ctx context.Context, object runtime.Object) (PrintResponse, error)
-	PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error)
+	PrintTabs(ctx context.Context, object runtime.Object) ([]TabResponse, error)
 	ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error)
 	HandleAction(ctx context.Context, actionName string, payload action.Payload) error
 }

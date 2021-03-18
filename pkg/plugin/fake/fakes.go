@@ -72,11 +72,11 @@ func (mr *MockRunnersMockRecorder) Print(arg0 interface{}) *gomock.Call {
 }
 
 // Tab mocks base method
-func (m *MockRunners) Tab(arg0 plugin.ManagerStore) (plugin.DefaultRunner, chan component.Tab) {
+func (m *MockRunners) Tab(arg0 plugin.ManagerStore) (plugin.DefaultRunner, chan []component.Tab) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tab", arg0)
 	ret0, _ := ret[0].(plugin.DefaultRunner)
-	ret1, _ := ret[1].(chan component.Tab)
+	ret1, _ := ret[1].(chan []component.Tab)
 	return ret0, ret1
 }
 
@@ -385,19 +385,19 @@ func (mr *MockModuleServiceMockRecorder) Print(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockModuleService)(nil).Print), arg0, arg1)
 }
 
-// PrintTab mocks base method
-func (m *MockModuleService) PrintTab(arg0 context.Context, arg1 runtime.Object) (plugin.TabResponse, error) {
+// PrintTabs mocks base method
+func (m *MockModuleService) PrintTabs(arg0 context.Context, arg1 runtime.Object) ([]plugin.TabResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrintTab", arg0, arg1)
-	ret0, _ := ret[0].(plugin.TabResponse)
+	ret := m.ctrl.Call(m, "PrintTabs", arg0, arg1)
+	ret0, _ := ret[0].([]plugin.TabResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PrintTab indicates an expected call of PrintTab
-func (mr *MockModuleServiceMockRecorder) PrintTab(arg0, arg1 interface{}) *gomock.Call {
+// PrintTabs indicates an expected call of PrintTabs
+func (mr *MockModuleServiceMockRecorder) PrintTabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTab", reflect.TypeOf((*MockModuleService)(nil).PrintTab), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTabs", reflect.TypeOf((*MockModuleService)(nil).PrintTabs), arg0, arg1)
 }
 
 // Register mocks base method
@@ -482,19 +482,19 @@ func (mr *MockServiceMockRecorder) Print(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockService)(nil).Print), arg0, arg1)
 }
 
-// PrintTab mocks base method
-func (m *MockService) PrintTab(arg0 context.Context, arg1 runtime.Object) (plugin.TabResponse, error) {
+// PrintTabs mocks base method
+func (m *MockService) PrintTabs(arg0 context.Context, arg1 runtime.Object) ([]plugin.TabResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrintTab", arg0, arg1)
-	ret0, _ := ret[0].(plugin.TabResponse)
+	ret := m.ctrl.Call(m, "PrintTabs", arg0, arg1)
+	ret0, _ := ret[0].([]plugin.TabResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PrintTab indicates an expected call of PrintTab
-func (mr *MockServiceMockRecorder) PrintTab(arg0, arg1 interface{}) *gomock.Call {
+// PrintTabs indicates an expected call of PrintTabs
+func (mr *MockServiceMockRecorder) PrintTabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTab", reflect.TypeOf((*MockService)(nil).PrintTab), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTabs", reflect.TypeOf((*MockService)(nil).PrintTabs), arg0, arg1)
 }
 
 // Register mocks base method

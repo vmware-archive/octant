@@ -127,7 +127,7 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 	assert.True(t, ran)
 }
 
-func TestHandler_PrintTab_default(t *testing.T) {
+func TestHandler_PrintTabs_default(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -140,15 +140,14 @@ func TestHandler_PrintTab_default(t *testing.T) {
 	pod := testutil.CreatePod("pod")
 
 	ctx := context.Background()
-	got, err := h.PrintTab(ctx, pod)
+	got, err := h.PrintTabs(ctx, pod)
 	require.NoError(t, err)
 
-	expected := plugin.TabResponse{}
-
-	require.Equal(t, expected, got)
+	expected := []plugin.TabResponse{}
+	assert.Equal(t, expected, got)
 }
 
-func TestHandler_PrintTab_using_supplied_function(t *testing.T) {
+func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -161,20 +160,24 @@ func TestHandler_PrintTab_using_supplied_function(t *testing.T) {
 	h := Handler{
 		dashboardClient: dashboardClient,
 		HandlerFuncs: HandlerFuncs{
-			PrintTab: func(r *PrintRequest) (plugin.TabResponse, error) {
-				ran = true
-				assert.Equal(t, dashboardClient, r.DashboardClient)
-				assert.Equal(t, pod, r.Object)
-				return plugin.TabResponse{}, nil
+			PrintTabs: []HandlerTabPrintFunc{
+				func(r *PrintRequest) (plugin.TabResponse, error) {
+					ran = true
+					assert.Equal(t, dashboardClient, r.DashboardClient)
+					assert.Equal(t, pod, r.Object)
+					return plugin.TabResponse{}, nil
+				},
 			},
 		},
 	}
 
 	ctx := context.Background()
-	got, err := h.PrintTab(ctx, pod)
+	got, err := h.PrintTabs(ctx, pod)
 	require.NoError(t, err)
 
-	expected := plugin.TabResponse{}
+	expected := []plugin.TabResponse{
+		{Tab: nil},
+	}
 	assert.Equal(t, expected, got)
 	assert.True(t, ran)
 }
