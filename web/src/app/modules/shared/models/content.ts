@@ -176,6 +176,13 @@ export interface ListView extends View {
   };
 }
 
+export interface ExpandableRowDetailView extends View {
+  config: {
+    body: View;
+    replace: boolean;
+  };
+}
+
 export interface ExpressionSelectorView extends View {
   config: {
     key: string;

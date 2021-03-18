@@ -26,6 +26,8 @@ const (
 	TypeEditor = "editor"
 	// TypeError is an error component.
 	TypeError = "error"
+	// TypeExpandableRowDetail is an expandable detail component for table rows.
+	TypeExpandableRowDetail = "expandableRowDetail"
 	// TypeExtension is an extension component.
 	TypeExtension = "extension"
 	// TypeExpressionSelector is an expression selector component.

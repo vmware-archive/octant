@@ -12,12 +12,14 @@ import {
 } from '@angular/core';
 import {
   Confirmation,
+  ExpandableRowDetailView,
   GridAction,
   GridActionsView,
   TableFilters,
   TableRow,
   TableRowWithMetadata,
   TableView,
+  View,
 } from 'src/app/modules/shared/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
@@ -54,6 +56,7 @@ export class DatagridComponent
   buttonGroup?: ButtonGroupView;
   isModalOpen = false;
   defaultPageSize: number;
+  detail = { name: 'test' };
 
   actionDialogOptions: ActionDialogOptions = undefined;
 
@@ -111,9 +114,17 @@ export class DatagridComponent
 
     return rows.map(row => {
       let actions: GridAction[] = [];
+      let detailView: View;
+      let replace: boolean;
 
       if (row.hasOwnProperty('_action')) {
         actions = (row._action as GridActionsView).config.actions;
+      }
+
+      if (row.hasOwnProperty('_expand')) {
+        const erv = (row._expand as ExpandableRowDetailView).config;
+        detailView = erv.body;
+        replace = erv.replace;
       }
 
       const isDeleted = !!row._isDeleted;
@@ -122,6 +133,8 @@ export class DatagridComponent
         data: row,
         actions,
         isDeleted,
+        detailView,
+        replace,
       };
     });
   }
