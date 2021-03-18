@@ -128,7 +128,7 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-hclog v0.15.0
 ## explicit
 github.com/hashicorp/go-hclog
-# github.com/hashicorp/go-multierror v1.1.0
+# github.com/hashicorp/go-multierror v1.1.1
 ## explicit
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
