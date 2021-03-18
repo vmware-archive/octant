@@ -16,7 +16,7 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.1
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/googleapis/gnostic v0.5.4
@@ -58,7 +58,7 @@ require (
 	google.golang.org/genproto v0.0.0-20201022181438-0ff5f38871d5 // indirect
 	google.golang.org/grpc v1.35.0
 	google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4 // indirect
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 	k8s.io/api v0.19.3
