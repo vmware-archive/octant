@@ -356,6 +356,8 @@ export interface TableRow {
 export interface TableRowWithMetadata {
   data: TableRow;
   actions?: GridAction[];
+  replace?: boolean;
+  expandedDetail?: View;
   isDeleted: boolean;
 }
 

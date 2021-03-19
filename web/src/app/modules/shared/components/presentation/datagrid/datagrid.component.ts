@@ -56,7 +56,6 @@ export class DatagridComponent
   buttonGroup?: ButtonGroupView;
   isModalOpen = false;
   defaultPageSize: number;
-  detail = { name: 'test' };
 
   actionDialogOptions: ActionDialogOptions = undefined;
 
@@ -114,7 +113,7 @@ export class DatagridComponent
 
     return rows.map(row => {
       let actions: GridAction[] = [];
-      let detailView: View;
+      let expandedDetail: View;
       let replace: boolean;
 
       if (row.hasOwnProperty('_action')) {
@@ -123,7 +122,7 @@ export class DatagridComponent
 
       if (row.hasOwnProperty('_expand')) {
         const erv = (row._expand as ExpandableRowDetailView).config;
-        detailView = erv.body;
+        expandedDetail = erv.body;
         replace = erv.replace;
       }
 
@@ -133,7 +132,7 @@ export class DatagridComponent
         data: row,
         actions,
         isDeleted,
-        detailView,
+        expandedDetail,
         replace,
       };
     });
