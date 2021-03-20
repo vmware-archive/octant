@@ -135,6 +135,8 @@
     "src//app/modules/shared/components/presentation/code/code.component.ts",
     "src//app/modules/shared/components/presentation/object-status/object-status.component.ts",
     "src//app/modules/shared/components/presentation/object-status/object-status.component.spec.ts",
+    "src//app/modules/shared/components/presentation/accordion/accordion.component.ts",
+    "src//app/modules/shared/components/presentation/accordion/accordion.component.spec.ts",
     "src//app/modules/shared/components/presentation/annotations/annotations.component.ts",
     "src//app/modules/shared/components/presentation/annotations/annotations.component.spec.ts",
     "src//app/modules/shared/components/presentation/content-filter/content-filter.component.ts",

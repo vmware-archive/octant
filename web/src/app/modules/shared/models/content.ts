@@ -35,6 +35,18 @@ export interface TitleView {
   metadata: TitleMetadata;
 }
 
+export interface AccordionView extends View {
+  config: {
+    rows: AccordionRow[];
+    allowMultipleExpanded: boolean;
+  };
+}
+
+export interface AccordionRow {
+  title: string;
+  content: View;
+}
+
 export interface AnnotationsView extends View {
   config: {
     annotations: { [key: string]: string };

@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "type": "accordion",
+    "title": [
+      {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "my accordion"
+        }
+      }
+    ]
+  },
+  "config": {
+    "rows": [
+      {
+        "title": "Row title",
+        "content": {
+          "metadata": {
+            "type": "text"
+          },
+          "config": {
+            "value": "row content"
+          }
+        }
+      }
+    ],
+    "allowMultipleExpanded": true
+  }
+}

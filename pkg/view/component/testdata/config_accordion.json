@@ -1,0 +1,16 @@
+{
+  "rows": [
+    {
+      "title": "Accordion title",
+      "content": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "accordion content"
+        }
+      }
+    }
+  ],
+  "allowMultipleExpanded": true
+}
