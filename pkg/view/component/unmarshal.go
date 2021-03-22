@@ -76,6 +76,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal expressionSelector config")
 		o = t
+	case TypeExpandableRowDetail:
+		t := &ExpandableRowDetail{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal expandable row detail config")
+		o = t
 	case TypeFlexLayout:
 		t := &FlexLayout{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

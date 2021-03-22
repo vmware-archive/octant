@@ -181,6 +181,18 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "expandable row detail",
+			configFile: "config_expandable_row_detail.json",
+			objectType: "expandableRowDetail",
+			expected: &ExpandableRowDetail{
+				Config: ExpandableDetailConfig{
+					Body:    NewText("test"),
+					Replace: true,
+				},
+				Base: newBase(TypeExpandableRowDetail, nil),
+			},
+		},
+		{
 			name:       "flexlayout",
 			configFile: "config_flexlayout.json",
 			objectType: "flexlayout",
@@ -647,7 +659,6 @@ func Test_unmarshal(t *testing.T) {
 
 			got, err := unmarshal(to)
 			require.NoError(t, err)
-
 			AssertEqual(t, tc.expected, got)
 		})
 	}

@@ -11,6 +11,18 @@ table.Add(component.TableRow{
 table.Sort("A")
 table.Reverse()`}}
 
+export const tableExpandableRowDocs= {source: {code: `cols := component.NewTableCols("A", "B")
+table := component.NewTable("Table Title", "Empty text", cols)
+card := component.NewCard(component.TitleFromString("Table Title"))
+card.SetBody(component.NewText("Card text"))
+row := component.TableRow{
+  "A": component.NewText("1"),
+}
+row.AddExpandableDetail(card, false)
+table.Add(row)
+table.Sort("A")
+table.Reverse()`}}
+
 export const textView = {
   config: {
     value: 'Table Title',
@@ -20,18 +32,42 @@ export const textView = {
   },
 };
 
+export const bodyView= {
+  config: {
+    value: 'Card text',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const cardView = {
+  config: {
+    body: bodyView,
+    actions: null,
+    alert: null,
+  },
+  metadata: {
+    title: [textView],
+    type: 'card',
+  },
+};
+
 <h1>Table Component</h1>
 <h2>Description</h2>
 
 <p>A table component is used to show tabular data with support for filtering, pagination, and sorting.</p>
 
 <p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
-<h2>Example</h2>
 
 <Meta title="Components/Table" component={DatagridComponent} />
 
+<h2>Table component</h2>
+
+<p>A table component with filtering, pagination, and title. The number of items per page can also be configured.</p>
+
 <Canvas withToolbar>
-  <Story name="Table component" parameters={{ docs: tableDocs }} height="800px" >
+  <Story name="Table component" parameters={{ docs: tableDocs }} height="250px" >
   {{
     props: {
       view: object('View', {
@@ -81,8 +117,104 @@ export const textView = {
   </Story>
 </Canvas>
 
+<h2>Table with expandable row</h2>
+
+<p>An expandable row consists of a toggle on the left that expands a row to show a hidden component.
+The component can be configured to replace the contents of the row.</p>
+
+<Canvas withToolbar>
+  <Story name="Table component expandable row" parameters={{ docs: tableExpandableRowDocs }} height="390px" >
+    {{
+      props: {
+        view: object('View', {
+          metadata: {
+            type: 'table',
+            title: [textView],
+          },
+          config: {
+            columns: [
+              {
+                name: 'A',
+                accessor: 'A',
+              },
+              {
+                name: 'B',
+                accessor: 'B',
+              },
+            ],
+            rows: [
+              {
+                _expand: {
+                  metadata: {
+                    type: 'expandableRow',
+                  },
+                  config: {
+                    replace: false,
+                    body: cardView,
+                  },
+                },
+                A: {
+                  config: {
+                    value: '1',
+                  },
+                  metadata: {
+                    type: 'text'
+                  },
+                },
+                B: {
+                  config: {
+                    value: '2',
+                  },
+                  metadata: {
+                    type: 'text',
+                  },
+                },
+              },
+              {
+                _expand: {
+                  metadata: {
+                    type: 'expandableRow',
+                  },
+                  config: {
+                    replace: true,
+                    body: cardView,
+                  },
+                },
+                A: {
+                  config: {
+                    value: '3',
+                  },
+                  metadata: {
+                    type: 'text'
+                  },
+                },
+                B: {
+                  config: {
+                    value: '4',
+                  },
+                  metadata: {
+                    type: 'text',
+                  },
+                },
+              },
+            ],
+            emptyContent: 'Empty text',
+            loading: false,
+            filters: {},
+          },
+        }),
+      },
+      component: DatagridComponent,
+    }}
+  </Story>
+</Canvas>
+
 <h2>Props</h2>
 <ArgsTable of={DatagridComponent} />
+
+<h2>Table with summary</h2>
+
+<p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
 
 <Canvas withToolbar>
   <Story name="Table used with summary" parameters={{ docs: tableDocs }} height="" >

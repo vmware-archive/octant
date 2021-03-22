@@ -1,0 +1,22 @@
+{
+  "body": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "test"
+    },
+    "title": [
+      {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "title"
+        }
+      }
+    ]
+  }
+}
+
+

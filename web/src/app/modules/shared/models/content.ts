@@ -188,6 +188,13 @@ export interface ListView extends View {
   };
 }
 
+export interface ExpandableRowDetailView extends View {
+  config: {
+    body: View;
+    replace: boolean;
+  };
+}
+
 export interface ExpressionSelectorView extends View {
   config: {
     key: string;
@@ -361,6 +368,8 @@ export interface TableRow {
 export interface TableRowWithMetadata {
   data: TableRow;
   actions?: GridAction[];
+  replace?: boolean;
+  expandedDetail?: View;
   isDeleted: boolean;
 }
 
