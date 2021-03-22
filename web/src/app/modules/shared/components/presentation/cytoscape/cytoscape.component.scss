@@ -19,7 +19,7 @@
 ::ng-deep .label1 {
   font-size: 22px;
   color: var(--label1-color);
-  font-weight: 500;
+  font-weight: normal;
   margin-top: 8px;
   line-height: 22px;
   cursor: default;
@@ -28,7 +28,7 @@
 ::ng-deep .label2 {
   font-size: 16px;
   color: var(--label2-color);
-  font-weight: 500;
+  font-weight: normal;
   margin-top: 4px;
   line-height: 18px;
   cursor: default;
