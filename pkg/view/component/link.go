@@ -19,8 +19,9 @@ var _ Component = &Link{}
 
 // LinkConfig is the contents of Link
 type LinkConfig struct {
-	Text string `json:"value"`
-	Ref  string `json:"ref"`
+	Text    string    `json:"value"`
+	Ref     string    `json:"ref"`
+	Content Component `json:"content,omitempty"`
 	// Status sets the status of the component.
 	Status       TextStatus `json:"status,omitempty" tsType:"number"`
 	StatusDetail Component  `json:"statusDetail,omitempty"`
@@ -30,6 +31,7 @@ func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Text         string       `json:"value,omitempty"`
 		Ref          string       `json:"ref,omitempty"`
+		Content      *TypedObject `json:"content,omitempty"`
 		Status       TextStatus   `json:"status,omitempty"`
 		StatusDetail *TypedObject `json:"statusDetail,omitempty"`
 	}{}
@@ -47,6 +49,13 @@ func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		lc.StatusDetail = sd
+	}
+	if x.Content != nil {
+		t, err := x.Content.ToComponent()
+		if err != nil {
+			return err
+		}
+		lc.Content = t
 	}
 
 	return nil
@@ -68,6 +77,18 @@ func NewLink(title, s, ref string, options ...LinkOption) *Link {
 		option(l)
 	}
 
+	return l
+}
+
+// NewLinkFromComponent wraps a component around href anchors
+func NewLinkFromComponent(c Component, ref string) *Link {
+	l := &Link{
+		Base: newBase(TypeLink, nil),
+		Config: LinkConfig{
+			Ref:     ref,
+			Content: c,
+		},
+	}
 	return l
 }
 

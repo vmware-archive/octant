@@ -137,6 +137,10 @@ export interface Button {
   name: string;
   confirmation?: Confirmation;
   modal?: ModalView;
+  ref?: string;
+  status?: string;
+  size?: string;
+  style?: string;
 }
 
 export interface ButtonGroupView extends View {
@@ -178,6 +182,7 @@ export interface LinkView extends View {
     value: string;
     status?: number;
     statusDetail?: View;
+    content?: View;
   };
 }
 

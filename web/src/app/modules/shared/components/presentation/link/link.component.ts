@@ -3,7 +3,7 @@
 //
 
 import { Component } from '@angular/core';
-import { LinkView } from 'src/app/modules/shared/models/content';
+import { LinkView, View } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 const isUrlExternal = url =>
@@ -19,6 +19,7 @@ export class LinkComponent extends AbstractViewComponent<LinkView> {
   value: string;
   isExternal: boolean;
   hasStatus: boolean;
+  content: View;
 
   constructor() {
     super();
@@ -29,6 +30,7 @@ export class LinkComponent extends AbstractViewComponent<LinkView> {
     this.ref = view.config.ref;
     this.value = view.config.value;
     this.isExternal = isUrlExternal(this.ref);
+    this.content = view.config.content;
 
     if (view.config.status) {
       this.hasStatus = true;

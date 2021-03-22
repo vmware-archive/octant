@@ -1,5 +1,11 @@
+<ng-template [ngIf]="content">
+  <ng-container *ngIf="isExternal; else componentInternal">
+    <a target="_blank" href="{{ ref }}"><app-view-container [view]="content"></app-view-container></a>
+  </ng-container>
+</ng-template>
+
 <ng-template [ngIf]="isExternal" [ngIfElse]="internal">
-  <a target ="_blank" href="{{ ref }}">{{ value }}</a>
+  <a target="_blank" href="{{ ref }}">{{ value }}</a>
 </ng-template>
 
 <ng-template #internal>
@@ -10,4 +16,8 @@
     ></app-indicator>
   </ng-container>
   <a [routerLink]="[ref]">{{ value }}</a>
+</ng-template>
+
+<ng-template #componentInternal>
+  <a [routerLink]="[ref]"><app-view-container [view]="content"></app-view-container></a>
 </ng-template>

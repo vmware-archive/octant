@@ -8,6 +8,39 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
+const (
+	// ButtonStatusSuccess is a green button
+	ButtonStatusSuccess ButtonStatus = "success"
+	// ButtonStatusInfo is the default blue color
+	ButtonStatusInfo ButtonStatus = "info"
+	// ButtonStatusDanger is a red button
+	ButtonStatusDanger ButtonStatus = "danger"
+	// ButtonStatusDisabled is a disabled button
+	ButtonStatusDisabled ButtonStatus = "disabled"
+)
+
+type ButtonStatus string
+
+const (
+	// ButtonSizeBlock is a full width button
+	ButtonSizeBlock ButtonSize = "block"
+	// ButtonSizeSmall is a small button
+	ButtonSizeLarge ButtonSize = "lg"
+)
+
+type ButtonSize string
+
+const (
+	// ButtonStyleOutline is a transparent button with a colored border
+	ButtonStyleOutline ButtonStyle = "outline"
+	// ButtonStyleSolid is a button with solid color
+	ButtonStyleSolid ButtonStyle = "solid"
+	// ButtonStyleFlat is a button with no background color or outline
+	ButtonStyleFlat ButtonStyle = "link"
+)
+
+type ButtonStyle string
+
 // Confirmation is configuration for a confirmation dialog.
 type Confirmation struct {
 	Title string `json:"title"`
@@ -34,12 +67,44 @@ func WithModal(modal *Modal) ButtonOption {
 	}
 }
 
+// WithLink configures a button with an href
+func WithButtonLink(ref string) ButtonOption {
+	return func(button *Button) {
+		button.Ref = ref
+	}
+}
+
+// WithButtonStatus configures the button color
+func WithButtonStatus(status ButtonStatus) ButtonOption {
+	return func(button *Button) {
+		button.Status = status
+	}
+}
+
+// WithButtonSize configures the button size
+func WithButtonSize(size ButtonSize) ButtonOption {
+	return func(button *Button) {
+		button.Size = size
+	}
+}
+
+// WithButtonStyle configures the button appearance
+func WithButtonStyle(style ButtonStyle) ButtonOption {
+	return func(button *Button) {
+		button.Style = style
+	}
+}
+
 func (b *Button) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Name         string         `json:"name"`
 		Payload      action.Payload `json:"payload"`
 		Confirmation *Confirmation  `json:"confirmation,omitempty"`
 		Modal        *TypedObject   `json:"modal,omitempty"`
+		Ref          string         `json:"ref,omitempty"`
+		Status       ButtonStatus   `json:"status,omitempty"`
+		Size         ButtonSize     `json:"size,omitempty"`
+		Style        ButtonStyle    `json:"style,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -62,6 +127,10 @@ func (b *Button) UnmarshalJSON(data []byte) error {
 	b.Name = x.Name
 	b.Payload = x.Payload
 	b.Confirmation = x.Confirmation
+	b.Ref = x.Ref
+	b.Status = x.Status
+	b.Size = x.Size
+	b.Style = x.Style
 
 	return nil
 }
@@ -72,6 +141,10 @@ type Button struct {
 	Payload      action.Payload `json:"payload"`
 	Confirmation *Confirmation  `json:"confirmation,omitempty"`
 	Modal        Component      `json:"modal,omitempty"`
+	Ref          string         `json:"ref,omitempty"`
+	Status       ButtonStatus   `json:"status,omitempty"`
+	Size         ButtonSize     `json:"size,omitempty"`
+	Style        ButtonStyle    `json:"style,omitempty"`
 }
 
 // NewButton creates an instance of Button.
@@ -79,6 +152,20 @@ func NewButton(name string, payload action.Payload, options ...ButtonOption) But
 	button := Button{
 		Name:    name,
 		Payload: payload,
+	}
+
+	for _, option := range options {
+		option(&button)
+	}
+
+	return button
+}
+
+// NewButtonLink creates a button component that navigates to a link
+func NewButtonLink(name, ref string, options ...ButtonOption) Button {
+	button := Button{
+		Name: name,
+		Ref:  ref,
 	}
 
 	for _, option := range options {

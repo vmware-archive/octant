@@ -12,6 +12,13 @@ buttonGroup.AddButton(
       )))
 `}}
 
+export const buttonStyleDocs= { source: { code: `buttonGroup := component.NewButtonGroup()
+button := component.NewButtonLink("Example", "https://google.com",
+		component.WithButtonStyle(component.ButtonStyle(component.ButtonStyleSolid)),
+		component.WithButtonStatus(component.ButtonStatusSuccess))
+buttonGroup.AddButton(button)
+`}}
+
 <h1>Button Group component</h1>
 <h2>Description</h2>
 
@@ -19,12 +26,14 @@ buttonGroup.AddButton(
 <p>The Button component supports a confirmation method with a Markdown compatible message that appears in a modal.
 Buttons requiring confirmation are red.</p>
 
-<h2>Example</h2>
-
 <Meta title="Components/Button Group" component={ButtonGroupComponent} />
 
+<h2>Button Group with Confirmation</h2>
+
+<p>One or more buttons can be added to a button group. A button can send payloads or open a modal.</p>
+
 <Canvas withToolbar>
-  <Story name="ButtonGroup component" parameters={{ docs: buttonDocs }} height="150px" >
+  <Story name="ButtonGroup with Modal" parameters={{ docs: buttonDocs }} height="150px" >
   {{
       props: {
         view:  object('View', {
@@ -47,6 +56,37 @@ Buttons requiring confirmation are red.</p>
       },
       component: ButtonGroupComponent,
       }}
+  </Story>
+</Canvas>
+
+<h2>Button with styling</h2>
+
+<p>Buttons can also be styled to have solid colors instead of a transparent background along with colors.</p>
+<p>A button can also link to a URL.</p>
+
+<Canvas withToolbar>
+  <Story name="ButtonGroup with Link" parameters={{ docs: buttonStyleDocs }} height="150px" >
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            buttons: [
+              {
+                name: "Example",
+                payload: null,
+                ref: 'https://octant.dev',
+                status: 'success',
+                style: 'solid',
+              }
+            ]
+          },
+          metadata: {
+            type: 'buttonGroup',
+          },
+        }),
+      },
+      component: ButtonGroupComponent,
+    }}
   </Story>
 </Canvas>
 
