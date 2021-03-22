@@ -3,18 +3,23 @@
 //
 
 import {
-  AfterViewInit,
+  ChangeDetectorRef,
   Component,
-  Input,
+  isDevMode,
+  OnDestroy,
+  OnInit,
   ViewEncapsulation,
 } from '@angular/core';
 import {
   Node,
   ResourceViewerView,
-  View,
 } from 'src/app/modules/shared/models/content';
 import { ElementsDefinition, Stylesheet } from 'cytoscape';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import { ELEMENTS_STYLE, ELEMENTS_STYLE_DARK } from './octant.style';
+import { Router } from '@angular/router';
+import { ThemeService } from '../../../services/theme/theme.service';
+import { Subscription } from 'rxjs';
 
 const statusColorCodes = {
   ok: '#60b515',
@@ -32,92 +37,66 @@ const edgeColorCode = '#003d79';
 })
 export class ResourceViewerComponent
   extends AbstractViewComponent<ResourceViewerView>
-  implements AfterViewInit {
-  selected: string;
+  implements OnInit, OnDestroy {
   selectedNode: Node;
+  private subscriptionTheme: Subscription;
 
   layout = {
     name: 'dagre',
-    padding: 30,
+    padding: 0,
+    nodeSep: 50,
+    rankSep: 150,
     rankDir: 'TB',
     directed: true,
     animate: false,
   };
 
   zoom = {
-    min: 0.5,
-    max: 2.0,
+    min: 0.075,
+    max: 4.0,
   };
 
-  style: Stylesheet[] = [
-    {
-      selector: 'node',
-      css: {
-        shape: 'rectangle',
-        width: 'label',
-        height: 'label',
-        content: 'data(name)',
-        'background-color': 'data(colorCode)',
-        color: '#fff',
-        'font-size': 12,
-        'text-wrap': 'wrap',
-        'text-valign': 'center',
-        'padding-left': '10px',
-        'padding-right': '10px',
-        'padding-top': '10px',
-        'padding-bottom': '10px',
-      },
-    },
-
-    {
-      selector: 'node:selected',
-      css: {
-        'curve-style': 'bezier',
-        'line-color': 'data(colorCode)',
-        'source-arrow-color': 'data(colorCode)',
-        'target-arrow-color': 'data(colorCode)',
-        'border-width': 1,
-        'border-color': '#313131',
-        'border-style': 'solid',
-      },
-    },
-
-    {
-      selector: 'edge',
-      css: {
-        'curve-style': 'bezier',
-        opacity: 0.666,
-        width: 'mapData(strength, 70, 100, 1, 3)',
-        'line-color': 'data(colorCode)',
-        'source-arrow-color': 'data(colorCode)',
-        'target-arrow-color': 'data(colorCode)',
-      },
-    },
-  ];
-
+  style: Stylesheet[] = ELEMENTS_STYLE;
   graphData: ElementsDefinition;
 
-  private afterFirstChange: boolean;
-
-  constructor() {
+  constructor(
+    private router: Router,
+    private themeService: ThemeService,
+    private cdr: ChangeDetectorRef
+  ) {
     super();
   }
 
-  ngAfterViewInit(): void {
-    if (this.afterFirstChange) {
-      this.graphData = this.generateGraphData();
-    }
-    super.ngAfterViewInit();
+  ngOnInit(): void {
+    this.subscriptionTheme = this.themeService.themeType.subscribe(() => {
+      this.style = this.themeService.isLightThemeEnabled()
+        ? ELEMENTS_STYLE
+        : ELEMENTS_STYLE_DARK;
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptionTheme?.unsubscribe();
   }
 
   update() {
-    this.select(this.v.config.selected);
-    this.graphData = this.generateGraphData();
-    this.afterFirstChange = true;
-  }
+    const nodes: Node[] = this.v.config.nodes;
+    if (nodes && Object.keys(nodes).length > 0) {
+      const selection = this.v.config?.selected
+        ? this.v.config.selected
+        : Object.keys(nodes)[0];
 
-  nodeChange(event) {
-    this.select(event.id);
+      this.graphData = this.generateGraphData();
+      this.selectNode(selection);
+
+      if (isDevMode()) {
+        console.log(
+          'Resource view data:',
+          JSON.stringify((this.view as ResourceViewerView).config)
+        );
+      }
+    }
   }
 
   generateGraphData() {
@@ -127,7 +106,7 @@ export class ResourceViewerComponent
     };
   }
 
-  private nodes() {
+  nodes() {
     if (!this.v.config.nodes) {
       return [];
     }
@@ -139,8 +118,10 @@ export class ResourceViewerComponent
       return {
         data: {
           id: name,
-          name: `${details.name}\n${details.apiVersion} ${details.kind}`,
+          label1: this.getLabel(details.name, 20),
+          label2: this.getLabel(`${details.apiVersion} ${details.kind}`, 36),
           weight: 100,
+          status: details.status,
           colorCode,
         },
       };
@@ -149,7 +130,7 @@ export class ResourceViewerComponent
     return Array.prototype.concat(...nodes);
   }
 
-  private edges() {
+  edges() {
     if (!this.v.config.edges) {
       return [];
     }
@@ -170,13 +151,26 @@ export class ResourceViewerComponent
     return Array.prototype.concat(...edges);
   }
 
-  private select(id: string) {
-    this.selected = id;
+  nodeChange(event) {
+    this.selectNode(event.id);
+  }
 
+  selectNode(id: string) {
     const nodes = this.v.config.nodes;
 
     if (nodes && nodes[id]) {
       this.selectedNode = nodes[id];
     }
+  }
+
+  openNode(event) {
+    const node = this.v.config.nodes[event.id];
+    if (node && node.path) {
+      this.router.navigateByUrl(node.path.config.ref);
+    }
+  }
+
+  getLabel(label: string, length: number): string {
+    return label.length > length ? label.substring(0, length) + '...' : label;
   }
 }

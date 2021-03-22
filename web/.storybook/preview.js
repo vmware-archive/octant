@@ -40,7 +40,10 @@ addDecorator(
       { provide: WindowToken, useFactory: windowProvider },
       {
         provide: APP_INITIALIZER,
-        useFactory: themeService => () => themeService.loadTheme(),
+        useFactory: themeService => () => {
+          themeService.themeType.next('light')
+          themeService.loadTheme();
+        },
         deps: [ThemeService],
         multi: true,
       },
