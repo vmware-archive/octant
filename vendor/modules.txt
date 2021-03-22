@@ -203,7 +203,7 @@ github.com/skratchdot/open-golang/open
 # github.com/soheilhy/cmux v0.1.4
 ## explicit
 github.com/soheilhy/cmux
-# github.com/spf13/afero v1.5.1
+# github.com/spf13/afero v1.6.0
 ## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
