@@ -24,6 +24,23 @@ func Test_unmarshal(t *testing.T) {
 		expected   Component
 	}{
 		{
+			name:       "accordion",
+			configFile: "config_accordion.json",
+			objectType: TypeAccordion,
+			expected: &Accordion{
+				Base: newBase(TypeAccordion, nil),
+				Config: AccordionConfig{
+					Rows: []AccordionRow{
+						{
+							Title:   "Accordion title",
+							Content: NewText("accordion content"),
+						},
+					},
+					AllowMultipleExpanded: true,
+				},
+			},
+		},
+		{
 			name:       "annotations",
 			configFile: "config_annotations.json",
 			objectType: TypeAnnotations,

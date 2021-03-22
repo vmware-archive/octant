@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TextComponent } from './components/presentation/text/text.component';
 import { ClarityModule } from '@clr/angular';
 import { TitleComponent } from './components/presentation/title/title.component';
+import { AccordionComponent } from './components/presentation/accordion/accordion.component';
 import { AlertComponent } from './components/presentation/alert/alert.component';
 import { AnnotationsComponent } from './components/presentation/annotations/annotations.component';
 import { BreadcrumbComponent } from './components/presentation/breadcrumb/breadcrumb.component';
@@ -85,6 +86,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 
 @NgModule({
   declarations: [
+    AccordionComponent,
     AlertComponent,
     AnnotationsComponent,
     BreadcrumbComponent,
@@ -159,6 +161,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
     BottomPanelComponent,
   ],
   entryComponents: [
+    AccordionComponent,
     AlertComponent,
     AnnotationsComponent,
     BreadcrumbComponent,

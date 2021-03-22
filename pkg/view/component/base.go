@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 const (
+	// TypeAccordion is an accordion component.
+	TypeAccordion = "accordion"
 	// TypeAnnotations is an annotations component.
 	TypeAnnotations = "annotations"
 	// ButtonGroup is a button group component.

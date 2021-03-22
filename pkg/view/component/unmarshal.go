@@ -16,6 +16,11 @@ func unmarshal(to TypedObject) (Component, error) {
 	var err error
 
 	switch to.Metadata.Type {
+	case TypeAccordion:
+		t := &Accordion{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal accordion config")
+		o = t
 	case TypeAnnotations:
 		t := &Annotations{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

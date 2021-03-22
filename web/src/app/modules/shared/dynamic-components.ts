@@ -4,6 +4,7 @@
  */
 
 import { InjectionToken, Type } from '@angular/core';
+import { AccordionComponent } from './components/presentation/accordion/accordion.component';
 import { AnnotationsComponent } from './components/presentation/annotations/annotations.component';
 import { IFrameComponent } from './components/presentation/iframe/iframe.component';
 import { ResourceViewerComponent } from './components/presentation/resource-viewer/resource-viewer.component';
@@ -46,6 +47,7 @@ export interface ComponentMapping {
 }
 
 const DynamicComponentMapping: ComponentMapping = {
+  accordion: AccordionComponent,
   annotations: AnnotationsComponent,
   buttonGroup: ButtonGroupComponent,
   card: CardComponent,

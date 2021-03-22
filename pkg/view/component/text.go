@@ -39,7 +39,7 @@ type TextConfig struct {
 	// TrustedContent sets if the content of the markdown text can be trusted.
 	// Use this when you want to use the markdown area to render custom HTML and links.
 	// Setting this to true for content you do not control, like Kubernetes Resources, can result
-	// in your plugin exposing XSS vulnerablities.
+	// in your plugin exposing XSS vulnerabilities.
 	TrustedContent bool `json:"trustedContent,omitempty"`
 	// Status sets the status of the component.
 	Status TextStatus `json:"status,omitempty"`
