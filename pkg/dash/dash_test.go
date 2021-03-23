@@ -8,6 +8,7 @@ package dash
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -20,8 +21,6 @@ import (
 	"testing"
 	"time"
 
-	v1 "k8s.io/api/authorization/v1"
-
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
 	"github.com/spf13/afero"
@@ -29,13 +28,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
@@ -181,11 +180,25 @@ func TestNewRunnerUsesClusterClient(t *testing.T) {
 	clusterClient := mockClusterClientReturningNamespace(controller, namespace)
 	listener := NewInMemoryListener()
 
+	sharedIndexInformer := clusterFake.NewMockSharedIndexInformer(controller)
+	sharedIndexInformer.EXPECT().SetWatchErrorHandler(gomock.Any())
+	sharedIndexInformer.EXPECT().AddEventHandlerWithResyncPeriod(gomock.Any(), gomock.Any())
+	sharedIndexInformer.EXPECT().Run(gomock.Any()).AnyTimes()
+
+	genericInformer := clusterFake.NewMockGenericInformer(controller)
+	genericInformer.EXPECT().Informer().Return(sharedIndexInformer).AnyTimes()
+	genericInformer.EXPECT().Lister().AnyTimes()
+
+	crds := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	dynamicInformerFactory := clusterFake.NewMockDynamicSharedInformerFactory(controller)
+	dynamicInformerFactory.EXPECT().ForResource(crds).Return(genericInformer)
+
 	logger := internalLog.NopLogger()
 	cancel, err := makeRunner(
 		logger,
 		WithClusterClient(clusterClient),
 		WithListener(listener),
+		WithDynamicSharedInformerFactory(dynamicInformerFactory),
 	)
 	require.NoError(t, err)
 	defer cancel()
@@ -198,54 +211,50 @@ func TestNewRunnerUsesClusterClient(t *testing.T) {
 func mockClusterClientReturningNamespace(controller *gomock.Controller, namespace string) cluster.ClientInterface {
 	nsClient := clusterFake.NewMockNamespaceInterface(controller)
 	nsClient.EXPECT().InitialNamespace().Return(namespace)
-	nsClient.EXPECT().Names().Return([]string{namespace}, nil)
 	nsClient.EXPECT().ProvidedNamespaces().Return([]string{namespace})
-	ssar := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
-	ssar.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(&v1.SelfSubjectAccessReview{}, nil)
-	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
-	authClient.EXPECT().SelfSubjectAccessReviews().Return(ssar).MinTimes(1)
-	k8sClient := clusterFake.NewMockKubernetesInterface(controller)
-	k8sClient.EXPECT().AuthorizationV1().Return(authClient).MinTimes(1)
+	nsClient.EXPECT().Names().AnyTimes()
+	nsClient.EXPECT().HasNamespace(namespace).Return(true)
+
+	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
+
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).MinTimes(1)
-	clusterClient.EXPECT().RESTClient().Return(nil, nil)
-	clusterClient.EXPECT().RESTConfig().Return(nil)
-	clusterClient.EXPECT().Resource(gomock.Any()).
-		Return(schema.GroupVersionResource{}, false, nil).
-		MinTimes(1)
-	clusterClient.EXPECT().KubernetesClient().Return(k8sClient, nil).MinTimes(1)
+	clusterClient.EXPECT().DynamicClient().Return(dynamicClient, nil)
+	clusterClient.EXPECT().RESTClient()
+	clusterClient.EXPECT().RESTConfig()
 	clusterClient.EXPECT().DefaultNamespace().Return(namespace)
+
 	return clusterClient
 }
 
-//func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
-//	srv := fakeK8sAPIThatForbidsWatchingCRDs()
-//	defer srv.Close()
-//	stubRiceBox("dist/octant")
-//
-//	listener := NewInMemoryListener()
-//	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
-//	require.NoError(t, err)
-//	defer cancel()
-//	kubeConfig := makeKubeConfig("test-context", srv.URL)
-//	websocketWrite(
-//		fmt.Sprintf(`{
-//	"type": "action.octant.dev/uploadKubeConfig",
-//	"payload": {"kubeConfig": "%s"}
-//}`, base64.StdEncoding.EncodeToString(kubeConfig)),
-//		listener,
-//	)
-//	// wait for API to reload
-//	for {
-//		if websocketReadTimeout(listener, 10*time.Millisecond) {
-//			break
-//		}
-//	}
-//	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
-//	require.NoError(t, err)
-//
-//	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
-//}
+func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
+	srv := fakeK8sAPIThatForbidsWatchingCRDs()
+	defer srv.Close()
+	stubRiceBox("dist/octant")
+
+	listener := NewInMemoryListener()
+	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
+	require.NoError(t, err)
+	defer cancel()
+	kubeConfig := makeKubeConfig("test-context", srv.URL)
+	websocketWrite(
+		fmt.Sprintf(`{
+	"type": "action.octant.dev/uploadKubeConfig",
+	"payload": {"kubeConfig": "%s"}
+}`, base64.StdEncoding.EncodeToString(kubeConfig)),
+		listener,
+	)
+	// wait for API to reload
+	for {
+		if websocketReadTimeout(listener, 10*time.Millisecond) {
+			break
+		}
+	}
+	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
+	require.NoError(t, err)
+
+	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
+}
 
 func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testing.T) {
 	stubRiceBox("dist/octant")

@@ -91,9 +91,6 @@ func TestLiveConfig(t *testing.T) {
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	buildInfo := BuildInfo{}
 
-	objectStore.EXPECT().
-		RegisterOnUpdate(gomock.Any())
-
 	restConfigOptions := cluster.RESTConfigOptions{}
 
 	config := NewLiveConfig(
@@ -139,9 +136,6 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToTrue(t *testing.T) {
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	buildInfo := BuildInfo{}
-
-	objectStore.EXPECT().
-		RegisterOnUpdate(gomock.Any())
 
 	restConfigOptions := cluster.RESTConfigOptions{}
 
@@ -199,9 +193,6 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToFalse(t *testing.T) {
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	buildInfo := BuildInfo{}
-
-	objectStore.EXPECT().
-		RegisterOnUpdate(gomock.Any())
 
 	restConfigOptions := cluster.RESTConfigOptions{}
 

@@ -50,8 +50,6 @@ func TestDefaultCRDWatcher_Watch(t *testing.T) {
 			assert.NotNil(t, c.DeleteFunc)
 			return nil
 		})
-	objectStore.EXPECT().
-		RegisterOnUpdate(gomock.Any())
 	errorStore, err := internalErr.NewErrorStore()
 	require.NoError(t, err)
 
@@ -82,8 +80,6 @@ func TestDefaultCRDWatcher_Watch_failure(t *testing.T) {
 		DoAndReturn(func(_ context.Context, _ store.Key, c *cache.ResourceEventHandlerFuncs) error {
 			return errors.New("failure")
 		})
-	objectStore.EXPECT().
-		RegisterOnUpdate(gomock.Any())
 	errorStore, err := internalErr.NewErrorStore()
 	require.NoError(t, err)
 
