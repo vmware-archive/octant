@@ -1,0 +1,11 @@
+<div class="blog-highlights">
+    <div class="wrapper blog">
+        <h2>Blog Highlights</h2>
+        <div class="grid three">
+            {{ range first 3 (where .Site.RegularPages "Section" "posts").ByDate.Reverse }}
+					{{ partial "blog-post-card.html" . }}
+			{{ end }}
+        </div>
+        <p class="center"><a href="/blog/" class="button secondary">See All Posts</a></p>
+    </div>
+</div>
