@@ -22,7 +22,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -67,15 +66,6 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 	if err := co.bootstrap(ctx); err != nil {
 		return nil, err
 	}
-
-	logger := internalLog.From(ctx).With("module", "overview")
-
-	co.dashConfig.ObjectStore().RegisterOnUpdate(func(newObjectStore store.Store) {
-		logger.Debugf("object store was updated")
-		if err := co.bootstrap(ctx); err != nil {
-			logger.WithErr(err).Errorf("updating object store")
-		}
-	})
 
 	return co, nil
 }

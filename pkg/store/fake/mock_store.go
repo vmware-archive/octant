@@ -128,18 +128,6 @@ func (mr *MockStoreMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockStore)(nil).List), arg0, arg1)
 }
 
-// RegisterOnUpdate mocks base method
-func (m *MockStore) RegisterOnUpdate(arg0 store.UpdateFn) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RegisterOnUpdate", arg0)
-}
-
-// RegisterOnUpdate indicates an expected call of RegisterOnUpdate
-func (mr *MockStoreMockRecorder) RegisterOnUpdate(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterOnUpdate", reflect.TypeOf((*MockStore)(nil).RegisterOnUpdate), arg0)
-}
-
 // Unwatch mocks base method
 func (m *MockStore) Unwatch(arg0 context.Context, arg1 ...schema.GroupVersionKind) error {
 	m.ctrl.T.Helper()

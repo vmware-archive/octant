@@ -49,16 +49,6 @@ func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInter
 		watchConfigs:  make(map[string]*config.CRDWatchConfig),
 	}
 
-	objectStore.RegisterOnUpdate(func(newObjectStore store.Store) {
-		cw.mu.Lock()
-		defer cw.mu.Unlock()
-
-		cw.objectStore = newObjectStore
-
-		logger := log.From(ctx)
-		logger.Debugf("default crd watcher updated object store")
-	})
-
 	return cw, nil
 }
 
@@ -79,7 +69,6 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 			defer cw.mu.Unlock()
 
 			logger := logger.With("crdwatcher", "add")
-
 			u, ok := object.(*unstructured.Unstructured)
 			if !ok {
 				logger.
@@ -101,7 +90,6 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 			defer cw.mu.Unlock()
 
 			logger := logger.With("crdwatcher", "delete")
-
 			u, ok := object.(*unstructured.Unstructured)
 			if !ok {
 				logger.

@@ -11,6 +11,8 @@ import (
 	"path"
 	"sort"
 
+	"go.opencensus.io/trace"
+
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/pkg/errors"
@@ -74,6 +76,9 @@ func New(title, navigationPath string, options ...Option) (*Navigation, error) {
 
 // CRDEntries generates navigation entries for CRDs.
 func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, bool, error) {
+	ctx, span := trace.StartSpan(ctx, "navigation:CRDEntries")
+	defer span.End()
+
 	var list = []Navigation{}
 
 	loading := false
@@ -119,6 +124,9 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 }
 
 func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1.CustomResourceDefinition, bool, error) {
+	ctx, span := trace.StartSpan(ctx, "navigation:CustomResourceDefinitions")
+	defer span.End()
+
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1",
 		Kind:       "CustomResourceDefinition",

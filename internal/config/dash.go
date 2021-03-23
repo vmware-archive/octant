@@ -193,9 +193,6 @@ func NewLiveConfig(
 		buildInfo:            buildInfo,
 		contextChosenInUI:    contextChosenInUI,
 	}
-	objectStore.RegisterOnUpdate(func(store store.Store) {
-		l.objectStore = store
-	})
 
 	return l
 }
