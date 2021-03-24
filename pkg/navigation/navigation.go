@@ -88,10 +88,6 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 		return nil, false, errors.Wrap(err, "retrieving CRDs")
 	}
 
-	sort.Slice(crds, func(i, j int) bool {
-		return crds[i].Name < crds[j].Name
-	})
-
 	for i := range crds {
 		if wantsClusterScoped && crds[i].Spec.Scope != apiextv1.ClusterScoped {
 			continue
@@ -158,6 +154,9 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1.
 		}
 		list = append(list, crd)
 	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
 
 	return list, hasSynced, nil
 }

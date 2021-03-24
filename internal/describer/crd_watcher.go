@@ -78,7 +78,6 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 			}
 
 			cw.clusterClient.ResetMapper()
-
 			for _, watchConfig := range cw.watchConfigs {
 				if watchConfig.CanPerform(u) {
 					watchConfig.Add(ctx, u)
