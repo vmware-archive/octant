@@ -1,4 +1,4 @@
-import { Component, EventEmitter, isDevMode, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ActionField, StepItem, StepperView } from '../../../models/content';
 import {
   FormBuilder,
@@ -30,6 +30,18 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
   formGroup: FormGroup;
   action: string;
   steps: StepItem[] = [];
+
+  needParams = {
+    min: true,
+    max: true,
+    minLength: true,
+    maxLength: true,
+    pattern: true,
+    required: false,
+    requiredTrue: false,
+    email: false,
+    nullValidator: false,
+  };
 
   constructor(
     private formBuilder: FormBuilder,
@@ -85,15 +97,31 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
     return index;
   }
 
-  getValidators(validators: string[]): ValidatorFn[] {
-    if (validators) {
-      const vFn: ValidatorFn[] = [];
-      validators.forEach(v => {
-        vFn.push(Validators[v]);
-      });
-      return vFn;
+  getValidators(validators: { string: any }): ValidatorFn[] {
+    if (!validators) {
+      return [];
     }
-    return [];
+
+    const vFn: ValidatorFn[] = [];
+    const keys = Object.keys(validators);
+    for (const key of keys) {
+      const value = validators[key];
+
+      // Check if function is expected
+      if (this.needParams[key] === undefined) {
+        console.error(`Unknown validation function ${key} for form`);
+        continue;
+      }
+
+      // Verify how many params needs
+      if (this.needParams[key]) {
+        vFn.push(Validators[key](value));
+      } else {
+        vFn.push(Validators[key]);
+      }
+    }
+
+    return vFn;
   }
 
   fieldChoices(field: ActionField) {

@@ -24,6 +24,20 @@ const (
 	FieldTypeHidden   = "hidden"
 )
 
+type FormValidator string
+
+const (
+	FormValidatorMin           FormValidator = "min"
+	FormValidatorMax           FormValidator = "max"
+	FormValidatorRequired      FormValidator = "required"
+	FormValidatorRequiredTrue  FormValidator = "requiredTrue"
+	FormValidatorEmail         FormValidator = "email"
+	FormValidatorMinLength     FormValidator = "minLength"
+	FormValidatorMaxLength     FormValidator = "maxLength"
+	FormValidatorPattern       FormValidator = "pattern"
+	FormValidatorNullValidator FormValidator = "nullValidator"
+)
+
 type InputChoice struct {
 	Label   string `json:"label"`
 	Value   string `json:"value"`
@@ -36,7 +50,7 @@ type BaseFormField struct {
 	fieldType    string
 	placeholder  string
 	errorMessage string
-	validators   []string
+	validators   map[FormValidator]interface{}
 }
 
 func newBaseFormField(label, name, fieldType string) *BaseFormField {
@@ -67,7 +81,7 @@ func (bff *BaseFormField) Error() string {
 	return bff.errorMessage
 }
 
-func (bff *BaseFormField) Validators() []string {
+func (bff *BaseFormField) Validators() map[FormValidator]interface{} {
 	return bff.validators
 }
 
@@ -81,7 +95,7 @@ type FormField interface {
 	Value() interface{}
 	Placeholder() string
 	Error() string
-	Validators() []string
+	Validators() map[FormValidator]interface{}
 
 	MarshalJSON() ([]byte, error)
 	UnmarshalJSON([]byte) error
@@ -140,18 +154,18 @@ func (ff *FormFieldCheckBox) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldCheckBox) AddValidator(errorMessage string, validators []string) {
+func (ff *FormFieldCheckBox) AddValidator(errorMessage string, validators map[FormValidator]interface{}) {
 	ff.errorMessage = errorMessage
 	ff.validators = validators
 }
 
 func (ff *FormFieldCheckBox) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string   `json:"label"`
-		Name          string   `json:"name"`
-		Type          string   `json:"type"`
-		Error         string   `json:"error"`
-		Validators    []string `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 		Configuration struct {
 			Choices []InputChoice
 		} `json:"configuration"`
@@ -207,18 +221,18 @@ func (ff *FormFieldRadio) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldRadio) AddValidator(errorMessage string, validators []string) {
+func (ff *FormFieldRadio) AddValidator(errorMessage string, validators map[FormValidator]interface{}) {
 	ff.errorMessage = errorMessage
 	ff.validators = validators
 }
 
 func (ff *FormFieldRadio) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string   `json:"label"`
-		Name          string   `json:"name"`
-		Type          string   `json:"type"`
-		Error         string   `json:"error"`
-		Validators    []string `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 		Configuration struct {
 			Choices []InputChoice
 		} `json:"configuration"`
@@ -268,7 +282,7 @@ func (ff *FormFieldText) MarshalJSON() ([]byte, error) {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldText) AddValidator(placeholder string, errorMessage string, validators []string) {
+func (ff *FormFieldText) AddValidator(placeholder string, errorMessage string, validators map[FormValidator]interface{}) {
 	ff.placeholder = placeholder
 	ff.errorMessage = errorMessage
 	ff.validators = validators
@@ -276,14 +290,14 @@ func (ff *FormFieldText) AddValidator(placeholder string, errorMessage string, v
 
 func (ff *FormFieldText) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string                 `json:"label"`
-		Name          string                 `json:"name"`
-		Type          string                 `json:"type"`
-		Configuration map[string]interface{} `json:"configuration"`
-		Value         string                 `json:"value"`
-		Placeholder   string                 `json:"placeholder"`
-		Error         string                 `json:"error"`
-		Validators    []string               `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Configuration map[string]interface{}        `json:"configuration"`
+		Value         string                        `json:"value"`
+		Placeholder   string                        `json:"placeholder"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -324,7 +338,7 @@ func (ff *FormFieldPassword) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldPassword) AddValidator(placeholder string, errorMessage string, validators []string) {
+func (ff *FormFieldPassword) AddValidator(placeholder string, errorMessage string, validators map[FormValidator]interface{}) {
 	ff.placeholder = placeholder
 	ff.errorMessage = errorMessage
 	ff.validators = validators
@@ -336,14 +350,14 @@ func (ff *FormFieldPassword) MarshalJSON() ([]byte, error) {
 
 func (ff *FormFieldPassword) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string                 `json:"label"`
-		Name          string                 `json:"name"`
-		Type          string                 `json:"type"`
-		Configuration map[string]interface{} `json:"configuration"`
-		Value         string                 `json:"value"`
-		Placeholder   string                 `json:"placeholder"`
-		Error         string                 `json:"error"`
-		Validators    []string               `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Configuration map[string]interface{}        `json:"configuration"`
+		Value         string                        `json:"value"`
+		Placeholder   string                        `json:"placeholder"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -383,7 +397,7 @@ func (ff *FormFieldNumber) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldNumber) AddValidator(errorMessage string, validators []string) {
+func (ff *FormFieldNumber) AddValidator(errorMessage string, validators map[FormValidator]interface{}) {
 	ff.errorMessage = errorMessage
 	ff.validators = validators
 }
@@ -394,13 +408,13 @@ func (ff *FormFieldNumber) MarshalJSON() ([]byte, error) {
 
 func (ff *FormFieldNumber) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string                 `json:"label"`
-		Name          string                 `json:"name"`
-		Type          string                 `json:"type"`
-		Configuration map[string]interface{} `json:"configuration"`
-		Value         string                 `json:"value"`
-		Error         string                 `json:"error"`
-		Validators    []string               `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Configuration map[string]interface{}        `json:"configuration"`
+		Value         string                        `json:"value"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -459,7 +473,7 @@ func (ff *FormFieldSelect) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldSelect) AddValidator(errorMessage string, validators []string) {
+func (ff *FormFieldSelect) AddValidator(errorMessage string, validators map[FormValidator]interface{}) {
 	ff.errorMessage = errorMessage
 	ff.validators = validators
 }
@@ -470,11 +484,11 @@ func (ff *FormFieldSelect) MarshalJSON() ([]byte, error) {
 
 func (ff *FormFieldSelect) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string   `json:"label"`
-		Name          string   `json:"name"`
-		Type          string   `json:"type"`
-		Error         string   `json:"error"`
-		Validators    []string `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 		Configuration struct {
 			Choices  []InputChoice `json:"choices"`
 			Multiple bool          `json:"multiple"`
@@ -518,7 +532,7 @@ func (ff *FormFieldTextarea) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldTextarea) AddValidator(placeholder string, errorMessage string, validators []string) {
+func (ff *FormFieldTextarea) AddValidator(placeholder string, errorMessage string, validators map[FormValidator]interface{}) {
 	ff.placeholder = placeholder
 	ff.errorMessage = errorMessage
 	ff.validators = validators
@@ -530,14 +544,14 @@ func (ff *FormFieldTextarea) MarshalJSON() ([]byte, error) {
 
 func (ff *FormFieldTextarea) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string                 `json:"label"`
-		Name          string                 `json:"name"`
-		Type          string                 `json:"type"`
-		Configuration map[string]interface{} `json:"configuration"`
-		Value         string                 `json:"value"`
-		Placeholder   string                 `json:"placeholder"`
-		Error         string                 `json:"error"`
-		Validators    []string               `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Configuration map[string]interface{}        `json:"configuration"`
+		Value         string                        `json:"value"`
+		Placeholder   string                        `json:"placeholder"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -577,7 +591,7 @@ func (ff *FormFieldHidden) Value() interface{} {
 }
 
 // AddValidator adds validator(s)
-func (ff *FormFieldHidden) AddValidator(placeholder string, errorMessage string, validators []string) {
+func (ff *FormFieldHidden) AddValidator(placeholder string, errorMessage string, validators map[FormValidator]interface{}) {
 	ff.placeholder = placeholder
 	ff.errorMessage = errorMessage
 	ff.validators = validators
@@ -589,14 +603,14 @@ func (ff *FormFieldHidden) MarshalJSON() ([]byte, error) {
 
 func (ff *FormFieldHidden) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Label         string                 `json:"label"`
-		Name          string                 `json:"name"`
-		Type          string                 `json:"type"`
-		Configuration map[string]interface{} `json:"configuration"`
-		Value         string                 `json:"value"`
-		Placeholder   string                 `json:"placeholder"`
-		Error         string                 `json:"error"`
-		Validators    []string               `json:"validators"`
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Configuration map[string]interface{}        `json:"configuration"`
+		Value         string                        `json:"value"`
+		Placeholder   string                        `json:"placeholder"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -652,7 +666,7 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 			Value         interface{}            `json:"value"`
 			Placeholder   string                 `json:"placeholder"`
 			Error         string                 `json:"error"`
-			Validators    []string               `json:"validators"`
+			Validators    map[string]interface{} `json:"validators"`
 		} `json:"fields"`
 		Action string `json:"action,omitempty"`
 	}{}

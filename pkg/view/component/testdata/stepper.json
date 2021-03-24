@@ -20,9 +20,9 @@
             {
               "error": "error message",
               "placeholder": "placeholder",
-              "validators": [
-                "required"
-              ],
+              "validators": {
+                "required": ""
+              },
               "type": "text",
               "label": "test",
               "name": "test",
@@ -41,9 +41,9 @@
             {
               "error": "error message",
               "placeholder": "placeholder",
-              "validators": [
-                "required"
-              ],
+              "validators": {
+                "required": ""
+              },
               "type": "text",
               "label": "test",
               "name": "test",
