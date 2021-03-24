@@ -42,7 +42,6 @@ func Test_Overview_CRD_Navigation_Cache(t *testing.T) {
 			assert.NotNil(t, c.DeleteFunc)
 			return nil
 		})
-	objectStore.EXPECT().RegisterOnUpdate(gomock.Any()).AnyTimes()
 
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()

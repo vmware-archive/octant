@@ -9,6 +9,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
