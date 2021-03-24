@@ -83,6 +83,7 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
 import { DataModule } from '../../data/data.module';
 import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
+import { IconComponent } from './components/presentation/icon/icon.component';
 
 @NgModule({
   declarations: [
@@ -117,6 +118,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
     HeptagonLabelComponent,
     IFrameComponent,
     IndicatorComponent,
+    IconComponent,
     LabelsComponent,
     LabelSelectorComponent,
     LinkComponent,

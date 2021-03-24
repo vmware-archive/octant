@@ -86,6 +86,8 @@ const (
 	TypeTimestamp = "timestamp"
 	// TypeYAML is a YAML component.
 	TypeYAML = "yaml"
+	// TypeIcon is a Icon component.
+	TypeIcon = "icon"
 )
 
 // Base is an abstract base for components..
