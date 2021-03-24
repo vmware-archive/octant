@@ -38,6 +38,8 @@ interface Viewer {
 })
 export class ViewContainerComponent implements OnInit, AfterViewInit {
   @ViewChild(ViewHostDirective, { static: true }) appView: ViewHostDirective;
+  lastViewType: string;
+
   @Input() set view(v: View) {
     if (v && v.metadata) {
       const cur = JSON.stringify(v);
@@ -79,7 +81,7 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
   }
 
   loadView(view: View) {
-    if (!this.componentRef) {
+    if (!this.componentRef || this.lastViewType !== view.metadata.type) {
       const viewType = view.metadata.type;
       let component: Type<any> = this.componentMappings[viewType];
       if (!component) {
