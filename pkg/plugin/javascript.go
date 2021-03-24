@@ -371,29 +371,39 @@ func (t *jsPlugin) PrintTabs(ctx context.Context, object runtime.Object) ([]TabR
 		return []TabResponse{}, err
 	}
 
-	tab := tabResponse.Get("tab")
-	if tab == goja.Undefined() {
-		return []TabResponse{}, fmt.Errorf("tab property not found")
-	}
-
-	contents, ok := tab.Export().(map[string]interface{})
-	if !ok {
-		return []TabResponse{}, fmt.Errorf("unable to export tab contents")
-	}
-
-	cTab := &component.Tab{}
-	if name, ok := contents["name"]; ok {
-		cTab.Contents = *component.NewFlexLayout(name.(string))
-		cTab.Name = name.(string)
-	}
-
-	if contents, ok := contents["contents"]; ok {
-		realComponent, err := javascript.ConvertToComponent("tab contents", contents)
-		if err != nil {
-			return []TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
+	responses, ok := tabResponse.Export().([]interface{})
+	if ok {
+		cTabs := []TabResponse{}
+		for _, response := range responses {
+			cTab := &component.Tab{}
+			tab, ok := response.(map[string]interface{})["tab"]
+			if !ok {
+				return []TabResponse{}, fmt.Errorf("tab property not found")
+			}
+			contents, ok := tab.(map[string]interface{})
+			if !ok {
+				return []TabResponse{}, fmt.Errorf("unable to get tab contents")
+			}
+			if name, ok := contents["name"]; ok {
+				cTab.Contents = *component.NewFlexLayout(name.(string))
+				cTab.Name = name.(string)
+			}
+			if contents, ok := contents["contents"]; ok {
+				realComponent, err := javascript.ConvertToComponent("tab contents", contents)
+				if err != nil {
+					return []TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
+				}
+				realFlexLayout := *realComponent.(*component.FlexLayout)
+				cTab.Contents.Config = realFlexLayout.Config
+			}
+			cTabs = append(cTabs, TabResponse{Tab: cTab})
 		}
-		realFlexLayout := *realComponent.(*component.FlexLayout)
-		cTab.Contents.Config = realFlexLayout.Config
+		return cTabs, nil
+	}
+
+	cTab, err := generateTabFromResponse(tabResponse)
+	if err != nil {
+		return []TabResponse{}, err
 	}
 
 	return []TabResponse{
@@ -671,4 +681,32 @@ func extractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 	}
 
 	return metadata, nil
+}
+
+func generateTabFromResponse(response *goja.Object) (*component.Tab, error) {
+	tab := response.Get("tab")
+	if tab == goja.Undefined() || tab == nil {
+		return nil, fmt.Errorf("tab property not found")
+	}
+
+	contents, ok := tab.Export().(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to export tab contents")
+	}
+
+	cTab := &component.Tab{}
+	if name, ok := contents["name"]; ok {
+		cTab.Contents = *component.NewFlexLayout(name.(string))
+		cTab.Name = name.(string)
+	}
+
+	if contents, ok := contents["contents"]; ok {
+		realComponent, err := javascript.ConvertToComponent("tab contents", contents)
+		if err != nil {
+			return nil, fmt.Errorf("unable to extract component: %w", err)
+		}
+		realFlexLayout := *realComponent.(*component.FlexLayout)
+		cTab.Contents.Config = realFlexLayout.Config
+	}
+	return cTab, nil
 }

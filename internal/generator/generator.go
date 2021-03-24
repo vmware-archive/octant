@@ -64,11 +64,21 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 	ctx, span := trace.StartSpan(ctx, "Generate")
 	defer span.End()
 
+	span.AddAttributes(
+		trace.StringAttribute("contentPath", contentPath),
+	)
+
 	pf, err := g.pathMatcher.Find(contentPath)
 	if err != nil {
 		if err == describer.ErrPathNotFound {
+			span.AddAttributes(
+				trace.BoolAttribute("pathNotFound", true),
+			)
 			return component.EmptyContentResponse, api.NewNotFoundError(contentPath)
 		}
+		span.AddAttributes(
+			trace.BoolAttribute("pathMatcherErr", true),
+		)
 		return component.EmptyContentResponse, err
 	}
 
@@ -104,8 +114,15 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 		LoadObject:  loaderFactory.LoadObject,
 	}
 
+	span.AddAttributes(
+		trace.BoolAttribute("preparedOptions", true),
+	)
+
 	cResponse, err := pf.Describer.Describe(ctx, namespace, options)
 	if err != nil {
+		span.AddAttributes(
+			trace.BoolAttribute("describeError", true),
+		)
 		return component.EmptyContentResponse, err
 	}
 

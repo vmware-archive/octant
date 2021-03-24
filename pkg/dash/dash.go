@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/client-go/dynamic/dynamicinformer"
+
 	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
@@ -68,11 +70,21 @@ type Options struct {
 	BuildInfo              config.BuildInfo
 	Listener               net.Listener
 	clusterClient          cluster.ClientInterface
+	factory                dynamicinformer.DynamicSharedInformerFactory
 }
 
 type RunnerOption struct {
 	kubeConfigOption kubeconfig.KubeConfigOption
 	nonClusterOption func(*Options)
+}
+
+func WithDynamicSharedInformerFactory(factory dynamicinformer.DynamicSharedInformerFactory) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.factory = factory
+		},
+	}
 }
 
 func WithOpenCensus() RunnerOption {
@@ -382,7 +394,8 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 
 	logger.Debugf("initial namespace for dashboard is %s", options.Namespace)
 
-	appObjectStore, err := initObjectStore(ctx, clusterClient)
+	factoryOption := objectstore.WithDynamicSharedInformerFactory(options.factory)
+	appObjectStore, err := initObjectStore(ctx, clusterClient, factoryOption)
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing store: %w", err)
 	}
@@ -495,13 +508,12 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 }
 
 // initObjectStore initializes the cluster object store interface
-func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store.Store, error) {
+func initObjectStore(ctx context.Context, client cluster.ClientInterface, opts ...objectstore.Option) (store.Store, error) {
 	if client == nil {
 		return nil, fmt.Errorf("nil cluster client")
 	}
 
-	resourceAccess := objectstore.NewResourceAccess(client)
-	appObjectStore, err := objectstore.NewDynamicCache(ctx, client, objectstore.Access(resourceAccess))
+	appObjectStore, err := objectstore.NewDynamicCache(ctx, client, opts...)
 
 	if err != nil {
 		return nil, fmt.Errorf("creating object store for app: %w", err)
