@@ -52,6 +52,7 @@
 }
 
 :host ::ng-deep .nav-group-content .nav-group-trigger-icon {
+  display: flex;
   height: 1.5rem;
   margin-left: 6px;
 }
