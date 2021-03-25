@@ -13,6 +13,8 @@ builds:
       - linux
     goarch:
       - amd64
+    flags:
+      - -tags=embedded
     ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}"
 nfpms:
   -

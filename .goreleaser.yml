@@ -16,6 +16,8 @@ builds:
       - amd64
       - arm
       - arm64
+    flags:
+      - -tags=embedded
     ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
 nfpms:
   -
