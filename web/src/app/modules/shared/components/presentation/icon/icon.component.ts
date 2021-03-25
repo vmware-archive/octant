@@ -106,7 +106,6 @@ export class IconComponent extends AbstractViewComponent<IconView> {
   }
 
   setColor(color: string) {
-    console.log('color', color);
     if (!color || color === '') {
       return;
     }

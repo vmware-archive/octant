@@ -1,0 +1,14 @@
+<div>
+  <clr-signpost class="trigger">
+    <app-view-container clrSignpostTrigger
+                        [ngClass]="{'onOpen': onOpen}"
+                        [view]="trigger">
+    </app-view-container>
+
+    <ng-template [(clrIfOpen)]="onOpen">
+      <clr-signpost-content>
+        <div [innerHTML]="message"></div>
+      </clr-signpost-content>
+    </ng-template>
+  </clr-signpost>
+</div>

@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2021 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package component
 
 import (
@@ -12,7 +17,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
-func Test_Icon_Marshal(t *testing.T) {
+func Test_Signpost_Marshal(t *testing.T) {
 	test := []struct {
 		name         string
 		input        Component
@@ -21,24 +26,19 @@ func Test_Icon_Marshal(t *testing.T) {
 	}{
 		{
 			name: "in general",
-			input: &Icon{
-				Base: newBase(TypeIcon, nil),
-				Config: IconConfig{
-					Shape:     "user",
-					Size:      "16",
-					Direction: DirectionDown,
-					Flip:      FlipHorizontal,
-					Solid:     true,
-					Status:    StatusDanger,
-					Inverse:   false,
-					Badge:     BadgeDanger,
-					Color:     "#add8e6",
+			input: &Signpost{
+				Base: newBase(TypeSignpost, nil),
+				Config: SignpostConfig{
+					Trigger:  NewIcon("user"),
+					Message:  "Message",
+					Position: PositionTopLeft,
 				},
 			},
-			expectedPath: "icon.json",
+			expectedPath: "signpost.json",
 			isErr:        false,
 		},
 	}
+
 	for _, tc := range test {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)

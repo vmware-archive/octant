@@ -1,0 +1,27 @@
+.signpost {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-block;
+}
+
+.trigger:hover {
+  ::ng-deep {
+    svg {
+      fill: var(--clr-color-action-600);
+    }
+  }
+}
+
+.onOpen {
+  ::ng-deep {
+    clr-icon {
+      svg {
+        fill: var(--clr-color-action-600);
+      }
+    }
+  }
+}

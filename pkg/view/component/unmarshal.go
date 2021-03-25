@@ -189,7 +189,12 @@ func unmarshal(to TypedObject) (Component, error) {
 	case TypeIcon:
 		t := &Icon{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal timestamp config")
+			"unmarshal icon config")
+		o = t
+	case TypeSignpost:
+		t := &Signpost{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal signpost config")
 		o = t
 	default:
 		return nil, errors.Errorf("unknown view component %q", to.Metadata.Type)
