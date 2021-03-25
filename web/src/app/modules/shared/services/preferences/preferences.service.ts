@@ -86,6 +86,7 @@ export class PreferencesService implements OnDestroy {
         ''
       )
     );
+    this.updateTheme();
   }
 
   ngOnDestroy(): void {

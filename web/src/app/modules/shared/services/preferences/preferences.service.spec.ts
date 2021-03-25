@@ -95,4 +95,18 @@ describe('PreferencesService', () => {
       100
     );
   });
+
+  it('theme initial value set properly', () => {
+    service.preferences.get('theme').subject.next('light');
+    const defaultPrefs = service.getPreferences();
+    const defaultElement = defaultPrefs.panels[0].sections[0].elements[0];
+    expect(defaultElement.name).toEqual('theme');
+    expect(defaultElement.value.toString()).toEqual('light');
+
+    service.preferences.get('theme').subject.next('dark');
+    const newPrefs = service.getPreferences();
+    const newElement = newPrefs.panels[0].sections[0].elements[0];
+    expect(newElement.name).toEqual('theme');
+    expect(newElement.value.toString()).toEqual('dark');
+  });
 });
