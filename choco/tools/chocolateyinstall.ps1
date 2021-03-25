@@ -2,8 +2,8 @@
 $ErrorActionPreference = 'Stop';
 $packageName = 'octant'
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$url64 = 'https://github.com/vmware-tanzu/octant/releases/download/v0.16.3/octant_0.16.3_Windows-64bit.zip'
-$checksum64 = '15bafbb6354257102c51478dda889eefa7676c60ea291b2756911a5fcb2e1f71'
+$url64 = 'https://github.com/vmware-tanzu/octant/releases/download/v0.18.0/octant_0.18.0_Windows-64bit.zip'
+$checksum64 = '490c8524fa7fcfa364b5200da255e0265df41ea61646f12a8a508b67d5127ea3'
 $checksumType64= 'sha256'
 
 $packageArgs = @{
