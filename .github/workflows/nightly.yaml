@@ -44,7 +44,7 @@ jobs:
     name: Run goreleaser
     needs: [nightly-build]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.128.0-cgo
+    container: goreleaser/goreleaser:v0.161.0
     steps:
       - uses: actions/checkout@v2
       - name: Run goreleaser
