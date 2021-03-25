@@ -47,6 +47,8 @@ jobs:
     container: goreleaser/goreleaser:v0.161.0
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Run goreleaser
         run: |
           git fetch --tags
