@@ -131,6 +131,8 @@ jobs:
     container: goreleaser/goreleaser:v0.128.0-cgo
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Run GoReleaser
         run: |
           goreleaser --skip-publish
