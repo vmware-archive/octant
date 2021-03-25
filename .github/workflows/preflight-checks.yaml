@@ -92,6 +92,10 @@ jobs:
           npm ci --prefer-offline --no-audit
           npm run-script build
         shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: bundle
+          path: web/dist
       - name: Go tools
         env:
           GOFLAGS: -mod=vendor
@@ -133,6 +137,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - uses: actions/download-artifact@v2
+        with:
+          name: bundle
+          path: web/dist
       - name: Run GoReleaser
         run: |
           goreleaser --skip-publish
