@@ -22,11 +22,11 @@ jobs:
           cd web
           npm ci --prefer-offline --no-audit
           npm run-script build
+        shell: bash
       - uses: actions/upload-artifact@v2
         with:
           name: bundle
           path: web/dist
-        shell: bash
       - name: Build electron binary
         env:
           GOFLAGS: -mod=vendor
