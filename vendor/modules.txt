@@ -200,7 +200,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 ## explicit
 github.com/skratchdot/open-golang/open
-# github.com/soheilhy/cmux v0.1.4
+# github.com/soheilhy/cmux v0.1.5
 ## explicit
 github.com/soheilhy/cmux
 # github.com/spf13/afero v1.6.0
@@ -259,7 +259,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.3.0
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+# golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -386,8 +386,6 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4
-## explicit
 # google.golang.org/protobuf v1.26.0
 ## explicit
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
