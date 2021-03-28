@@ -39,7 +39,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{.ProjectName}}_{{.Date}}_{{.Os}}-{{.Arch}}"
+    file_name_template: "{{.ProjectName}}_{{.Date}}_{{.Os}}-{{.Arch}}"
     replacements:
       darwin: macOS
       linux: Linux
