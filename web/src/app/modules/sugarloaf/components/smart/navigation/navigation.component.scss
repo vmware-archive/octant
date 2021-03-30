@@ -3,6 +3,8 @@
  */
 
 :host-context(body) {
+  --nav-icon-color: var(--clr-vertical-nav-item-active-color, #666666);
+  --nav-icon-color-active: #1b2a32;
   --selection-color: var(--clr-color-neutral-400);
   --selection-color-hover: #0072a3;
   --flyout-background-color: var(--clr-color-neutral-50);
@@ -16,6 +18,8 @@
 }
 
 :host-context(body.dark) {
+  --nav-icon-color: #acbac3;
+  --nav-icon-color-active: white;
   --selection-color: #324f62;
   --selection-color-hover: #fff;
   --flyout-background-color: #1b2a32;
@@ -48,6 +52,7 @@
 }
 
 :host ::ng-deep .nav-group-content .nav-group-trigger-icon {
+  display: flex;
   height: 1.5rem;
   margin-left: 6px;
 }
@@ -193,6 +198,10 @@
     height: 1.5rem;
     line-height: 1.5rem;
     padding-left: 0;
+
+    .icon-nav {
+      color: var(--nav-icon-color);
+    }
   }
 
   .namespace-switcher {
@@ -236,7 +245,7 @@
 
   .navigation-items-collapsed {
     width: 40px !important;
-    padding-top: 0.6rem;
+    padding-top: 0.4rem;
     height: 100%;
     overflow-y: hidden;
     border-left: 1px solid rgba(173, 187, 196, 0.3);
@@ -329,10 +338,24 @@
 
   .nav-link.active {
     background-color: var(--selection-color);
+    color: var(--nav-icon-color-active);
+
     .button-text {
       color: var(--nav-selection-color);
     }
+
+    .icon-nav {
+      color: var(--nav-icon-color-active);
+    }
   }
+
+  .nav-link:hover {
+    color: var(--nav-icon-color-active);
+    .icon-nav {
+      color: var(--nav-icon-color-active);
+    }
+  }
+
   .item-selected:hover + .flyout {
     display: flex;
   }

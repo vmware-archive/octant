@@ -105,7 +105,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
         valignBox: 'bottom',
         halignBox: 'right',
         tpl: data =>
-          '<div><p class="label1">' +
+          '<div class="label-header"><p class="label1">' +
           data.label1 +
           '</p>' +
           '<p class="label2">' +
