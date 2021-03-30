@@ -79,6 +79,21 @@ func (mr *MockDashboardMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDashboard)(nil).Create), arg0, arg1)
 }
 
+// CreateLink mocks base method
+func (m *MockDashboard) CreateLink(arg0 context.Context, arg1 store.Key) (api.LinkResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateLink", arg0, arg1)
+	ret0, _ := ret[0].(api.LinkResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateLink indicates an expected call of CreateLink
+func (mr *MockDashboardMockRecorder) CreateLink(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateLink", reflect.TypeOf((*MockDashboard)(nil).CreateLink), arg0, arg1)
+}
+
 // Delete mocks base method
 func (m *MockDashboard) Delete(arg0 context.Context, arg1 store.Key) error {
 	m.ctrl.T.Helper()

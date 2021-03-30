@@ -25,6 +25,7 @@ type Dashboard interface {
 	ListNamespaces(ctx context.Context) (api.NamespacesResponse, error)
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
+	CreateLink(ctx context.Context, key store.Key) (api.LinkResponse, error)
 }
 
 // NewDashboardClient creates a dashboard client.

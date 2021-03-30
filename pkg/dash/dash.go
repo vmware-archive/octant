@@ -435,6 +435,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 
 	r.moduleManager = moduleManager
 	pluginDashboardService := &pluginAPI.GRPCService{
+		LinkGenerator:          moduleManager,
 		ObjectStore:            appObjectStore,
 		PortForwarder:          portForwarder,
 		NamespaceInterface:     nsClient,

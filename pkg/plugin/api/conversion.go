@@ -6,14 +6,15 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	"github.com/vmware-tanzu/octant/internal/util/json"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
@@ -96,6 +97,14 @@ func convertToAlert(in *proto.AlertRequest) (action.Alert, error) {
 	}
 
 	return alert, nil
+}
+
+func convertToLinkComponent(in, name string) (*component.Link, error) {
+	if in == "" {
+		return &component.Link{}, nil
+	}
+	link := component.NewLink("", name, in)
+	return link, nil
 }
 
 func convertFromObjects(in *unstructured.UnstructuredList) ([][]byte, error) {

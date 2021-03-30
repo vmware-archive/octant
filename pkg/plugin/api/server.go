@@ -10,6 +10,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+
 	"google.golang.org/grpc/metadata"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -46,6 +49,10 @@ type NamespacesResponse struct {
 	Namespaces []string
 }
 
+type LinkResponse struct {
+	Link component.Link
+}
+
 // Service is the dashboard service.
 type Service interface {
 	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
@@ -58,6 +65,7 @@ type Service interface {
 	Delete(ctx context.Context, key store.Key) error
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
+	CreateLink(ctx context.Context, key store.Key) (LinkResponse, error)
 }
 
 // FrontendUpdateController can control the frontend. ie. the web gui
@@ -86,6 +94,7 @@ type GRPCService struct {
 	FrontendProxy          FrontendProxy
 	NamespaceInterface     cluster.NamespaceInterface
 	WebsocketClientManager event.WSClientGetter
+	LinkGenerator          octant.LinkGenerator
 }
 
 var _ Service = (*GRPCService)(nil)
@@ -186,6 +195,18 @@ func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert acti
 
 	sender.Send(event)
 	return nil
+}
+
+func (s *GRPCService) CreateLink(_ context.Context, key store.Key) (LinkResponse, error) {
+	ref, err := s.LinkGenerator.ObjectPath(key.Namespace, key.APIVersion, key.Kind, key.Name)
+	if err != nil {
+		return LinkResponse{}, err
+	}
+
+	linkComponent := component.NewLink("", "", ref)
+	return LinkResponse{
+		Link: *linkComponent,
+	}, nil
 }
 
 func NewGRPCServer(service Service) *grpcServer {
@@ -366,6 +387,27 @@ func (c *grpcServer) SendAlert(ctx context.Context, in *proto.AlertRequest) (*pr
 
 	c.service.SendAlert(ctx, in.ClientID, alert)
 	return &proto.Empty{}, nil
+}
+
+func (c *grpcServer) CreateLink(ctx context.Context, in *proto.KeyRequest) (*proto.LinkResponse, error) {
+	key, err := convertToKey(in)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.service.CreateLink(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	var ref string
+	if &resp.Link != nil && &resp.Link.Config != nil {
+		ref = resp.Link.Config.Ref
+	}
+
+	return &proto.LinkResponse{
+		Ref: ref,
+	}, nil
 }
 
 func extractObjectStoreMetadata(ctx context.Context) context.Context {
