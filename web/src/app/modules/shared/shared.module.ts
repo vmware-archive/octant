@@ -84,6 +84,7 @@ import { DataModule } from '../../data/data.module';
 import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 import { IconComponent } from './components/presentation/icon/icon.component';
+import { FormViewContainerComponent } from './components/form-view-container/form-view-container.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
 
@@ -113,6 +114,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     FiltersComponent,
     FlexlayoutComponent,
     FormComponent,
+    FormViewContainerComponent,
     GraphvizComponent,
     HeptagonComponent,
     HeptagonGridComponent,
@@ -268,6 +270,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     FiltersComponent,
     FlexlayoutComponent,
     FormComponent,
+    FormViewContainerComponent,
     GraphvizComponent,
     HeptagonComponent,
     HeptagonGridComponent,
