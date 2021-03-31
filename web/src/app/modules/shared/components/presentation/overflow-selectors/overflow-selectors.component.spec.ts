@@ -99,14 +99,14 @@ describe('OverflowSelectorsComponent', () => {
         config: {
           key: 'keyOne',
           operator: 'In',
-          values: [
-            'valueOne'
-          ]
+          values: ['valueOne'],
         },
       },
     ];
     fixture.detectChanges();
-    const renderedSelectors = document.getElementsByClassName('selector--expression');
+    const renderedSelectors = document.getElementsByClassName(
+      'selector--expression'
+    );
 
     expect(component.overflowSelectors).toBeUndefined();
     expect(component.showSelectors.length).toEqual(1);
