@@ -55,6 +55,7 @@ type Service interface {
 	ListNamespaces(ctx context.Context) (NamespacesResponse, error)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	Create(ctx context.Context, object *unstructured.Unstructured) error
+	Delete(ctx context.Context, key store.Key) error
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
 }
@@ -119,6 +120,11 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 func (s *GRPCService) Create(ctx context.Context, object *unstructured.Unstructured) error {
 	ctx = extractObjectStoreMetadata(ctx)
 	return s.ObjectStore.Create(ctx, object)
+}
+
+func (s *GRPCService) Delete(ctx context.Context, key store.Key) error {
+	ctx = extractObjectStoreMetadata(ctx)
+	return s.ObjectStore.Delete(ctx, key)
 }
 
 // PortForward creates a port forward.
@@ -282,6 +288,21 @@ func (c *grpcServer) Create(ctx context.Context, in *proto.CreateRequest) (*prot
 	}
 
 	return &proto.CreateResponse{}, nil
+}
+
+// Get gets an object.
+func (c *grpcServer) Delete(ctx context.Context, in *proto.KeyRequest) (*proto.DeleteResponse, error) {
+	key, err := convertToKey(in)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.service.Delete(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.DeleteResponse{}, nil
 }
 
 // PortForward creates a port forward.

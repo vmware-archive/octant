@@ -1,6 +1,8 @@
 syntax = "proto3";
 package proto;
 
+option go_package = "github.com/vmware-tanzu/octant/pkg/plugin/api/proto";
+
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -38,6 +40,10 @@ message CreateResponse {
 
 }
 
+message DeleteResponse {
+
+}
+
 message PortForwardRequest {
     string namespace = 1;
     string podName = 2;
@@ -70,6 +76,7 @@ service Dashboard {
     rpc Get(KeyRequest) returns (GetResponse);
     rpc Update(UpdateRequest) returns (UpdateResponse);
     rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Delete(KeyRequest) returns (DeleteResponse);
     rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
     rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
     rpc ListNamespaces(Empty) returns (NamespacesResponse);

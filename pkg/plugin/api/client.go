@@ -164,6 +164,20 @@ func (c *Client) Create(ctx context.Context, object *unstructured.Unstructured) 
 
 }
 
+// Delete deletes an object from the dashboard's objectStore.
+func (c *Client) Delete(ctx context.Context, key store.Key) error {
+	client := c.DashboardConnection.Client()
+
+	keyRequest, err := convertFromKey(key)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Delete(ctx, keyRequest)
+
+	return err
+}
+
 // PortForward creates a port forward.
 func (c *Client) PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error) {
 	client := c.DashboardConnection.Client()

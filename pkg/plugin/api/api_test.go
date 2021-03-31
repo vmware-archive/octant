@@ -56,7 +56,15 @@ func TestAPI(t *testing.T) {
 		Kind:       "Deployment",
 		Name:       "deployment",
 	}
+
 	object := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
+
+	deleteKey := store.Key{
+		Namespace:  "default",
+		APIVersion: "apps/v1",
+		Kind:       "Deployment",
+		Name:       "foo",
+	}
 
 	pfRequest := api.PortForwardRequest{
 		Namespace: "default",
@@ -156,6 +164,26 @@ func TestAPI(t *testing.T) {
 				expected := object
 
 				assert.Equal(t, expected, got)
+			},
+		},
+		{
+			name: "delete",
+			initFunc: func(t *testing.T, mocks *apiMocks) {
+				mocks.objectStore.EXPECT().
+					Delete(contextType, storeKeyType).
+					Return(nil).
+					Do(func(ctx context.Context, _ store.Key) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
+			},
+			doFunc: func(t *testing.T, client *api.Client) {
+				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
+				err := client.Delete(clientCtx, deleteKey)
+
+				require.NoError(t, err)
 			},
 		},
 		{
