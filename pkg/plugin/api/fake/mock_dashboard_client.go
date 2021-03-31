@@ -77,6 +77,26 @@ func (mr *MockDashboardClientMockRecorder) Create(arg0, arg1 interface{}, arg2 .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDashboardClient)(nil).Create), varargs...)
 }
 
+// Delete mocks base method
+func (m *MockDashboardClient) Delete(arg0 context.Context, arg1 *proto.KeyRequest, arg2 ...grpc.CallOption) (*proto.DeleteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Delete", varargs...)
+	ret0, _ := ret[0].(*proto.DeleteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockDashboardClientMockRecorder) Delete(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDashboardClient)(nil).Delete), varargs...)
+}
+
 // ForceFrontendUpdate mocks base method
 func (m *MockDashboardClient) ForceFrontendUpdate(arg0 context.Context, arg1 *proto.Empty, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()

@@ -65,6 +65,34 @@ func (mr *MockDashboardMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDashboard)(nil).Close))
 }
 
+// Create mocks base method
+func (m *MockDashboard) Create(arg0 context.Context, arg1 *unstructured.Unstructured) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockDashboardMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDashboard)(nil).Create), arg0, arg1)
+}
+
+// Delete mocks base method
+func (m *MockDashboard) Delete(arg0 context.Context, arg1 store.Key) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockDashboardMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDashboard)(nil).Delete), arg0, arg1)
+}
+
 // ForceFrontendUpdate mocks base method
 func (m *MockDashboard) ForceFrontendUpdate(arg0 context.Context) error {
 	m.ctrl.T.Helper()
