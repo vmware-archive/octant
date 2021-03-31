@@ -86,6 +86,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 import { IconComponent } from './components/presentation/icon/icon.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
+import { ButtonComponent } from './components/presentation/button/button.component';
 
 @NgModule({
   declarations: [
@@ -165,6 +166,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     OctantTooltipComponent,
     BottomPanelComponent,
     JoinPipe,
+    ButtonComponent,
   ],
   entryComponents: [
     AccordionComponent,
@@ -230,6 +232,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     StepperComponent,
     ViewContainerComponent,
     MissingComponentComponent,
+    ButtonComponent,
   ],
   imports: [
     ClarityModule,
@@ -309,6 +312,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     BottomPanelComponent,
     StringEscapePipe,
     JoinPipe,
+    ButtonComponent,
   ],
 })
 export class SharedModule {}

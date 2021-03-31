@@ -5,23 +5,24 @@ import {
   SecurityContext,
 } from '@angular/core';
 import {
-  ButtonGroupView,
+  ButtonView,
   Confirmation,
   View,
   ModalView,
 } from '../../../models/content';
-import { ActionService } from '../../../services/action/action.service';
+
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
-import { ModalService } from '../../../services/modal/modal.service';
-import { DomSanitizer } from '@angular/platform-browser';
 import { parse } from 'marked';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ActionService } from '../../../services/action/action.service';
+import { ModalService } from '../../../services/modal/modal.service';
 
 @Component({
-  selector: 'app-button-group',
-  templateUrl: './button-group.component.html',
-  styleUrls: ['./button-group.component.scss'],
+  selector: 'app-button',
+  templateUrl: './button.component.html',
+  styleUrls: ['./button.component.scss'],
 })
-export class ButtonGroupComponent extends AbstractViewComponent<ButtonGroupView> {
+export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   isModalOpen = false;
@@ -41,19 +42,15 @@ export class ButtonGroupComponent extends AbstractViewComponent<ButtonGroupView>
   }
 
   update() {
-    if (this.v.config.buttons) {
-      this.v.config.buttons.forEach(button => {
-        if (button.config.confirmation) {
-          this.class = 'btn-danger-outline btn-sm';
-        } else {
-          this.class = 'btn-outline btn-sm';
-        }
-        if (button.config.modal) {
-          this.modalView = button.config.modal;
-          const modal = this.modalView as ModalView;
-          this.modalService.setState(modal.config.opened);
-        }
-      });
+    if (this.v.config.confirmation) {
+      this.class = 'btn btn-danger-outline btn-sm';
+    } else {
+      this.class = 'btn btn-outline btn-sm';
+    }
+    if (this.v.config.modal) {
+      this.modalView = this.v.config.modal;
+      const modal = this.modalView as ModalView;
+      this.modalService.setState(modal.config.opened);
     }
   }
 

@@ -90,6 +90,8 @@ const (
 	TypeIcon = "icon"
 	// TypeSignpost is a SignPost component.
 	TypeSignpost = "signpost"
+	// TypeButton is a Button component.
+	TypeButton = "button"
 )
 
 // Base is an abstract base for components..

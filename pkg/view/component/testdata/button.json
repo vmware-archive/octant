@@ -1,0 +1,11 @@
+{
+  "metadata": {
+    "type": "button"
+  },
+  "config": {
+    "name": "test",
+    "payload": {
+      "foo": "bar"
+    }
+  }
+}

@@ -8,6 +8,8 @@ package octant
 import (
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -19,15 +21,15 @@ func Test_DeleteObjectConfirmation(t *testing.T) {
 	option, err := DeleteObjectConfirmationButton(pod)
 	require.NoError(t, err)
 
-	button := component.Button{}
-	option(&button)
+	button := component.NewButton("", action.Payload{})
+	option(button)
 
-	expected := component.Button{
-		Confirmation: &component.Confirmation{
-			Title: "Delete Pod",
-			Body:  "Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
-		},
-	}
+	expected := component.NewButton("",
+		action.Payload{},
+		component.WithButtonConfirmation(
+			"Delete Pod",
+			"Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
+		))
 
 	require.Equal(t, expected, button)
 }

@@ -210,7 +210,11 @@ func Test_unmarshal(t *testing.T) {
 						Base: Base{},
 						Config: ButtonGroupConfig{
 							Buttons: []Button{{
-								Name: "test",
+								Base: newBase(TypeButton, nil),
+								Config: ButtonConfig{
+									Name:    "test",
+									Payload: action.Payload{"foo": "bar"},
+								},
 							}},
 						},
 					},
@@ -593,15 +597,16 @@ func Test_unmarshal(t *testing.T) {
 					},
 					ButtonGroup: &ButtonGroup{
 						Config: ButtonGroupConfig{
-							Buttons: []Button{
-								{
+							Buttons: []Button{{
+								Base: Base{},
+								Config: ButtonConfig{
 									Name: "Create",
 									Payload: action.Payload{
 										"action": "action.local/create",
 										"prop":   "value",
 									},
 								},
-							},
+							}},
 						},
 					},
 				},
@@ -643,6 +648,19 @@ func Test_unmarshal(t *testing.T) {
 					Vertical: true,
 				},
 				Base: newBase(TypeTimeline, nil),
+			},
+		},
+		{
+			name:       "button",
+			configFile: "config_button.json",
+			objectType: "button",
+			expected: &Button{
+				Config: ButtonConfig{
+					Name: "test",
+					Payload: action.Payload{
+						"foo": "bar",
+					}},
+				Base: newBase(TypeButton, nil),
 			},
 		},
 	}

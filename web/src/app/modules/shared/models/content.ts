@@ -132,16 +132,9 @@ export interface Confirmation {
   body: string;
 }
 
-export interface Button {
-  payload: {};
-  name: string;
-  confirmation?: Confirmation;
-  modal?: ModalView;
-}
-
 export interface ButtonGroupView extends View {
   config: {
-    buttons: Button[];
+    buttons: ButtonView[];
   };
 }
 
@@ -178,6 +171,7 @@ export interface LinkView extends View {
     value: string;
     status?: number;
     statusDetail?: View;
+    component?: View;
   };
 }
 
@@ -226,7 +220,7 @@ export interface ModalView extends View {
     opened: boolean;
     size?: string;
     form?: ActionForm;
-    buttons?: Button[];
+    buttons?: ButtonView[];
   };
 }
 
@@ -605,5 +599,14 @@ export interface SignpostView extends View {
     trigger: View;
     message: string;
     position: string;
+  };
+}
+
+export interface ButtonView extends View {
+  config: {
+    payload: {};
+    name: string;
+    confirmation?: Confirmation;
+    modal?: ModalView;
   };
 }
