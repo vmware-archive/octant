@@ -4,7 +4,7 @@
 
 import { AfterViewChecked, Component, ElementRef, Input } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import {ExpressionSelectorView, LabelSelectorView} from "../../../models/content";
+import { ExpressionSelectorView, LabelSelectorView } from 'src/app/modules/shared/models/content';
 
 @Component({
   selector: 'app-overflow-selectors',
