@@ -21,20 +21,4 @@ export class SelectorsComponent extends AbstractViewComponent<SelectorsView> {
   }
 
   update() {}
-
-  identifyItem(
-    index: number,
-    item: ExpressionSelectorView | LabelSelectorView
-  ): string {
-    const { key } = item.config;
-    const labelSelector = item as LabelSelectorView;
-    const expressionSelector = item as ExpressionSelectorView;
-    if (labelSelector.config.value) {
-      return `${key}-${labelSelector.config.value}`;
-    } else if (expressionSelector.config.values) {
-      return `${key}-${
-        expressionSelector.config.operator
-      }-${expressionSelector.config.values.join(',')}`;
-    }
-  }
 }

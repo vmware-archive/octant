@@ -35,7 +35,7 @@ describe('OverflowSelectorsComponent', () => {
     component.selectors = [
       {
         metadata: {
-          type: 'LabelSelector',
+          type: 'labelSelector',
         },
         config: {
           key: 'keyOne',
@@ -44,7 +44,7 @@ describe('OverflowSelectorsComponent', () => {
       },
       {
         metadata: {
-          type: 'LabelSelector',
+          type: 'labelSelector',
         },
         config: {
           key: 'keyTwo',
@@ -53,7 +53,7 @@ describe('OverflowSelectorsComponent', () => {
       },
       {
         metadata: {
-          type: 'LabelSelector',
+          type: 'labelSelector',
         },
         config: {
           key: 'keyThree',
@@ -74,7 +74,7 @@ describe('OverflowSelectorsComponent', () => {
     component.selectors = [
       {
         metadata: {
-          type: 'LabelSelector',
+          type: 'labelSelector',
         },
         config: {
           key: 'keyOne',
@@ -84,6 +84,29 @@ describe('OverflowSelectorsComponent', () => {
     ];
     fixture.detectChanges();
     const renderedSelectors = document.getElementsByClassName('label');
+
+    expect(component.overflowSelectors).toBeUndefined();
+    expect(component.showSelectors.length).toEqual(1);
+    expect(renderedSelectors.length).toEqual(1);
+  });
+
+  it('should display expression selector', () => {
+    component.selectors = [
+      {
+        metadata: {
+          type: 'expressionSelector',
+        },
+        config: {
+          key: 'keyOne',
+          operator: 'In',
+          values: [
+            'valueOne'
+          ]
+        },
+      },
+    ];
+    fixture.detectChanges();
+    const renderedSelectors = document.getElementsByClassName('selector--expression');
 
     expect(component.overflowSelectors).toBeUndefined();
     expect(component.showSelectors.length).toEqual(1);
