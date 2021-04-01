@@ -83,7 +83,7 @@ describe('OverflowSelectorsComponent', () => {
       },
     ];
     fixture.detectChanges();
-    const renderedSelectors = document.getElementsByClassName('label');
+    const renderedSelectors = document.getElementsByClassName('label-orange');
 
     expect(component.overflowSelectors).toBeUndefined();
     expect(component.showSelectors.length).toEqual(1);
@@ -104,9 +104,7 @@ describe('OverflowSelectorsComponent', () => {
       },
     ];
     fixture.detectChanges();
-    const renderedSelectors = document.getElementsByClassName(
-      'selector--expression'
-    );
+    const renderedSelectors = document.getElementsByClassName('label-purple');
 
     expect(component.overflowSelectors).toBeUndefined();
     expect(component.showSelectors.length).toEqual(1);
