@@ -256,7 +256,7 @@ func (t *instance) terminalStream() error {
 	}()
 
 	select {
-	case <-time.After(200 * time.Millisecond):
+	case <-time.After(1000 * time.Millisecond):
 		return nil
 	case err := <-ch:
 		return err
