@@ -1,12 +1,13 @@
 <div class="selectors-wrapper" *ngIf="selectors">
   <div class="selectors-container">
     <ng-container
-      *ngFor="let selector of showSelectors; trackBy: trackByIdentity"
+      *ngFor="let selector of showSelectors; trackBy: trackByIdentity" [ngSwitch]="selector.metadata.type"
     >
-      <app-octant-tooltip tooltipText="{{ selector.config.key }}:{{ selector.config.value }}">
-        <span class="label label-orange">
-          {{ selector.config.key }}:{{ selector.config.value }}
-        </span>
+      <app-octant-tooltip *ngSwitchCase="'labelSelector'" tooltipText="{{ selector.config.key }}:{{ selector.config.value }}">
+        <app-view-label-selector [view]="selector"></app-view-label-selector>
+      </app-octant-tooltip>
+      <app-octant-tooltip *ngSwitchCase="'expressionSelector'" tooltipText="{{ selector.config.key }} {{ selector.config.operator }} {{ selector.config.values | join: ',' }}">
+        <app-view-expression-selector [view]="selector"></app-view-expression-selector>
       </app-octant-tooltip>
     </ng-container>
   </div>
@@ -17,11 +18,10 @@
     </span>
     <clr-signpost-content [clrPosition]="'left-middle'" *clrIfOpen>
       <ng-container
-        *ngFor="let selector of overflowSelectors; trackBy: trackByIdentity"
+        *ngFor="let selector of overflowSelectors; trackBy: trackByIdentity" [ngSwitch]="selector.metadata.type"
       >
-        <span class="label label-orange">
-          {{ selector.config.key }}:{{ selector.config.value }}
-        </span>
+        <app-view-label-selector *ngSwitchCase="'labelSelector'" [view]="selector"></app-view-label-selector>
+        <app-view-expression-selector *ngSwitchCase="'expressionSelector'" [view]="selector"></app-view-expression-selector>
       </ng-container>
     </clr-signpost-content>
   </clr-signpost>

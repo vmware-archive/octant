@@ -4,16 +4,10 @@
 
 import { AfterViewChecked, Component, ElementRef, Input } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-
-interface Selector {
-  metadata: {
-    type: string;
-  };
-  config: {
-    key: string;
-    value: string;
-  };
-}
+import {
+  ExpressionSelectorView,
+  LabelSelectorView,
+} from 'src/app/modules/shared/models/content';
 
 @Component({
   selector: 'app-overflow-selectors',
@@ -21,21 +15,23 @@ interface Selector {
   styleUrls: ['./overflow-selectors.component.scss'],
 })
 export class OverflowSelectorsComponent implements AfterViewChecked {
-  @Input() set selectors(selectors: Selector[]) {
+  @Input() set selectors(
+    selectors: Array<LabelSelectorView | ExpressionSelectorView>
+  ) {
     this.selectorsList = selectors;
     this.updateSelectors();
   }
 
-  get selectors(): Selector[] {
+  get selectors(): Array<LabelSelectorView | ExpressionSelectorView> {
     return this.selectorsList;
   }
 
   constructor(private rootElement: ElementRef) {}
   @Input() numberShownSelectors = 2;
 
-  private selectorsList: Selector[];
-  showSelectors: Selector[];
-  overflowSelectors: Selector[];
+  private selectorsList: Array<LabelSelectorView | ExpressionSelectorView>;
+  showSelectors: Array<LabelSelectorView | ExpressionSelectorView>;
+  overflowSelectors: Array<LabelSelectorView | ExpressionSelectorView>;
   trackByIdentity = trackByIdentity;
   componentWidth = 0;
 
