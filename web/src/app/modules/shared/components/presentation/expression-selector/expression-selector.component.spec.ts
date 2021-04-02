@@ -73,7 +73,7 @@ describe('ExpressionSelectorComponent', () => {
 
     it('should render correctly', () => {
       const element: HTMLElement = fixture.nativeElement.querySelector('div');
-      expect(element.textContent).toEqual('keyOne In valueOne|valueTwo');
+      expect(element.textContent).toEqual('keyOne In valueOne,valueTwo');
     });
   });
 

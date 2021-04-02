@@ -6,7 +6,7 @@
       <app-octant-tooltip *ngSwitchCase="'labelSelector'" tooltipText="{{ selector.config.key }}:{{ selector.config.value }}">
         <app-view-label-selector [view]="selector"></app-view-label-selector>
       </app-octant-tooltip>
-      <app-octant-tooltip *ngSwitchCase="'expressionSelector'" tooltipText="{{ selector.config.key }} {{ selector.config.operator }} {{ selector.config.values?.join('|') }}">
+      <app-octant-tooltip *ngSwitchCase="'expressionSelector'" tooltipText="{{ selector.config.key }} {{ selector.config.operator }} {{ selector.config.values | join: ',' }}">
         <app-view-expression-selector [view]="selector"></app-view-expression-selector>
       </app-octant-tooltip>
     </ng-container>

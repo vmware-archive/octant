@@ -24,6 +24,6 @@ export class ExpressionSelectorComponent extends AbstractViewComponent<Expressio
     const view = this.v;
     this.key = view.config.key;
     this.operator = view.config.operator;
-    this.values = view.config.values?.join('|');
+    this.values = view.config.values?.join(',');
   }
 }

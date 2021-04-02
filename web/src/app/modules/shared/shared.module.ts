@@ -84,6 +84,7 @@ import { DataModule } from '../../data/data.module';
 import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 import { IconComponent } from './components/presentation/icon/icon.component';
+import { JoinPipe } from './pipes/join/join.pipe';
 
 @NgModule({
   declarations: [
@@ -161,6 +162,7 @@ import { IconComponent } from './components/presentation/icon/icon.component';
     MissingComponentComponent,
     OctantTooltipComponent,
     BottomPanelComponent,
+    JoinPipe,
   ],
   entryComponents: [
     AccordionComponent,
@@ -303,6 +305,7 @@ import { IconComponent } from './components/presentation/icon/icon.component';
     OctantTooltipComponent,
     BottomPanelComponent,
     StringEscapePipe,
+    JoinPipe,
   ],
 })
 export class SharedModule {}
