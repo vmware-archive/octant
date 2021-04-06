@@ -51,7 +51,7 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
   @Output() viewInit: EventEmitter<void> = new EventEmitter<void>();
 
   private start: number;
-  private componentRef: ComponentRef<Viewer>;
+  public componentRef: ComponentRef<Viewer>;
   private previous: string;
 
   constructor(
@@ -79,7 +79,11 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
   }
 
   loadView(view: View) {
-    if (!this.componentRef) {
+    const componentChanged =
+      this.componentRef &&
+      view.metadata.type !== this.componentRef.instance.view.metadata.type;
+
+    if (!this.componentRef || componentChanged) {
       const viewType = view.metadata.type;
       let component: Type<any> = this.componentMappings[viewType];
       if (!component) {
