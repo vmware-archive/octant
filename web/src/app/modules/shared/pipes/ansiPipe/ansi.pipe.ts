@@ -15,9 +15,7 @@ import { default as AnsiUp } from 'ansi_up';
 export class AnsiPipe implements PipeTransform {
   ansiUp = new AnsiUp();
 
-  constructor(private sanitizer: DomSanitizer) {
-    this.ansiUp.escape_for_html = false;
-  }
+  constructor(private sanitizer: DomSanitizer) {}
 
   public transform(
     value: string
