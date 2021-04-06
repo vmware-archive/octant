@@ -53,6 +53,8 @@ addDecorator(
 
 export const parameters = {
   docs: {
+    inlineStories: true,
+    prepareForInline,
     theme: theme,
   },
   options: {

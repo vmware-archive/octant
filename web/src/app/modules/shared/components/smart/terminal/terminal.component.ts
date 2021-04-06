@@ -66,29 +66,32 @@ export class TerminalComponent
 
   ngAfterViewInit() {
     const logLevel = 'info';
-    const { terminal } = this.v.config;
-    const { active } = terminal;
-    const disableStdin = !active;
-    this.term = new Terminal({
-      logLevel,
-      disableStdin,
-    });
-    setTimeout(() => {
-      this.initStream();
-    });
-    this.enableResize();
-    this.term.onData(data => {
-      if (active) {
-        this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
-          key: data,
-        });
-      }
-    });
-    this.fitAddon = new FitAddon();
-    this.term.loadAddon(this.fitAddon);
-    this.term.open(this.terminalDiv.nativeElement);
-    this.term.focus();
-    this.fitAddon.fit();
+    const terminal = this.v?.config.terminal;
+
+    if (terminal) {
+      const { active } = terminal;
+      const disableStdin = !active;
+      this.term = new Terminal({
+        logLevel,
+        disableStdin,
+      });
+      setTimeout(() => {
+        this.initStream();
+      });
+      this.enableResize();
+      this.term.onData(data => {
+        if (active) {
+          this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
+            key: data,
+          });
+        }
+      });
+      this.fitAddon = new FitAddon();
+      this.term.loadAddon(this.fitAddon);
+      this.term.open(this.terminalDiv.nativeElement);
+      this.term.focus();
+      this.fitAddon.fit();
+    }
 
     super.ngAfterViewInit();
   }

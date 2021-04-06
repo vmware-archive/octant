@@ -27,8 +27,8 @@
 </ng-template>
 
 <ng-template #actionFooter>
-  <div class="card-footer" *ngIf="v.config.actions?.length > 0">
-    <ng-container *ngFor="let action of v.config.actions; trackBy: trackByFn">
+  <div class="card-footer" *ngIf="v?.config.actions?.length > 0">
+    <ng-container *ngFor="let action of v?.config.actions; trackBy: trackByFn">
       <button class="btn btn-sm btn-link" (click)="setAction(action)">
         {{ action.name }}
       </button>
@@ -37,11 +37,11 @@
 </ng-template>
 
 <ng-template #content>
-  <ng-container *ngIf="v.config.alert">
-    <div class="alert alert-{{ v.config.alert.type }} alert-sm">
+  <ng-container *ngIf="v?.config.alert">
+    <div class="alert alert-{{ v?.config.alert.type }} alert-sm">
       <div class="alert-item static">
         <span class="alert-text">
-          {{ v.config.alert.message }}
+          {{ v?.config.alert.message }}
         </span>
       </div>
     </div>

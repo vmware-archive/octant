@@ -116,11 +116,12 @@ export class HeptagonGridComponent implements OnInit {
   isActivated(index: number) {
     const row = this.row(index);
     const col = this.col(index);
-
-    if (this.hoverStates[row][col]) {
-      return 1;
-    } else {
-      return 0;
+    if (this.hoverStates?.length > 0) {
+      if (this.hoverStates[row][col]) {
+        return 1;
+      } else {
+        return 0;
+      }
     }
   }
 }
