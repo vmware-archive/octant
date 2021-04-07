@@ -42,6 +42,7 @@ import { ContainersComponent } from './components/presentation/containers/contai
 import { ModalComponent } from './components/presentation/modal/modal.component';
 import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
 import { IconComponent } from './components/presentation/icon/icon.component';
+import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -86,6 +87,7 @@ const DynamicComponentMapping: ComponentMapping = {
   timestamp: TimestampComponent,
   yaml: YamlComponent,
   icon: IconComponent,
+  signpost: SignpostComponent,
 };
 
 export const DYNAMIC_COMPONENTS_MAPPING = new InjectionToken<ComponentMapping>(

@@ -1,6 +1,5 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
+import { object } from '@storybook/addon-knobs';
 import { StepperComponent } from '../app/modules/shared/components/presentation/stepper/stepper.component';
 
 export const stepperDocs = {
@@ -25,8 +24,11 @@ export const stepperView = {
             name: 'firstName',
             type: 'text',
             value: '',
-            error: 'First name is required.',
-            validators: ['required'],
+            error: 'First name is required and it should be more than 10 chars.',
+            validators: {
+              required: "",
+              minLength: "10"
+            },
           },
           {
             label: 'Last Name',
@@ -47,13 +49,19 @@ export const stepperView = {
             name: 'city',
             type: 'text',
             value: '',
+            error: 'City should not have numbers.',
+            validators: {
+              required: "",
+              pattern: "[a-zA-Z ]*"},
           },
           {
             label: 'State',
             name: 'state',
             type: 'select',
-            error: 'State is required.',
-            validators: ['required'],
+            error: 'State is required',
+            validators: {
+              required: ""
+            },
             configuration: {
               choices: [
                 { label: '', value: '' },

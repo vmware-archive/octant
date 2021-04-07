@@ -1,0 +1,52 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
+import { object } from '@storybook/addon-knobs';
+import { SignpostComponent } from "../app/modules/shared/components/presentation/signpost/signpost.component";
+
+export const iconDocs= {source: {code: `c: component.NewSignpost(component.NewText("test"), component.NewIcon("user"), "Message")
+c.setPosition = PositionTopMiddle
+`}}
+
+<h1>Signpost Component</h1>
+<h2>Description</h2>
+<p>An Signpost component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a>
+  and adapted to <a href="https://v4.clarity.design/icons/how-to-use">Clarity 4</a> </p>
+
+<h2>Example</h2>
+
+<Meta title="Components/Signpost" component={SignpostComponent} />
+
+<Canvas withToolbar>
+  <Story name="Signpost component" parameters={{ docs: iconDocs }} height="800px" >
+    {{
+      props: {
+        view: object('View', {
+          "metadata":{
+            "type":"signpost"
+          },
+          "config":{
+            "trigger":{
+              "metadata":{
+                "type":"icon"
+              },
+              "config":{
+                "shape":"user",
+                "size":"65",
+                "direction":"up",
+                "solid":true,
+                "inverse":false,
+                "badge":"danger",
+                "color":"#add8e6"
+              }
+            },
+            "message":"<h1>Test Markup</h1>",
+            "position": "bottom-middle"
+          }
+        }),
+      },
+      component: SignpostComponent,
+    }}
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable of={SignpostComponent} />

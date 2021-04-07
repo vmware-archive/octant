@@ -1,0 +1,25 @@
+{
+  "metadata":{
+    "type":"signpost"
+  },
+  "config":{
+    "trigger":{
+      "metadata":{
+        "type":"icon"
+      },
+      "config":{
+        "shape":"user",
+        "size":"",
+        "direction":"",
+        "flip":"",
+        "solid":false,
+        "status":"",
+        "inverse":false,
+        "badge":"",
+        "color":""
+      }
+    },
+    "message":"Message",
+    "position": "top-left"
+  }
+}
