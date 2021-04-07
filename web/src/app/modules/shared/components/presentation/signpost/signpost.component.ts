@@ -13,6 +13,7 @@ export class SignpostComponent extends AbstractViewComponent<SignpostView> {
   message: string;
   trigger: View;
   onOpen = false;
+  position: string;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -23,6 +24,7 @@ export class SignpostComponent extends AbstractViewComponent<SignpostView> {
 
   update() {
     this.trigger = this.v.config.trigger;
+    this.position = this.v.config.position;
 
     const html = parse(this.v.config.message);
     this.message = this.sanitizer.sanitize(SecurityContext.HTML, html);

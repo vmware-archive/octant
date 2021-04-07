@@ -43,7 +43,7 @@ const (
 	PositionLeftTop      Position = "left-top"
 )
 
-func NewSignpost(c Component, t Component, m string) *Signpost {
+func NewSignpost(t Component, m string) *Signpost {
 	so := &Signpost{
 		Base: newBase(TypeSignpost, nil),
 		Config: SignpostConfig{

@@ -2,7 +2,7 @@ import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object } from '@storybook/addon-knobs';
 import { SignpostComponent } from "../app/modules/shared/components/presentation/signpost/signpost.component";
 
-export const iconDocs= {source: {code: `c: component.NewSignpost(component.NewText("test"), component.NewIcon("user"), "Message")
+export const iconDocs= {source: {code: `c: component.NewSignpost(component.NewIcon("user"), "Message")
 c.setPosition = PositionTopMiddle
 `}}
 
@@ -16,7 +16,7 @@ c.setPosition = PositionTopMiddle
 <Meta title="Components/Signpost" component={SignpostComponent} />
 
 <Canvas withToolbar>
-  <Story name="Signpost component" parameters={{ docs: iconDocs }} height="800px" >
+  <Story name="Signpost component" parameters={{ docs: iconDocs }} height="200px" >
     {{
       props: {
         view: object('View', {
@@ -39,7 +39,7 @@ c.setPosition = PositionTopMiddle
               }
             },
             "message":"<h1>Test Markup</h1>",
-            "position": "bottom-middle"
+            "position": "right-middle"
           }
         }),
       },

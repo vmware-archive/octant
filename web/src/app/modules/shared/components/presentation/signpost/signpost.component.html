@@ -6,7 +6,7 @@
     </app-view-container>
 
     <ng-template [(clrIfOpen)]="onOpen">
-      <clr-signpost-content>
+      <clr-signpost-content [clrPosition]="position">
         <div [innerHTML]="message"></div>
       </clr-signpost-content>
     </ng-template>
