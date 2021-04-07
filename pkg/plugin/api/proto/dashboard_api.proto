@@ -71,6 +71,10 @@ message AlertRequest {
     string clientID = 4;
 }
 
+message LinkResponse {
+    string ref = 1;
+}
+
 service Dashboard {
     rpc List(KeyRequest) returns (ListResponse);
     rpc Get(KeyRequest) returns (GetResponse);
@@ -82,4 +86,5 @@ service Dashboard {
     rpc ListNamespaces(Empty) returns (NamespacesResponse);
     rpc ForceFrontendUpdate(Empty) returns(Empty);
     rpc SendAlert(AlertRequest) returns(Empty);
+    rpc CreateLink(KeyRequest) returns(LinkResponse);
 }

@@ -250,3 +250,26 @@ func (c *Client) SendAlert(ctx context.Context, clientID string, alert action.Al
 	_, err = client.SendAlert(ctx, alertRequest)
 	return err
 }
+
+func (c *Client) CreateLink(ctx context.Context, key store.Key) (LinkResponse, error) {
+	client := c.DashboardConnection.Client()
+
+	req, err := convertFromKey(key)
+	if err != nil {
+		return LinkResponse{}, err
+	}
+
+	resp, err := client.CreateLink(ctx, req)
+	if err != nil {
+		return LinkResponse{}, nil
+	}
+
+	linkComponent, err := convertToLinkComponent(resp.Ref, key.Name)
+	if err != nil {
+		return LinkResponse{}, err
+	}
+
+	return LinkResponse{
+		Link: *linkComponent,
+	}, nil
+}
