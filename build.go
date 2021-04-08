@@ -58,7 +58,7 @@ func main() {
 			Use:   "ci-quick",
 			Short: "full build, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
-				webDeps()
+				webDeps("--prefer-offline", "--no-audit")
 				webBuild()
 				build()
 			},
@@ -75,7 +75,8 @@ func main() {
 			Short: "run client tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				verifyRegistry()
-				webDeps()
+				verifyNpmCache()
+				webDeps("--prefer-offline", "--no-audit")
 				webTest()
 			},
 		},
@@ -84,8 +85,17 @@ func main() {
 			Short: "client build, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				verifyRegistry()
-				webDeps()
+				webDeps("--prefer-offline", "--no-audit")
 				webBuild()
+			},
+		},
+		&cobra.Command{
+			Use:   "web-lint",
+			Short: "run client linter",
+			Run: func(cmd *cobra.Command, args []string) {
+				verifyRegistry()
+				webDeps()
+				webLint()
 			},
 		},
 		&cobra.Command{
@@ -144,6 +154,8 @@ func main() {
 			Use:   "build-electron",
 			Short: "server build to extraResources, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
+				webDeps("--prefer-offline", "--no-audit")
+				webBuild()
 				webBuildElectron()
 				buildElectron()
 			},
@@ -313,8 +325,9 @@ func goFmt(update bool) {
 	}
 }
 
-func webDeps() {
-	cmd := newCmd("npm", nil, "ci")
+func webDeps(opts ...string) {
+	args := append([]string{"ci"}, opts...)
+	cmd := newCmd("npm", nil, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -354,6 +367,17 @@ func webBuildElectron() {
 	cleanCmd.Dir = "./web"
 	if err := cleanCmd.Run(); err != nil {
 		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
+	}
+}
+
+func webLint() {
+	cmd := newCmd("npm", nil, "run", "lint")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Dir = "./web"
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("web-lint: %s", err)
 	}
 }
 
@@ -492,5 +516,16 @@ func verifyRegistry() {
 	}
 	if len(out) > 0 {
 		log.Fatalf("found registry: %s", string(out))
+	}
+}
+
+func verifyNpmCache() {
+	cmd := newCmd("npm", nil, "cache", "verify")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Dir = "./web"
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("NPM cache verify: %s", err)
 	}
 }
