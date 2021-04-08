@@ -1,5 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
+import { object } from '@storybook/addon-knobs';
 import {DatagridComponent} from "../app/modules/shared/components/presentation/datagrid/datagrid.component";
 import {TableComponent} from "../app/modules/shared/components/presentation/table/table.component";
 
@@ -18,7 +18,12 @@ card.SetBody(component.NewText("Card text"))
 row := component.TableRow{
   "A": component.NewText("1"),
 }
-row.AddExpandableDetail(card, false)
+erd := NewExpandableRowDetail(
+  card,
+  component.NewText("Cat"),
+  component.NewText("Dog"),
+  component.NewText("Monkey"))
+row.AddExpandableDetail(erd)
 table.Add(row)
 table.Sort("A")
 table.Reverse()`}}
@@ -85,6 +90,10 @@ export const cardView = {
               name: 'B',
               accessor: 'B',
             },
+            {
+              name: 'C',
+              accessor: 'C',
+            },
           ],
           rows: [
             {
@@ -99,6 +108,14 @@ export const cardView = {
               B: {
                 config: {
                   value: '2',
+                },
+                metadata: {
+                  type: 'text',
+                },
+              },
+              C: {
+                config: {
+                  value: '5',
                 },
                 metadata: {
                   type: 'text',
@@ -141,6 +158,10 @@ The component can be configured to replace the contents of the row.</p>
                 name: 'B',
                 accessor: 'B',
               },
+              {
+                name: 'C',
+                accessor: 'C',
+              },
             ],
             rows: [
               {
@@ -150,7 +171,7 @@ The component can be configured to replace the contents of the row.</p>
                   },
                   config: {
                     replace: false,
-                    body: cardView,
+                    body: [cardView],
                   },
                 },
                 A: {
@@ -169,6 +190,14 @@ The component can be configured to replace the contents of the row.</p>
                     type: 'text',
                   },
                 },
+                C: {
+                  config: {
+                    value: '3',
+                  },
+                  metadata: {
+                    type: 'text',
+                  },
+                },
               },
               {
                 _expand: {
@@ -176,13 +205,13 @@ The component can be configured to replace the contents of the row.</p>
                     type: 'expandableRow',
                   },
                   config: {
-                    replace: true,
-                    body: cardView,
+                    replace: false,
+                    body: [cardView, cardView, cardView, cardView],
                   },
                 },
                 A: {
                   config: {
-                    value: '3',
+                    value: '4',
                   },
                   metadata: {
                     type: 'text'
@@ -190,7 +219,15 @@ The component can be configured to replace the contents of the row.</p>
                 },
                 B: {
                   config: {
-                    value: '4',
+                    value: '5',
+                  },
+                  metadata: {
+                    type: 'text',
+                  },
+                },
+                C: {
+                  config: {
+                    value: '6',
                   },
                   metadata: {
                     type: 'text',

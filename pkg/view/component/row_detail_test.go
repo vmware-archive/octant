@@ -13,11 +13,30 @@ import (
 
 func TestTableRow_AddExpandableDetail(t *testing.T) {
 	text := NewText("detail")
-	expected := NewExpandableRowDetail(text, true)
+	expected := NewExpandableRowDetail(text)
+	expected.SetReplace(true)
 	row := TableRow{
 		"abc": NewText("123"),
 	}
-	row.AddExpandableDetail(text, true)
+	erd := NewExpandableRowDetail(text)
+	erd.SetReplace(true)
+	row.AddExpandableDetail(erd)
+
+	require.Equal(t, expected, row[ExpandableRowKey])
+}
+
+func TestTableRow_AddExpandableDetailMultipleElements(t *testing.T) {
+	firstText := NewText("Text 1")
+	secondText := NewText("Text 2")
+	thirdText := NewText("Text 3")
+
+	expected := NewExpandableRowDetail(firstText, secondText, thirdText)
+
+	row := TableRow{
+		"abc": NewText("123"),
+	}
+	erd := NewExpandableRowDetail(firstText, secondText, thirdText)
+	row.AddExpandableDetail(erd)
 
 	require.Equal(t, expected, row[ExpandableRowKey])
 }
@@ -32,10 +51,27 @@ func TestTableTow_ExpandableDetail_Marshal(t *testing.T) {
 		{
 			name: "in general",
 			input: &ExpandableRowDetail{
-				Base:   newBase(TypeExpandableRowDetail, nil),
-				Config: ExpandableDetailConfig{Body: NewText("test")},
+				Base: newBase(TypeExpandableRowDetail, nil),
+				Config: ExpandableDetailConfig{
+					Body: []Component{
+						NewText("test"),
+					},
+				},
 			},
 			expectedPath: "expandable_row.json",
+		},
+		{
+			name: "in general",
+			input: &ExpandableRowDetail{
+				Base: newBase(TypeExpandableRowDetail, nil),
+				Config: ExpandableDetailConfig{
+					Body: []Component{
+						NewText("test"),
+						NewText("test2"),
+					},
+				},
+			},
+			expectedPath: "expandable_row_per_column.json",
 		},
 	}
 

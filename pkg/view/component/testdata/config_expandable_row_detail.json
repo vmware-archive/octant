@@ -1,11 +1,13 @@
 {
   "replace": true,
-  "body": {
-    "metadata": {
-      "type": "text"
-    },
-    "config": {
-      "value": "test"
+  "body": [
+    {
+      "metadata": {
+        "type": "text"
+      },
+      "config": {
+        "value": "test"
+      }
     }
-  }
+  ]
 }
