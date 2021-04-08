@@ -192,7 +192,7 @@ func Test_ServiceConfiguration(t *testing.T) {
 
 	startPortForwardingButtonGroup := component.NewButtonGroup()
 	startPortForwardingButtonGroup.Config = component.ButtonGroupConfig{Buttons: []component.Button{
-		component.NewButton("Start port forward", action.Payload{
+		*component.NewButton("Start port forward", action.Payload{
 			"action":     "overview/startPortForward",
 			"apiVersion": validService.APIVersion,
 			"kind":       validService.Kind,
@@ -204,7 +204,7 @@ func Test_ServiceConfiguration(t *testing.T) {
 
 	stopPortForwardingButtonGroup := component.NewButtonGroup()
 	stopPortForwardingButtonGroup.Config = component.ButtonGroupConfig{Buttons: []component.Button{
-		component.NewButton("Stop port forward", action.Payload{
+		*component.NewButton("Stop port forward", action.Payload{
 			"action": "overview/stopPortForward",
 			"id":     "an-id",
 		}),

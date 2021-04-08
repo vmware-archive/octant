@@ -24,6 +24,8 @@ type LinkConfig struct {
 	// Status sets the status of the component.
 	Status       TextStatus `json:"status,omitempty" tsType:"number"`
 	StatusDetail Component  `json:"statusDetail,omitempty"`
+	// Component allows Links to receive a component to be wrapped as a link
+	Component Component `json:"component,omitempty"`
 }
 
 func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
@@ -32,6 +34,7 @@ func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
 		Ref          string       `json:"ref,omitempty"`
 		Status       TextStatus   `json:"status,omitempty"`
 		StatusDetail *TypedObject `json:"statusDetail,omitempty"`
+		Component    *TypedObject `json:"component,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -47,6 +50,14 @@ func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		lc.StatusDetail = sd
+	}
+
+	if x.Component != nil {
+		component, err := x.Component.ToComponent()
+		if err != nil {
+			return err
+		}
+		lc.Component = component
 	}
 
 	return nil
@@ -95,6 +106,11 @@ func (t *Link) SetStatus(status TextStatus, detail Component) {
 	t.Config.StatusDetail = detail
 }
 
+// SetComponent sets the component to be wrapped by the Link
+func (t *Link) SetComponent(component Component) {
+	t.Config.Component = component
+}
+
 type linkMarshal Link
 
 // MarshalJSON implements json.Marshaler
@@ -117,4 +133,11 @@ func (t *Link) LessThan(i interface{}) bool {
 	}
 
 	return t.Config.Text < v.Config.Text
+}
+
+// WithComponent sets a component for the Link
+func WithComponent(c Component) LinkOption {
+	return func(link *Link) {
+		link.Config.Component = c
+	}
 }

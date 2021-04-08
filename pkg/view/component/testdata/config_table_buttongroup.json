@@ -54,10 +54,15 @@
     "config": {
       "buttons": [
         {
-          "name": "Create",
-          "payload": {
-            "action": "action.local/create",
-            "prop": "value"
+          "metadata": {
+            "type": "button"
+          },
+          "config": {
+            "name": "Create",
+            "payload": {
+              "action": "action.local/create",
+              "prop": "value"
+            }
           }
         }
       ]

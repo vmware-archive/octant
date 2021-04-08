@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
   ActionForm,
-  Button,
+  ButtonView,
   ModalView,
   TitleView,
   View,
@@ -34,7 +34,7 @@ export class ModalComponent
   opened = false;
   size: string;
   action: string;
-  buttons: Button[];
+  buttons: ButtonView[];
 
   private modalSubscription: Subscription;
 

@@ -1,0 +1,6 @@
+{
+  "name": "test",
+  "payload": {
+    "foo": "bar"
+  }
+}

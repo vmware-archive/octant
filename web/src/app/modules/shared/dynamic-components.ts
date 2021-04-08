@@ -43,6 +43,7 @@ import { ModalComponent } from './components/presentation/modal/modal.component'
 import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
 import { IconComponent } from './components/presentation/icon/icon.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
+import { ButtonComponent } from './components/presentation/button/button.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -88,6 +89,7 @@ const DynamicComponentMapping: ComponentMapping = {
   yaml: YamlComponent,
   icon: IconComponent,
   signpost: SignpostComponent,
+  button: ButtonComponent,
 };
 
 export const DYNAMIC_COMPONENTS_MAPPING = new InjectionToken<ComponentMapping>(

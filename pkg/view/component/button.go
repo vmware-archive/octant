@@ -1,10 +1,14 @@
+/*
+Copyright (c) 2021 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package component
 
 import (
-	"github.com/vmware-tanzu/octant/internal/util/json"
-
 	"github.com/pkg/errors"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
@@ -20,7 +24,7 @@ type ButtonOption func(button *Button)
 // WithButtonConfirmation configured a button with a confirmation.
 func WithButtonConfirmation(title, body string) ButtonOption {
 	return func(button *Button) {
-		button.Confirmation = &Confirmation{
+		button.Config.Confirmation = &Confirmation{
 			Title: title,
 			Body:  body,
 		}
@@ -30,11 +34,15 @@ func WithButtonConfirmation(title, body string) ButtonOption {
 // WithModal configures a button to open a modal
 func WithModal(modal *Modal) ButtonOption {
 	return func(button *Button) {
-		button.Modal = modal
+		button.Config.Modal = modal
 	}
 }
 
-func (b *Button) UnmarshalJSON(data []byte) error {
+var _ Component = (*Button)(nil)
+
+type buttonMarshal Button
+
+func (b *ButtonConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Name         string         `json:"name"`
 		Payload      action.Payload `json:"payload"`
@@ -66,59 +74,41 @@ func (b *Button) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// Button is a button in a group.
+// Button is a component for a Button
+// +octant:component
 type Button struct {
-	Name         string         `json:"name"`
-	Payload      action.Payload `json:"payload"`
-	Confirmation *Confirmation  `json:"confirmation,omitempty"`
-	Modal        Component      `json:"modal,omitempty"`
+	Base
+	Config ButtonConfig `json:"config"`
 }
 
 // NewButton creates an instance of Button.
-func NewButton(name string, payload action.Payload, options ...ButtonOption) Button {
+func NewButton(name string, payload action.Payload, options ...ButtonOption) *Button {
 	button := Button{
-		Name:    name,
-		Payload: payload,
+		Base: newBase(TypeButton, nil),
+		Config: ButtonConfig{
+			Name:    name,
+			Payload: payload,
+		},
 	}
 
 	for _, option := range options {
 		option(&button)
 	}
 
-	return button
+	return &button
 }
 
-// ButtonGroupConfig is configuration for a button group.
-type ButtonGroupConfig struct {
-	// Buttons are buttons in the group.
-	Buttons []Button `json:"buttons"`
+// ButtonConfig is the contents of a Button
+type ButtonConfig struct {
+	Name         string         `json:"name"`
+	Payload      action.Payload `json:"payload"`
+	Confirmation *Confirmation  `json:"confirmation,omitempty"`
+	Modal        Component      `json:"modal,omitempty"`
 }
 
-// ButtonGroup is a group of buttons.
-//
-// +octant:component
-type ButtonGroup struct {
-	Base
-	Config ButtonGroupConfig `json:"config"`
-}
-
-// NewButtonGroup creates an instance of ButtonGroup.
-func NewButtonGroup() *ButtonGroup {
-	return &ButtonGroup{
-		Base: newBase(TypeButtonGroup, nil),
-	}
-}
-
-// AddButton adds a button to the ButtonGroup.
-func (bg *ButtonGroup) AddButton(button Button) {
-	bg.Config.Buttons = append(bg.Config.Buttons, button)
-}
-
-type buttonGroupMarshal ButtonGroup
-
-// MarshalJSON marshals a button group.
-func (bg *ButtonGroup) MarshalJSON() ([]byte, error) {
-	m := buttonGroupMarshal(*bg)
-	m.Metadata.Type = TypeButtonGroup
+// MarshalJSON implements json.Marshaler
+func (b *Button) MarshalJSON() ([]byte, error) {
+	m := buttonMarshal(*b)
+	m.Metadata.Type = TypeButton
 	return json.Marshal(&m)
 }

@@ -5,27 +5,25 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/vmware-tanzu/octant/pkg/action"
-
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Button_Marshal(t *testing.T) {
+func Test_ButtonGroup_Marshal(t *testing.T) {
 	tests := []struct {
 		name         string
-		input        func() *Button
+		input        func() *ButtonGroup
 		expectedFile string
 		isErr        bool
 	}{
 		{
-			name: "empty button",
-			input: func() *Button {
-				return NewButton("test", action.Payload{"foo": "bar"})
+			name: "empty button group",
+			input: func() *ButtonGroup {
+				return NewButtonGroup()
 			},
-			expectedFile: "button.json",
+			expectedFile: "button_group_empty.json",
 		},
 	}
 

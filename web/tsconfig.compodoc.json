@@ -194,6 +194,8 @@
     "src//app/modules/shared/components/presentation/icon/icon.component.spec.ts",
     "src//app/modules/shared/components/presentation/signpost/signpost.component.ts",
     "src//app/modules/shared/components/presentation/signpost/signpost.component.spec.ts",
+    "src//app/modules/shared/components/presentation/button/button.component.ts",
+    "src//app/modules/shared/components/presentation/button/button.component.spec.ts",
     "src//app/modules/shared/shared.module.ts",
     "src//app/modules/shared/pod-logs/pod-logs.service.ts",
     "src//app/modules/shared/pod-logs/pod-logs.service.spec.ts",

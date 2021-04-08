@@ -1,10 +1,8 @@
-<div *ngIf="v.config.buttons" class="btn-group">
-  <app-button
-    *ngFor="let button of v.config.buttons; trackBy: trackByFn"
-    [class]="class"
-    [view]="button">
-  </app-button>
-</div>
+<button
+  class="{{ class }}"
+  (click)="onClick(v.config.payload, v.config.confirmation, v.config.modal)">
+  {{ v.config.name }}
+</button>
 
 <app-view-modal *ngIf="modalView" [view]="modalView"></app-view-modal>
 <clr-modal [(clrModalOpen)]="isModalOpen">
