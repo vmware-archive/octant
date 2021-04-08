@@ -18,9 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/plugin/dashboard"
@@ -81,8 +84,16 @@ func testWithGRPCServer(t *testing.T, fn func(*grpcServerMocks)) {
 
 func Test_GRPCClient_Content(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+
+		clientStateData, _ := json.Marshal(&clientState)
 		req := &dashboard.ContentRequest{
-			Path: "/",
+			Path:        "/",
+			ClientState: clientStateData,
 		}
 
 		contentResponse := component.NewContentResponse(component.TitleFromString("title"))
@@ -101,6 +112,8 @@ func Test_GRPCClient_Content(t *testing.T) {
 
 		client := mocks.genClient()
 		ctx := context.Background()
+
+		ctx = ocontext.WithClientState(ctx, clientState)
 		got, err := client.Content(ctx, "/")
 		require.NoError(t, err)
 
@@ -110,7 +123,16 @@ func Test_GRPCClient_Content(t *testing.T) {
 
 func Test_GRPCClient_Navigation(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
-		req := &dashboard.NavigationRequest{}
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+
+		clientStateData, _ := json.Marshal(&clientState)
+		req := &dashboard.NavigationRequest{
+			ClientState: clientStateData,
+		}
 
 		resp := &dashboard.NavigationResponse{
 			Navigation: &dashboard.NavigationResponse_Navigation{
@@ -124,6 +146,7 @@ func Test_GRPCClient_Navigation(t *testing.T) {
 
 		client := mocks.genClient()
 		ctx := context.Background()
+		ctx = ocontext.WithClientState(ctx, clientState)
 		got, err := client.Navigation(ctx)
 		require.NoError(t, err)
 
@@ -178,6 +201,13 @@ func Test_GRPCClient_Register(t *testing.T) {
 
 func Test_GRPCClient_Print(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
 		object := testutil.CreateDeployment("deployment")
 
 		items := component.FlexLayoutSection{
@@ -189,7 +219,8 @@ func Test_GRPCClient_Print(t *testing.T) {
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 		objectRequest := &dashboard.ObjectRequest{
-			Object: objectData,
+			Object:      objectData,
+			ClientState: clientStateData,
 		}
 
 		config1 := component.NewText("config1 value")
@@ -208,6 +239,7 @@ func Test_GRPCClient_Print(t *testing.T) {
 
 		client := mocks.genClient()
 		ctx := context.Background()
+		ctx = ocontext.WithClientState(ctx, clientState)
 		got, err := client.Print(ctx, object)
 		require.NoError(t, err)
 
@@ -229,13 +261,20 @@ func Test_GRPCClient_Print(t *testing.T) {
 
 func Test_GRPCClient_PrintTabs(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
 		object := testutil.CreateDeployment("deployment")
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 		objectRequest := &dashboard.ObjectRequest{
-			Object:   objectData,
-			ClientID: "",
+			Object:      objectData,
+			ClientState: clientStateData,
 		}
 
 		layout := flexlayout.New()
@@ -258,6 +297,7 @@ func Test_GRPCClient_PrintTabs(t *testing.T) {
 
 		client := mocks.genClient()
 		ctx := context.Background()
+		ctx = ocontext.WithClientState(ctx, clientState)
 		got, err := client.PrintTabs(ctx, object)
 		require.NoError(t, err)
 
@@ -284,12 +324,20 @@ func Test_GRPCClient_PrintTabs(t *testing.T) {
 
 func Test_GRPCClient_ObjectStatus(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
 		object := testutil.CreatePod("pod")
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 		objectRequest := &dashboard.ObjectRequest{
-			Object: objectData,
+			Object:      objectData,
+			ClientState: clientStateData,
 		}
 
 		gvk := object.GroupVersionKind()
@@ -311,6 +359,7 @@ func Test_GRPCClient_ObjectStatus(t *testing.T) {
 
 		client := mocks.genClient()
 		ctx := context.Background()
+		ctx = ocontext.WithClientState(ctx, clientState)
 		got, err := client.ObjectStatus(ctx, object)
 		require.NoError(t, err)
 
@@ -322,18 +371,60 @@ func Test_GRPCClient_ObjectStatus(t *testing.T) {
 	})
 }
 
+func Test_GRPCClient_HandleAction(t *testing.T) {
+	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
+		payload := action.Payload{}
+		data, _ := json.Marshal(&payload)
+		req := &dashboard.HandleActionRequest{
+			ActionName:  "foo-action",
+			Payload:     data,
+			ClientState: clientStateData,
+		}
+
+		mocks.protoClient.EXPECT().HandleAction(gomock.Any(), req, grpc.WaitForReady(true)).
+			Do(func(ctx context.Context, _ *dashboard.HandleActionRequest, _ interface{}) {
+				ps := ocontext.ClientStateFrom(ctx)
+				assert.Equal(t, clientState, ps)
+			}).
+			Return(nil, nil)
+
+		client := mocks.genClient()
+		ctx := context.Background()
+		ctx = ocontext.WithClientState(ctx, clientState)
+		err := client.HandleAction(ctx, "foo-action", payload)
+		require.NoError(t, err)
+	})
+}
+
 func Test_GRPCServer_Content(t *testing.T) {
 	testWithGRPCServer(t, func(mocks *grpcServerMocks) {
 		server := mocks.genModuleServer()
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
 
 		contentResponse := component.NewContentResponse(component.TitleFromString("title"))
 
 		mocks.moduleService.EXPECT().
 			Content(gomock.Any(), "/").
+			Do(func(ctx context.Context, _ string) {
+				ps := ocontext.ClientStateFrom(ctx)
+				assert.Equal(t, clientState, ps)
+			}).
 			Return(*contentResponse, nil)
 
 		ctx := context.Background()
-		got, err := server.Content(ctx, &dashboard.ContentRequest{Path: "/"})
+		got, err := server.Content(ctx, &dashboard.ContentRequest{Path: "/", ClientState: clientStateData})
 		require.NoError(t, err)
 
 		contentResponseBytes, err := json.Marshal(contentResponse)
@@ -349,13 +440,23 @@ func Test_GRPCServer_Content(t *testing.T) {
 func Test_GRPCServer_Navigation(t *testing.T) {
 	testWithGRPCServer(t, func(mocks *grpcServerMocks) {
 		server := mocks.genModuleServer()
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
 
 		mocks.moduleService.EXPECT().
 			Navigation(gomock.Any()).
+			Do(func(ctx context.Context) {
+				ps := ocontext.ClientStateFrom(ctx)
+				assert.Equal(t, clientState, ps)
+			}).
 			Return(navigation.Navigation{Title: "title"}, nil)
 
 		ctx := context.Background()
-		got, err := server.Navigation(ctx, &dashboard.NavigationRequest{})
+		got, err := server.Navigation(ctx, &dashboard.NavigationRequest{ClientState: clientStateData})
 		require.NoError(t, err)
 
 		expected := &dashboard.NavigationResponse{
@@ -436,14 +537,27 @@ func Test_GRPCServer_Print(t *testing.T) {
 		require.NoError(t, err)
 		u := &unstructured.Unstructured{Object: m}
 
-		mocks.service.EXPECT().Print(gomock.Any(), gomock.Eq(u)).Return(pr, nil)
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
+		mocks.service.EXPECT().Print(gomock.Any(), gomock.Eq(u)).
+			Do(func(ctx context.Context, _ *unstructured.Unstructured) {
+				ps := ocontext.ClientStateFrom(ctx)
+				assert.Equal(t, clientState, ps)
+			}).
+			Return(pr, nil)
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 
 		ctx := context.Background()
 		objectRequest := &dashboard.ObjectRequest{
-			Object: objectData,
+			Object:      objectData,
+			ClientState: clientStateData,
 		}
 
 		server := mocks.genServer()
@@ -486,12 +600,25 @@ func Test_GRPCServer_ObjectStatus(t *testing.T) {
 		require.NoError(t, err)
 		u := &unstructured.Unstructured{Object: m}
 
-		mocks.service.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(u)).Return(osr, nil)
+		clientState := ocontext.ClientState{
+			ClientID:  "foo-client",
+			Namespace: "foo-namespace",
+			Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+		}
+		clientStateData, _ := json.Marshal(&clientState)
+
+		mocks.service.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(u)).
+			Do(func(ctx context.Context, _ *unstructured.Unstructured) {
+				ps := ocontext.ClientStateFrom(ctx)
+				assert.Equal(t, clientState, ps)
+			}).
+			Return(osr, nil)
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 		objectRequest := &dashboard.ObjectRequest{
-			Object: objectData,
+			Object:      objectData,
+			ClientState: clientStateData,
 		}
 
 		ctx := context.Background()

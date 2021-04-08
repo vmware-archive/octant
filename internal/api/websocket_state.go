@@ -48,7 +48,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 		NewNavigationManager(dashConfig),
 		NewNamespacesManager(dashConfig),
 		NewContextManager(dashConfig),
-		NewActionRequestManager(),
+		NewActionRequestManager(dashConfig),
 		NewTerminalStateManager(dashConfig),
 		NewPodLogsStateManager(dashConfig),
 	}

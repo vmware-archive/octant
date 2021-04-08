@@ -10,7 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
@@ -101,6 +103,11 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 	defer controller.Finish()
 
 	pod := testutil.CreatePod("pod")
+	clientState := ocontext.ClientState{
+		ClientID:  "foo-client",
+		Namespace: "foo-namespace",
+		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+	}
 
 	dashboardClient := fake.NewMockDashboard(controller)
 
@@ -111,6 +118,7 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, pod, r.Object)
+				assert.Equal(t, clientState, r.ClientState)
 				return plugin.PrintResponse{}, nil
 			},
 		},
@@ -118,6 +126,7 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.Print(ctx, pod)
 	require.NoError(t, err)
 
@@ -152,6 +161,11 @@ func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 	defer controller.Finish()
 
 	pod := testutil.CreatePod("pod")
+	clientState := ocontext.ClientState{
+		ClientID:  "foo-client",
+		Namespace: "foo-namespace",
+		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+	}
 
 	dashboardClient := fake.NewMockDashboard(controller)
 
@@ -165,6 +179,7 @@ func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 					ran = true
 					assert.Equal(t, dashboardClient, r.DashboardClient)
 					assert.Equal(t, pod, r.Object)
+					assert.Equal(t, clientState, r.ClientState)
 					return plugin.TabResponse{}, nil
 				},
 			},
@@ -172,6 +187,7 @@ func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.PrintTabs(ctx, pod)
 	require.NoError(t, err)
 
@@ -209,6 +225,11 @@ func TestHandler_ObjectStatus_using_supplied_function(t *testing.T) {
 
 	dashboardClient := fake.NewMockDashboard(controller)
 	pod := testutil.CreatePod("pod")
+	clientState := ocontext.ClientState{
+		ClientID:  "foo-client",
+		Namespace: "foo-namespace",
+		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+	}
 
 	ran := false
 
@@ -219,12 +240,14 @@ func TestHandler_ObjectStatus_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, pod, r.Object)
+				assert.Equal(t, clientState, r.ClientState)
 				return plugin.ObjectStatusResponse{}, nil
 			},
 		},
 	}
 
 	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.ObjectStatus(ctx, pod)
 	require.NoError(t, err)
 
@@ -259,6 +282,11 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 
 	actionName := "action.octant.dev/testAction"
 	payload := action.Payload{"foo": "bar"}
+	clientState := ocontext.ClientState{
+		ClientID:  "foo-client",
+		Namespace: "foo-namespace",
+		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+	}
 
 	ran := false
 
@@ -269,6 +297,7 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, payload, r.Payload)
+				assert.Equal(t, clientState, r.ClientState)
 
 				return nil
 			},
@@ -276,6 +305,7 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
 	err := h.HandleAction(ctx, actionName, payload)
 	assert.NoError(t, err)
 	assert.True(t, ran)
@@ -305,6 +335,11 @@ func TestHandler_Navigation_using_supplied_function(t *testing.T) {
 	defer controller.Finish()
 
 	dashboardClient := fake.NewMockDashboard(controller)
+	clientState := ocontext.ClientState{
+		ClientID:  "foo-client",
+		Namespace: "foo-namespace",
+		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
+	}
 
 	ran := false
 
@@ -314,12 +349,14 @@ func TestHandler_Navigation_using_supplied_function(t *testing.T) {
 			Navigation: func(r *NavigationRequest) (navigation.Navigation, error) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
+				assert.Equal(t, clientState, r.ClientState)
 				return navigation.Navigation{}, nil
 			},
 		},
 	}
 
 	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.Navigation(ctx)
 	require.NoError(t, err)
 

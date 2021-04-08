@@ -237,7 +237,7 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientID := ocontext.WebsocketClientIDFrom(ctx)
+		clientState := ocontext.ClientStateFrom(ctx)
 
 		handler, err := vm.RunString("_concretePlugin.contentHandler")
 		if err != nil {
@@ -255,9 +255,11 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 			errCh <- fmt.Errorf("unable to set contentPath: %w", err)
 			return
 		}
-		if err := obj.Set("clientID", vm.ToValue(clientID)); err != nil {
-			errCh <- fmt.Errorf("unable to set clientID: %w", err)
+		if err := obj.Set("clientState", vm.ToValue(clientState)); err != nil {
+			errCh <- fmt.Errorf("unable to set octant state: %w", err)
+			return
 		}
+
 		s, err := cHandler(t.pluginClass, obj)
 		if err != nil {
 			errCh <- fmt.Errorf("calling contentHandler: %w", err)
@@ -456,7 +458,7 @@ func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload 
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientID := ocontext.WebsocketClientIDFrom(ctx)
+		clientState := ocontext.ClientStateFrom(ctx)
 
 		handler, err := vm.RunString("_concretePlugin.actionHandler")
 		if err != nil {
@@ -482,8 +484,8 @@ func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload 
 			errCh <- fmt.Errorf("unable to set payload: %w", err)
 			return
 		}
-		if err := obj.Set("clientID", clientID); err != nil {
-			errCh <- fmt.Errorf("unable to set clientID: %w", err)
+		if err := obj.Set("clientState", vm.ToValue(clientState)); err != nil {
+			errCh <- fmt.Errorf("unable to set octant state: %w", err)
 			return
 		}
 
@@ -569,7 +571,7 @@ func (t *jsPlugin) objectRequestCall(ctx context.Context, handlerName string, ob
 	var response *goja.Object
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientID := ocontext.WebsocketClientIDFrom(ctx)
+		clientState := ocontext.ClientStateFrom(ctx)
 
 		handler, err := vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
 		if err != nil {
@@ -588,8 +590,8 @@ func (t *jsPlugin) objectRequestCall(ctx context.Context, handlerName string, ob
 			errCh <- fmt.Errorf("unable to set object: %w", err)
 			return
 		}
-		if err := obj.Set("clientID", vm.ToValue(clientID)); err != nil {
-			errCh <- fmt.Errorf("unable to set clientID: %w", err)
+		if err := obj.Set("clientState", vm.ToValue(clientState)); err != nil {
+			errCh <- fmt.Errorf("unable to set octant state: %w", err)
 			return
 		}
 		s, err := cHandler(t.pluginClass, obj)
