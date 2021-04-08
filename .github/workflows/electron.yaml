@@ -18,12 +18,6 @@ jobs:
         with:
           go-version: 1.16.x
       - uses: actions/checkout@v2
-      - name: Build node modules
-        run: |
-          cd web
-          npm ci --prefer-offline --no-audit
-          npm run-script build
-        shell: bash
       - name: Build binary
         env:
           GOFLAGS: -mod=vendor

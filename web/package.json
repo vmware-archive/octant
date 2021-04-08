@@ -16,7 +16,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --prod --output-hashing=all",
-    "build-electron": "tsc main.ts && npm run build -- --base-href ./",
+    "build-electron": "npm install && tsc main.ts && npm run build -- --base-href ./",
     "test": "ng test --watch=false --browsers=ElectronDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless --source-map=false",
     "lint": "prettier -c 'src/**/*.ts'",

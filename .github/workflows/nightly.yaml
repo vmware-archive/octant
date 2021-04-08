@@ -17,12 +17,9 @@ jobs:
         with:
           go-version: 1.16.x
       - uses: actions/checkout@v2
-      - name: Build node modules
+      - name: Build web assets
         run: |
-          cd web
-          npm ci --prefer-offline --no-audit
-          npm run-script build
-        shell: bash
+          go run build.go web-build
       - uses: actions/upload-artifact@v2
         with:
           name: bundle
