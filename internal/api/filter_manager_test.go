@@ -45,9 +45,19 @@ func TestFilterManager_AddFilter(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
+	filter := octant.Filter{Key: "foo", Value: "bar"}
+	dispatchFilters := []map[string]string{
+		{
+			"key":   "foo",
+			"value": "bar",
+		},
+	}
+
 	state := octantFake.NewMockState(controller)
-	state.EXPECT().AddFilter(octant.Filter{Key: "foo", Value: "bar"})
+	state.EXPECT().AddFilter(filter)
 	state.EXPECT().SendAlert(gomock.Any())
+	state.EXPECT().GetFilters().Return([]octant.Filter{filter})
+	state.EXPECT().Dispatch(gomock.Any(), action.RequestSetFilter, action.Payload{"filters": dispatchFilters})
 
 	manager := api.NewFilterManager()
 
@@ -68,6 +78,8 @@ func TestFilterManager_ClearFilters(t *testing.T) {
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().SetFilters([]octant.Filter{})
 	state.EXPECT().SendAlert(gomock.Any())
+	state.EXPECT().GetFilters().Return([]octant.Filter{})
+	state.EXPECT().Dispatch(gomock.Any(), action.RequestSetFilter, action.Payload{"filters": []map[string]string{}})
 
 	manager := api.NewFilterManager()
 
@@ -79,9 +91,19 @@ func TestFilterManager_RemoveFilter(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
+	filter := octant.Filter{Key: "foo", Value: "bar"}
+	dispatchFilters := []map[string]string{
+		{
+			"key":   "foo",
+			"value": "bar",
+		},
+	}
+
 	state := octantFake.NewMockState(controller)
-	state.EXPECT().RemoveFilter(octant.Filter{Key: "foo", Value: "bar"})
+	state.EXPECT().RemoveFilter(filter)
 	state.EXPECT().SendAlert(gomock.Any())
+	state.EXPECT().GetFilters().Return([]octant.Filter{filter})
+	state.EXPECT().Dispatch(gomock.Any(), action.RequestSetFilter, action.Payload{"filters": dispatchFilters})
 
 	manager := api.NewFilterManager()
 
