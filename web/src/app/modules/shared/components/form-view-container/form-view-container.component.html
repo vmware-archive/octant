@@ -1,0 +1,111 @@
+<div [formGroup]="formGroupContainer" *ngFor="let field of form?.fields; trackBy: trackByFn">
+  <ng-container [ngSwitch]="field.type">
+
+    <ng-container *ngSwitchCase="'checkbox'">
+      <clr-checkbox-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <clr-checkbox-wrapper
+          *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
+        >
+          <input
+            type="checkbox"
+            clrCheckbox
+            [formArrayName]="field.name"
+            [value]="opt.value"
+            [checked]="opt.checked"
+            (change)="onCheck($event, field.name)"
+          />
+          <label>{{ opt.label }}</label>
+        </clr-checkbox-wrapper>
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-checkbox-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'radio'">
+      <clr-radio-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <clr-radio-wrapper
+          *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
+        >
+          <input
+            type="radio"
+            clrRadio
+            [formControlName]="field.name"
+            [value]="opt.value"
+          />
+          <label>{{ opt.label }}</label>
+        </clr-radio-wrapper>
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-radio-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'text'">
+      <clr-input-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <input
+          clrInput
+          type="text"
+          [formControlName]="field.name"
+          [placeholder]="field.placeholder ? field.placeholder : ''"
+        />
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-input-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'number'">
+      <clr-input-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <input
+          clrInput
+          type="number"
+          [formControlName]="field.name"
+        />
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-input-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'password'">
+      <clr-input-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <input
+          clrInput
+          type="password"
+          [formControlName]="field.name"
+        />
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-input-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'select'">
+      <clr-select-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <select
+          clrSelect
+          [formControlName]="field.name"
+          [multiple]="field.configuration.multiple"
+        >
+          <option
+            *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
+            [value]="opt.value"
+          >
+            {{ opt.label }}
+          </option>
+        </select>
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-select-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'textarea'">
+      <clr-textarea-container>
+        <label [for]="field.name">{{ field.label }}</label>
+        <textarea clrTextarea [formControlName]="field.name"></textarea>
+        <clr-control-error>{{ field.error }}</clr-control-error>
+      </clr-textarea-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'hidden'"> </ng-container>
+    <ng-container *ngSwitchDefault>
+      Unable to display form field type {{ field.type }}
+    </ng-container>
+  </ng-container>
+</div>

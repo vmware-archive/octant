@@ -1,13 +1,9 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActionField, StepItem, StepperView } from '../../../models/content';
-import {
-  FormBuilder,
-  FormGroup,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ActionService } from '../../../services/action/action.service';
+import { FormHelper } from '../../../models/form-helper';
 
 interface Choice {
   label: string;
@@ -20,7 +16,9 @@ interface Choice {
   templateUrl: './stepper.component.html',
   styleUrls: ['./stepper.component.scss'],
 })
-export class StepperComponent extends AbstractViewComponent<StepperView> {
+export class StepperComponent
+  extends AbstractViewComponent<StepperView>
+  implements OnInit {
   @Output()
   submit: EventEmitter<FormGroup> = new EventEmitter(true);
 
@@ -31,18 +29,6 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
   action: string;
   steps: StepItem[] = [];
 
-  needParams = {
-    min: true,
-    max: true,
-    minLength: true,
-    maxLength: true,
-    pattern: true,
-    required: false,
-    requiredTrue: false,
-    email: false,
-    nullValidator: false,
-  };
-
   constructor(
     private formBuilder: FormBuilder,
     private actionService: ActionService
@@ -50,36 +36,29 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
     super();
   }
 
+  ngOnInit() {
+    this.formGroup = this.createStepGroups(this.steps);
+  }
+
+  // Each Step is a form, so it creates a form group for every form and encapsulate
+  // them with another form group, Yes! a form group with many form groups :P
+  createStepGroups(steps: StepItem[]): FormGroup {
+    const stepGroups: { [name: string]: any } = {};
+    const formHelper = new FormHelper();
+
+    steps?.forEach(step => {
+      stepGroups[step.name] = formHelper.createFromGroup(
+        step.form,
+        this.formBuilder
+      );
+    });
+
+    return this.formBuilder.group(stepGroups);
+  }
+
   update() {
     this.action = this.v.config.action;
     this.steps = this.v.config.steps;
-
-    const stepGroups = this.createStepGroups(this.steps);
-    this.formGroup = this.formBuilder.group(stepGroups);
-  }
-
-  createStepGroups(steps: StepItem[]): { [name: string]: any } {
-    const stepGroups: { [name: string]: any } = {};
-
-    steps?.forEach(step => {
-      const controls = this.createControlGroups(step);
-      stepGroups[step.name] = this.formBuilder.group(controls);
-    });
-
-    return stepGroups;
-  }
-
-  createControlGroups(step: StepItem): { [name: string]: any } {
-    const controls: { [name: string]: any } = {};
-
-    step.form?.fields?.forEach(field => {
-      controls[field.name] = [
-        field.value,
-        this.getValidators(field.validators),
-      ];
-    });
-
-    return controls;
   }
 
   onFormSubmit() {
@@ -97,34 +76,11 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
     return index;
   }
 
-  getValidators(validators: { string: any }): ValidatorFn[] {
-    if (!validators) {
-      return [];
-    }
-
-    const vFn: ValidatorFn[] = [];
-    const keys = Object.keys(validators);
-    for (const key of keys) {
-      const value = validators[key];
-
-      // Check if function is expected
-      if (this.needParams[key] === undefined) {
-        console.error(`Unknown validation function ${key} for form`);
-        continue;
-      }
-
-      // Verify how many params needs
-      if (this.needParams[key]) {
-        vFn.push(Validators[key](value));
-      } else {
-        vFn.push(Validators[key]);
-      }
-    }
-
-    return vFn;
-  }
-
   fieldChoices(field: ActionField) {
     return field.configuration.choices as Choice[];
+  }
+
+  formGroupFromName(step: StepItem): FormGroup {
+    return this.formGroup.get(step.name) as FormGroup;
   }
 }
