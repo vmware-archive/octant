@@ -115,6 +115,12 @@ log.Printf("octant-sample-plugin is starting")
 p.Serve()
 ```
 
+## Plugins with partial octant state
+All plugin implementations are passed a request parameter which makes a partial octant state available to the plugins.
+request.ClientState contains accessors for the current namespace, filters and context name. The plugins can now respond to state updates by
+either responding to specific actions (eg. action.octant.dev/setNamespace) or they can reflect the
+current state using the request.ClientState.
+
 ## More About Capabilities
 
 Octant provides a well defined set of capabilites for plugins to implement. These include:

@@ -190,7 +190,8 @@ func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert acti
 
 	sender := s.WebsocketClientManager.Get(clientID)
 	if sender == nil {
-		return fmt.Errorf("unable to find ws client %s", ocontext.WebsocketClientIDFrom(ctx))
+		clientID := ocontext.ClientStateFrom(ctx).ClientID
+		return fmt.Errorf("unable to find ws client %s", clientID)
 	}
 
 	sender.Send(event)

@@ -26,6 +26,7 @@ const (
 
 // FilterManager manages filters.
 type FilterManager struct {
+	ctx context.Context
 }
 
 var _ StateManager = (*FilterManager)(nil)
@@ -37,6 +38,7 @@ func NewFilterManager() *FilterManager {
 
 // Start starts the manager. Current is a no-op.
 func (fm *FilterManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+	fm.ctx = ctx
 }
 
 // Handlers returns a slice of handlers.
@@ -63,6 +65,7 @@ func (fm *FilterManager) AddFilter(state octant.State, payload action.Payload) e
 		state.AddFilter(filter)
 		message := fmt.Sprintf("Added filter for label %s", filter.String())
 		state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
+		dispatchFilters(fm.ctx, state)
 	}
 
 	return nil
@@ -73,6 +76,7 @@ func (fm *FilterManager) ClearFilters(state octant.State, payload action.Payload
 	state.SetFilters([]octant.Filter{})
 	message := "Cleared filters"
 	state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
+	dispatchFilters(fm.ctx, state)
 	return nil
 }
 
@@ -82,6 +86,7 @@ func (fm *FilterManager) RemoveFilter(state octant.State, payload action.Payload
 		state.RemoveFilter(filter)
 		message := fmt.Sprintf("Removed filter for label %s", filter.String())
 		state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
+		dispatchFilters(fm.ctx, state)
 	}
 	return nil
 }
@@ -160,4 +165,15 @@ func FiltersToLabelSet(filters []octant.Filter) *labels.Set {
 	}
 	return &set
 
+}
+
+func dispatchFilters(ctx context.Context, state octant.State) {
+	filters := state.GetFilters()
+	payloadFilters := []map[string]string{}
+
+	for _, filter := range filters {
+		payloadFilters = append(payloadFilters, map[string]string{"key": filter.Key, "value": filter.Value})
+	}
+
+	state.Dispatch(ctx, action.RequestSetFilter, action.Payload{"filters": payloadFilters})
 }

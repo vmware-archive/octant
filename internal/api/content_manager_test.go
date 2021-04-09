@@ -15,11 +15,14 @@ import (
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/module"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -45,12 +48,19 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	defer controller.Finish()
 
 	params := map[string][]string{}
+	filters := []octant.Filter{{Key: "foo", Value: "bar"}}
 
 	dashConfig := configFake.NewMockDash(controller)
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	fakeModule := moduleFake.NewMockModule(controller)
 	state := octantFake.NewMockState(controller)
 
-	state.EXPECT().GetContentPath().Return("/path").AnyTimes()
+	dashConfig.EXPECT().CurrentContext().Return("foo-context")
+	state.EXPECT().GetClientID().Return("foo-client")
+	state.EXPECT().GetFilters().Return(filters).AnyTimes()
+	state.EXPECT().GetNamespace().Return("foo-namespace").AnyTimes()
+	state.EXPECT().GetQueryParams().Return(params)
+	state.EXPECT().GetContentPath().Return(".").AnyTimes()
 	state.EXPECT().OnContentPathUpdate(gomock.Any()).DoAndReturn(func(fn octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
 		fn("foo")
 		return func() {}
@@ -60,19 +70,29 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	stopCh := make(chan struct{}, 1)
 
 	contentResponse := component.ContentResponse{}
-	contentEvent := api.CreateContentEvent(contentResponse, "default", "/path", params)
+	contentEvent := api.CreateContentEvent(contentResponse, "foo-namespace", ".", params)
 	octantClient.EXPECT().Send(contentEvent).AnyTimes()
 	octantClient.EXPECT().StopCh().Return(stopCh).AnyTimes()
+
+	moduleManager.EXPECT().ModuleForContentPath(gomock.Any()).Return(fakeModule, true)
+	moduleManager.EXPECT().Navigation(gomock.Any(), "foo-namespace", "foo-module").Return([]navigation.Navigation{}, nil)
+	fakeModule.EXPECT().Name().Return("foo-module").AnyTimes()
+	fakeModule.EXPECT().Content(gomock.Any(), ".", gomock.Any()).
+		Do(func(ctx context.Context, _ string, _ module.ContentOptions) {
+			clientState := ocontext.ClientStateFrom(ctx)
+			require.Equal(t, "foo-namespace", clientState.Namespace)
+			require.Equal(t, "foo", clientState.Filters[0].Key)
+			require.Equal(t, "bar", clientState.Filters[0].Value)
+			require.Equal(t, "foo-client", clientState.ClientID)
+			require.Equal(t, "foo-context", clientState.ContextName)
+		}).
+		Return(contentResponse, nil)
 
 	logger := log.NopLogger()
 
 	poller := api.NewSingleRunPoller()
 
-	contentGenerator := func(ctx context.Context, state octant.State) (api.Content, bool, error) {
-		return api.Content{Response: contentResponse}, false, nil
-	}
 	manager := api.NewContentManager(moduleManager, dashConfig, logger,
-		api.WithContentGenerator(contentGenerator),
 		api.WithContentGeneratorPoller(poller))
 
 	ctx := context.Background()

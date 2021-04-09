@@ -21,10 +21,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-const (
-	RequestSetContext = "action.octant.dev/setContext"
-)
-
 // ContextManagerOption is an option for configuring ContextManager.
 type ContextManagerOption func(manager *ContextManager)
 
@@ -47,6 +43,7 @@ func WithContextGeneratorPoll(poller Poller) ContextManagerOption {
 
 // ContextManager manages context.
 type ContextManager struct {
+	ctx                 context.Context
 	dashConfig          config.Dash
 	contextGenerateFunc ContextGenerateFunc
 	poller              Poller
@@ -74,7 +71,7 @@ func NewContextManager(dashConfig config.Dash, options ...ContextManagerOption) 
 func (c *ContextManager) Handlers() []octant.ClientRequestHandler {
 	return []octant.ClientRequestHandler{
 		{
-			RequestType: RequestSetContext,
+			RequestType: action.RequestSetContext,
 			Handler:     c.SetContext,
 		},
 	}
@@ -87,12 +84,14 @@ func (c *ContextManager) SetContext(state octant.State, payload action.Payload) 
 		return errors.Wrap(err, "extract requested context from payload")
 	}
 	state.SetContext(requestedContext)
+	state.Dispatch(c.ctx, action.RequestSetContext, action.Payload{"contextName": requestedContext})
 	return nil
 }
 
 // Start starts the manager.
 func (c *ContextManager) Start(ctx context.Context, state octant.State, s OctantClient) {
 	c.poller.Run(ctx, nil, c.runUpdate(state, s), event.DefaultScheduleDelay)
+	c.ctx = ctx
 }
 
 func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFunc {

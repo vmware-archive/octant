@@ -66,7 +66,8 @@ func (d *DashboardSendEvent) Call(ctx context.Context, vm *goja.Runtime) func(c 
 
 		sender := d.WebsocketClientManager.Get(clientID)
 		if sender == nil {
-			panic(panicMessage(vm, fmt.Errorf("unable to find ws client %s", ocontext.WebsocketClientIDFrom(ctx)), ""))
+			clientID := ocontext.ClientStateFrom(ctx).ClientID
+			panic(panicMessage(vm, fmt.Errorf("unable to find ws client %s", clientID), ""))
 		}
 
 		sender.Send(event)

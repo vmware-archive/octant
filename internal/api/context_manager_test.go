@@ -9,6 +9,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/golang/mock/gomock"
@@ -28,7 +29,7 @@ func TestContextManager_Handlers(t *testing.T) {
 	dashConfig := configFake.NewMockDash(controller)
 
 	manager := api.NewContextManager(dashConfig)
-	AssertHandlers(t, manager, []string{api.RequestSetContext})
+	AssertHandlers(t, manager, []string{action.RequestSetContext})
 }
 
 func TestContext_GenerateContexts(t *testing.T) {
@@ -58,4 +59,18 @@ func TestContext_GenerateContexts(t *testing.T) {
 
 	ctx := context.Background()
 	manager.Start(ctx, state, octantClient)
+}
+
+func TestContext_SetContext(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	state := octantFake.NewMockState(controller)
+	dashConfig := configFake.NewMockDash(controller)
+	manager := api.NewContextManager(dashConfig)
+
+	state.EXPECT().SetContext("foo")
+	state.EXPECT().Dispatch(gomock.Any(), action.RequestSetContext, action.Payload{"contextName": "foo"})
+
+	manager.SetContext(state, action.Payload{"requestedContext": "foo"})
 }

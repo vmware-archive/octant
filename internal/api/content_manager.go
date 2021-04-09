@@ -194,7 +194,13 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 		LabelSet: FiltersToLabelSet(state.GetFilters()),
 	}
 
-	ctx = ocontext.WithWebsocketClientID(ctx, state.GetClientID())
+	pluginState := ocontext.ClientState{
+		ClientID:    state.GetClientID(),
+		Filters:     state.GetFilters(),
+		Namespace:   state.GetNamespace(),
+		ContextName: cm.dashConfig.CurrentContext(),
+	}
+	ctx = ocontext.WithClientState(ctx, pluginState)
 
 	contentResponse, err := m.Content(ctx, modulePath, options)
 	if err != nil {

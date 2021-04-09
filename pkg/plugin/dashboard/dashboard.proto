@@ -1,11 +1,15 @@
 syntax = "proto3";
 package dashboard;
 
+option go_package = "github.com/vmware-tanzu/octant/pkg/plugin/dashboard";
+
 message Empty {}
 
 message ContentRequest {
+    reserved 2;
+    reserved "clientID";
     string path = 1;
-    string clientID = 2;
+    bytes client_state = 3;
 }
 
 message ContentResponse {
@@ -13,9 +17,11 @@ message ContentResponse {
 }
 
 message HandleActionRequest {
+    reserved 3;
+    reserved "clientID";
     string action_name = 1;
     bytes payload = 2;
-    string clientID = 3;
+    bytes client_state = 4;
 }
 
 message HandleActionResponse {
@@ -23,7 +29,9 @@ message HandleActionResponse {
 }
 
 message NavigationRequest {
-    string clientID = 1;
+    reserved 1;
+    reserved "clientID";
+    bytes client_state = 2;
 }
 
 message NavigationResponse {
@@ -64,8 +72,10 @@ message RegisterResponse {
 }
 
 message ObjectRequest {
+    reserved 2;
+    reserved "clientID";
     bytes object = 1;
-    string clientID = 2;
+    bytes client_state = 3;
 }
 
 message PrintResponse {

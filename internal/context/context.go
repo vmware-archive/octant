@@ -5,7 +5,11 @@
 
 package context
 
-import "context"
+import (
+	"context"
+
+	"github.com/vmware-tanzu/octant/internal/octant"
+)
 
 type OctantContextKey string
 
@@ -19,17 +23,24 @@ func WithKubeConfigCh(ctx context.Context) context.Context {
 	return context.WithValue(ctx, KubeConfigKey, make(chan string))
 }
 
-type OctantWebsocketClientID string
+type OctantClientState string
 
-const WebsocketClientIDKey = OctantWebsocketClientID("clientID")
+const ClientStateKey = OctantClientState("clientState")
 
-func WebsocketClientIDFrom(ctx context.Context) string {
-	if ctx.Value(WebsocketClientIDKey) == nil {
-		return ""
-	}
-	return ctx.Value(WebsocketClientIDKey).(string)
+type ClientState struct {
+	ClientID    string          `json:"clientID"`
+	Filters     []octant.Filter `json:"filters"`
+	Namespace   string          `json:"namespace"`
+	ContextName string          `json:"contextName"`
 }
 
-func WithWebsocketClientID(ctx context.Context, id string) context.Context {
-	return context.WithValue(ctx, WebsocketClientIDKey, id)
+func WithClientState(ctx context.Context, state ClientState) context.Context {
+	return context.WithValue(ctx, ClientStateKey, state)
+}
+
+func ClientStateFrom(ctx context.Context) ClientState {
+	if ctx.Value(ClientStateKey) == nil {
+		return ClientState{}
+	}
+	return ctx.Value(ClientStateKey).(ClientState)
 }
