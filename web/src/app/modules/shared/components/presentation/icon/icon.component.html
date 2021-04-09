@@ -1,8 +1,12 @@
-<clr-icon
+<cds-icon
+  [style]="iconStyle != '' ? iconStyle : null"
   [attr.shape]="shape"
-  [attr.style]="styleAttr"
-  [attr.class]="classAttr"
-  [attr.flip]="flip"
   [attr.size]="size"
-></clr-icon>
-
+  [attr.direction]="direction"
+  [attr.flip]="flip"
+  [attr.solid]="isSolid ? true: null"
+  [attr.status]="status"
+  [attr.inverse]="isInverse ? true: null"
+  [attr.badge]="badge"
+  [attr.aria-label]="label"
+></cds-icon>

@@ -4,6 +4,18 @@ import {
   Component,
 } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import '@cds/core/icon/register';
+import {
+  loadCoreIconSet,
+  loadEssentialIconSet,
+  loadCommerceIconSet,
+  loadMediaIconSet,
+  loadSocialIconSet,
+  loadTravelIconSet,
+  loadTextEditIconSet,
+  loadTechnologyIconSet,
+  loadChartIconSet,
+} from '@cds/core/icon';
 import { IconView } from '../../../models/content';
 
 @Component({
@@ -13,102 +25,51 @@ import { IconView } from '../../../models/content';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IconComponent extends AbstractViewComponent<IconView> {
+  direction: string;
   shape: string;
   flip: string;
   size: string;
-
-  styleAttr = '';
-  classAttr = '';
-
-  sizeHash = { sm: '16', md: '24', lg: '36"', xl: '48', xxl: '64' };
-  directionHash = {
-    up: 'transform: rotate(0deg);',
-    right: 'transform: rotate(90deg);',
-    down: 'transform: rotate(180deg);',
-    left: 'transform: rotate(270deg);',
-  };
-  statusHash = {
-    info: 'is-info ',
-    success: 'is-success ',
-    warning: 'is-warning ',
-    danger: 'is-error ',
-  };
-  badge = {
-    info: 'has-badge--info ',
-    success: 'has-badge--success ',
-    danger: 'has-badge ',
-    'warning-triangle': 'has-alert ',
-  };
+  isInverse: boolean;
+  isSolid: boolean;
+  badge: string;
+  status: string;
+  iconStyle: string;
+  label: string;
 
   constructor(private cdr: ChangeDetectorRef) {
     super();
+    loadCoreIconSet();
+    loadEssentialIconSet();
+    loadCommerceIconSet();
+    loadMediaIconSet();
+    loadSocialIconSet();
+    loadTravelIconSet();
+    loadTextEditIconSet();
+    loadTechnologyIconSet();
+    loadChartIconSet();
   }
 
-  // This will work for version 5 of clarity but we are using
-  // version 4 so function are been added to map the differences
-  // dir needs to be change to direction on the template
   protected update(): void {
     const view = this.v;
 
-    // reset values to be re-calculated
-    this.styleAttr = '';
-    this.classAttr = '';
-
     this.shape = view.config.shape;
     this.flip = view.config.flip;
-    this.mapSize(view.config.size);
-    this.mapDirection(view.config.direction);
-    this.mapSolid(view.config.solid);
-    this.mapStatus(view.config.status);
-    this.mapInverse(view.config.inverse);
-    this.mapBadge(view.config.badge);
-    if (view.config.status === '' || !view.config.status) {
-      this.setColor(view.config.color);
-    }
+    this.size = view.config.size;
+    this.direction = view.config.direction;
+    this.status = view.config.status;
+    this.badge = view.config.badge;
 
+    this.isInverse = view.config.inverse;
+    this.isSolid = view.config.solid;
+
+    this.iconStyle = '';
+    if (view.config.color !== '') {
+      this.iconStyle += `--color: ${view.config.color};`;
+    }
+    if (view.config.badgeColor !== '') {
+      this.iconStyle += `--badge-color: ${view.config.badgeColor};`;
+    }
+    this.label = view.config.label;
     this.cdr.markForCheck();
-  }
-
-  mapSize(size: string): string {
-    if (!size || size === '') {
-      return;
-    }
-    this.size = this.sizeHash[size] || size;
-  }
-
-  mapDirection(direction: string) {
-    if (!direction || direction === '') {
-      return;
-    }
-    this.styleAttr += this.directionHash[direction] || '';
-  }
-
-  mapSolid(isSolid: boolean) {
-    this.classAttr += isSolid ? 'is-solid ' : '';
-  }
-
-  mapStatus(status: string) {
-    if (!status || status === '') {
-      return;
-    }
-    this.classAttr += this.statusHash[status] || '';
-  }
-
-  mapInverse(inverse: boolean) {
-    this.classAttr += inverse ? 'is-inverse ' : '';
-  }
-
-  mapBadge(badge: string) {
-    if (!badge || badge === '') {
-      return;
-    }
-    this.classAttr += this.badge[badge] || '';
-  }
-
-  setColor(color: string) {
-    if (!color || color === '') {
-      return;
-    }
-    this.styleAttr += `fill: ${color};`;
   }
 }

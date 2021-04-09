@@ -1,44 +1,51 @@
-import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object } from '@storybook/addon-knobs';
-import { SignpostComponent } from "../app/modules/shared/components/presentation/signpost/signpost.component";
+import {ArgsTable, Canvas, Meta, Story} from '@storybook/addon-docs/blocks';
+import {object} from '@storybook/addon-knobs';
+import {SignpostComponent} from "../app/modules/shared/components/presentation/signpost/signpost.component";
 
-export const iconDocs= {source: {code: `c: component.NewSignpost(component.NewIcon("user"), "Message")
-c.setPosition = PositionTopMiddle
-`}}
+export const signpostDocs = {
+  source: {
+    code: `c: component.NewSignpost(component.NewIcon("user"), "Message")
+c.SetPosition = PositionTopMiddle
+`
+  }
+}
 
 <h1>Signpost Component</h1>
 <h2>Description</h2>
-<p>An Signpost component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a>
-  and adapted to <a href="https://v4.clarity.design/icons/how-to-use">Clarity 4</a> </p>
+<p>An Signpost component is used to display a message by clicking on a component.</p>
+
+<p>On hover, the component will change color and cursor will change to a pointer.</p>
 
 <h2>Example</h2>
 
-<Meta title="Components/Signpost" component={SignpostComponent} />
+<Meta title="Components/Signpost" component={SignpostComponent}/>
 
 <Canvas withToolbar>
-  <Story name="Signpost component" parameters={{ docs: iconDocs }} height="200px" >
+  <Story name="Signpost component" parameters={{docs: signpostDocs}} height="200px">
     {{
       props: {
         view: object('View', {
-          "metadata":{
-            "type":"signpost"
+          "metadata": {
+            "type": "signpost"
           },
-          "config":{
-            "trigger":{
-              "metadata":{
-                "type":"icon"
+          "config": {
+            "trigger": {
+              "metadata": {
+                "type": "icon"
               },
-              "config":{
-                "shape":"user",
-                "size":"65",
-                "direction":"up",
-                "solid":true,
-                "inverse":false,
-                "badge":"danger",
-                "color":"#add8e6"
+              "config": {
+                "shape": "user",
+                "size": "",
+                "direction": "",
+                "solid": false,
+                "inverse": false,
+                "badge": "",
+                "color": "",
+                "badgeColor": "",
+                "label": "",
               }
             },
-            "message":"<h1>Test Markup</h1>",
+            "message": "Message",
             "position": "right-middle"
           }
         }),
@@ -49,4 +56,4 @@ c.setPosition = PositionTopMiddle
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={SignpostComponent} />
+<ArgsTable of={SignpostComponent}/>
