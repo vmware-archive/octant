@@ -3,24 +3,24 @@ import { object } from '@storybook/addon-knobs';
 import { IconComponent } from "../app/modules/shared/components/presentation/icon/icon.component";
 
 export const iconDocs= {source: {code: `c := component.NewIcon("user")
-c.Config.Inverse = true
-c.Config.Size = "65"
+c.Config.Inverse = false
+c.Config.Size = "md"
 c.Config.Direction = component.DirectionDown
 c.Config.Flip = component.FlipHorizontal
 c.Config.Badge = component.BadgeDanger
+c.Config.AddLabel("label for accessibility")
 `}}
 
 <h1>Icon Component</h1>
 <h2>Description</h2>
-<p>An Icon component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a>
-  and adapted to <a href="https://v4.clarity.design/icons/how-to-use">Clarity 4</a> </p>
+<p>An Icon component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a></p>
 
 <h2>Example</h2>
 
 <Meta title="Components/Icon" component={IconComponent} />
 
 <Canvas withToolbar>
-  <Story name="Icon component" parameters={{ docs: iconDocs }} height="800px" >
+  <Story name="Icon component" parameters={{ docs: iconDocs }} height="200px" >
     {{
       props: {
         view: object('View', {
@@ -29,14 +29,16 @@ c.Config.Badge = component.BadgeDanger
           },
           config: {
             shape: "user",
-            size: "65",
+            size: "md",
             direction: "up",
             flip: "horizontal",
             solid: true,
             status: "danger",
             inverse: false,
             badge: "danger",
-            color: "#add8e6"
+            color: "",
+            badgeColor: "",
+            label: "label for accessibility",
           }
         }),
       },

@@ -11,6 +11,8 @@
     "status": "danger",
     "inverse": false,
     "badge": "danger",
-    "color": "#add8e6"
+    "color": "#add8e6",
+    "badgeColor": "purple",
+    "label": "example icon"
   }
 }

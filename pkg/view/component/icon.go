@@ -4,25 +4,23 @@ import (
 	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
-// WARNING: This is using version on clarity 4.0.12 but
-// this is built using the API of version 5 is not expected to change the the version
-// but is good to know :)
-
 type Icon struct {
 	Base
 	Config IconConfig `json:"config"`
 }
 
 type IconConfig struct {
-	Shape     string    `json:"shape"`
-	Size      string    `json:"size"`
-	Direction Direction `json:"direction"`
-	Flip      Flip      `json:"flip"`
-	Solid     bool      `json:"solid"`
-	Status    Status    `json:"status"`
-	Inverse   bool      `json:"inverse"`
-	Badge     Badge     `json:"badge"`
-	Color     string    `json:"color"`
+	Shape      string    `json:"shape"`
+	Size       string    `json:"size"`
+	Direction  Direction `json:"direction"`
+	Flip       Flip      `json:"flip"`
+	Solid      bool      `json:"solid"`
+	Status     Status    `json:"status"`
+	Inverse    bool      `json:"inverse"`
+	Badge      Badge     `json:"badge"`
+	Color      string    `json:"color"`
+	BadgeColor string    `json:"badgeColor"`
+	Label      string    `json:"label"`
 }
 
 type Direction string
@@ -57,18 +55,24 @@ const (
 	BadgeSuccess         Badge = "success"
 	BadgeWarningTriangle Badge = "warning-triangle"
 	BadgeDanger          Badge = "danger"
-	// BadgeWarning         Badge = "warning" just for clarity 5
-	// BadgeInherit         Badge = "inherit" just for clarity 5
-	// BadgeInheritTriangle Badge = "inherit-triangle" just for clarity 5
+	BadgeWarning         Badge = "warning"
+	BadgeInherit         Badge = "inherit"
+	BadgeInheritTriangle Badge = "inherit-triangle"
 )
 
-func NewIcon(shape string) *Icon {
-	return &Icon{
+func NewIcon(shape string, options ...func(*Icon)) *Icon {
+	i := &Icon{
 		Base: newBase(TypeIcon, nil),
 		Config: IconConfig{
 			Shape: shape,
 		},
 	}
+
+	for _, option := range options {
+		option(i)
+	}
+
+	return i
 }
 
 type iconMarshal Icon
@@ -81,4 +85,24 @@ func (i *Icon) MarshalJSON() ([]byte, error) {
 	m.Metadata.Type = TypeIcon
 
 	return json.Marshal(&m)
+}
+
+// AddLabel adds an aria-label for screen readers
+func (i *Icon) AddLabel(label string) {
+	i.Config.Label = label
+}
+
+// SetColor sets the color of an icon. A color from status has priority over a set color.
+func (i *Icon) SetColor(color string) {
+	i.Config.Color = color
+}
+
+// SetBadgeColor sets the color of a badge. A set badge color has priority over a badge status.
+func (i *Icon) SetBadgeColor(color string) {
+	i.Config.BadgeColor = color
+}
+
+// SetSize sets the size of a badge. The size can me sm, md, lg, xl, xxl, or an integer for N x N pixels.
+func (i *Icon) SetSize(size string) {
+	i.Config.Size = size
 }

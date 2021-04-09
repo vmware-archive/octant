@@ -1,25 +1,27 @@
 {
-  "metadata":{
-    "type":"signpost"
+  "metadata": {
+    "type": "signpost"
   },
-  "config":{
-    "trigger":{
-      "metadata":{
-        "type":"icon"
+  "config": {
+    "trigger": {
+      "metadata": {
+        "type": "icon"
       },
-      "config":{
-        "shape":"user",
-        "size":"",
-        "direction":"",
-        "flip":"",
-        "solid":false,
-        "status":"",
-        "inverse":false,
-        "badge":"",
-        "color":""
+      "config": {
+        "shape": "user",
+        "size": "",
+        "direction": "",
+        "flip": "",
+        "solid": false,
+        "status": "",
+        "inverse": false,
+        "badge": "",
+        "color": "",
+        "badgeColor": "",
+        "label": ""
       }
     },
-    "message":"Message",
+    "message": "Message",
     "position": "top-left"
   }
 }

@@ -583,14 +583,16 @@ export interface StepperView extends View {
 export interface IconView extends View {
   config: {
     shape: string;
-    size: string;
-    direction: string;
-    flip: string;
+    size?: string;
+    direction?: string;
+    flip?: string;
     solid: boolean;
-    status: string;
-    inverse: boolean;
-    badge: string;
-    color: string;
+    status?: string;
+    inverse?: boolean;
+    badge?: string;
+    color?: string;
+    badgeColor?: string;
+    label?: string;
   };
 }
 
