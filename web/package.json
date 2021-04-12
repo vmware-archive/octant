@@ -146,6 +146,6 @@
     "wait-on": "^5.2.0"
   },
   "resolutions": {
-    "marked": "2.0.1"
+    "marked": "2.0.3"
   }
 }
