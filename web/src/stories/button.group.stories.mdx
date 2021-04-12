@@ -25,28 +25,33 @@ Buttons requiring confirmation are red.</p>
 
 <Canvas withToolbar>
   <Story name="ButtonGroup component" parameters={{ docs: buttonDocs }} height="150px" >
-  {{
+    {{
       props: {
         view:  object('View', {
           config: {
             buttons: [
               {
-                name: 'Delete',
-                payload: {},
-                confirmation: {
-                  title: 'Delete Pod',
-                  body: 'Are you sure you want to delete *Pod* **pod**?',
+                metadata: {
+                  type: "button"
                 },
+                config: {
+                  name: 'Delete',
+                  payload: {},
+                  confirmation: {
+                    title: 'Delete Pod',
+                    body: 'Are you sure you want to delete *Pod* **pod**?',
+                  },
+                }
               },
             ],
           },
           metadata: {
             type: 'buttonGroup',
           },
-      }),
+        }),
       },
       component: ButtonGroupComponent,
-      }}
+    }}
   </Story>
 </Canvas>
 

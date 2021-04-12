@@ -54,6 +54,7 @@
     "@angular/platform-browser": "^11.2.8",
     "@angular/platform-browser-dynamic": "^11.2.8",
     "@angular/router": "^11.2.8",
+    "@cds/angular": "^5.1.1",
     "@cds/core": "^5.1.0",
     "@clr/angular": "^5.1.0",
     "@clr/icons": "^5.1.0",
