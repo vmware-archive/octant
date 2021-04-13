@@ -48,7 +48,7 @@ correctness issues, interactions with other parts of the system, etc.
 - Sponsored by 2 approvers. **Note the following requirements for sponsors**:
   - Sponsors must have close interactions with the prospective member - e.g. code/design/proposal review, coordinating
     on issues, etc.
-  - Sponsors must be from multiple companies to demonstrate integration across community.
+  - If there are at least 3 active approvers from non-VMware companies, one sponsor must be from a non-VMware company to demonstrate integration across community.
 - **[Open an issue](./templates/membership.md) against the Octant repo**
   - Ensure your sponsors are @mentioned on the issue
   - Complete every item on the checklist ([preview the current version of the template](.github/ISSUE_TEMPLATE/become-an-octant-approver.md))
