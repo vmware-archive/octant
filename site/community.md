@@ -1,5 +1,7 @@
 ---
-layout: page
+layout: community
+backgrounds:
+  team: dark-blue
 title: Community
 description: Octant Community
 id: community

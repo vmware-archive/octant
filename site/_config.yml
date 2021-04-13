@@ -63,6 +63,7 @@ page_gen:
 collections:
   - contributors
   - casestudies
+  - emeritus
 
 versioning: false
 latest: master
