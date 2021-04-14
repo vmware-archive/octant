@@ -1,6 +1,9 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import '@cds/core/button/register.js';
+import '@cds/core/modal/register';
+import { ClarityIcons, helpIcon } from '@cds/core/icon';
 import { Subscription } from 'rxjs';
-import { HelperService } from '../../../../shared/services/helper/helper.service';
+import { HelperService } from '../../../services/helper/helper.service';
 import { TextView } from '../../../models/content';
 
 @Component({
@@ -21,12 +24,11 @@ export class HelperComponent implements OnInit, OnDestroy {
       isMarkdown: true,
     },
   };
-  isBuildModalOpen = false;
-  isShortcutModalOpen = false;
-  isReleaseModalOpen = false;
   private buildInfoSubscription: Subscription;
 
-  constructor(private helperService: HelperService) {}
+  constructor(private helperService: HelperService) {
+    ClarityIcons.addIcons(helpIcon);
+  }
 
   ngOnInit() {
     this.buildInfoSubscription = this.helperService
@@ -63,9 +65,10 @@ export class HelperComponent implements OnInit, OnDestroy {
       });
   }
 
-  showReleases(): void {
+  toggleReleases(): void {
     this.getReleaseInfo(this.version);
-    this.isReleaseModalOpen = true;
+    const releaseModal = document.getElementById('release-modal');
+    releaseModal.hidden = !releaseModal.hidden;
   }
 
   showDocs(): void {
@@ -78,15 +81,22 @@ export class HelperComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleBuildInfo(): void {
+    const buildModal = document.getElementById('build-modal');
+    buildModal.hidden = !buildModal.hidden;
+  }
+
+  toggleShortcut(): void {
+    const shortcutModal = document.getElementById('shortcut-modal');
+    shortcutModal.hidden = !shortcutModal.hidden;
+  }
+
   @HostListener('window:keydown', ['$event'])
   keyEvent(event: KeyboardEvent) {
-    if (this.isShortcutModalOpen) {
-      return;
-    }
     if (event.ctrlKey && event.key === '/') {
       event.preventDefault();
       event.cancelBubble = true;
-      this.isShortcutModalOpen = true;
+      this.toggleShortcut();
     }
   }
 }

@@ -9,6 +9,8 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
+import '@cds/core/button/register.js';
+import { ClarityIcons, linkIcon } from '@cds/core/icon';
 import { PortsView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -27,6 +29,7 @@ export class PortsComponent
 
   constructor() {
     super();
+    ClarityIcons.addIcons(linkIcon);
   }
 
   update() {

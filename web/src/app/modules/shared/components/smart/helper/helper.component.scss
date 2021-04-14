@@ -8,7 +8,7 @@
   outline: none;
 }
 
-.modal-body {
+.table {
   th {
     font-size: 13px;
     background: transparent;
@@ -23,12 +23,8 @@ clr-dropdown-menu .with-shortcut {
   padding-right: 12px;
 }
 
-clr-dropdown-menu div {
-  padding-right: 48px;
-}
-
-.release-info {
-  height: 30rem;
+clr-stack-view {
+  width: 100%;
 }
 
 .loading-spinner {

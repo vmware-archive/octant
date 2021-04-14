@@ -76,6 +76,11 @@ export class ThemeService {
       this.renderer.removeClass(this.document.body, t.type)
     );
     this.renderer.addClass(this.document.body, currentTheme.type);
+    this.renderer.setAttribute(
+      this.document.body,
+      'cds-theme',
+      currentTheme.type
+    );
   }
 
   switchTheme(): void {

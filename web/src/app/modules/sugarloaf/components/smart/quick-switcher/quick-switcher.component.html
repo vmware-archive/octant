@@ -1,13 +1,5 @@
-<clr-modal
-  class="quick-switcher-modal"
-  [(clrModalOpen)]="opened"
-  [clrModalStaticBackdrop]="false"
-  [clrModalSkipAnimation]="true"
-  (keyup.enter)="onEnter()"
-  (keyup)="onKeyUp($event)"
-  (keydown)="onKeyDown($event)"
->
-  <div class="modal-body">
+<cds-modal size="md" class="quick-switcher-modal" id="quick-switcher-modal" [closable]="false" [hidden]="true" (closeChange)="toggleQuickSwitcher()">
+  <cds-modal-content>
     <input
       class="filter-input"
       clrInput
@@ -15,34 +7,37 @@
       name="input"
       [(ngModel)]="input"
       (ngModelChange)="onInputChange($event)"
+      size="37.5"
     />
     <table class="table table-noborder destinations">
       <thead *ngIf="searchingNamespace">
-        <tr>
-          <th>Searching Namespaces</th>
-        </tr>
+      <tr>
+        <th>Searching Namespaces</th>
+      </tr>
       </thead>
       <overlay-scrollbars>
         <tbody>
-          <tr
-            *ngFor="
-              let destination of filteredDestinations;
-              trackBy: identifyDestinationItem;
-              index as index
-            "
-            (mouseover)="activeIndex = index"
-            (click)="onEnter($event)"
-            [class.destination-active]="index == activeIndex"
-            [attr.aria-label]="destination.title"
-          >
-            <td>{{ destination.title }}</td>
-            <td>{{ destination.type }}</td>
-          </tr>
+        <tr
+          *ngFor="
+            let destination of filteredDestinations;
+            trackBy: identifyDestinationItem;
+            index as index
+          "
+          (mouseover)="activeIndex = index"
+          (click)="onEnter($event)"
+          [class.destination-active]="index == activeIndex"
+          [attr.aria-label]="destination.title"
+        >
+          <td>{{ destination.title }}</td>
+          <td>{{ destination.type }}</td>
+        </tr>
         </tbody>
       </overlay-scrollbars>
     </table>
-  </div>
-  <div class="modal-footer">
-    <pre>{{ helperText}}<code>!</code></pre>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <div cds-layout="horizontal gap:sm align:left">
+      <pre>{{ helperText}}<code>!</code></pre>
+    </div>
+  </cds-modal-actions>
+</cds-modal>

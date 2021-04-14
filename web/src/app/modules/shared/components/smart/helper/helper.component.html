@@ -1,20 +1,22 @@
 <div class="app-helper">
   <clr-dropdown>
-    <button class="dropdown-button" clrDropdownTrigger>
-      <clr-icon shape="help"></clr-icon>
-    </button>
+    <div cds-layout="horizontal gap:sm">
+      <button class="dropdown-button" clrDropdownTrigger>
+        <cds-icon shape="help"></cds-icon>
+      </button>
+    </div>
     <clr-dropdown-menu clrPosition="bottom-right" *clrIfOpen>
       <div
         aria-label="Dropdown header About Octant"
         clrDropdownItem
-        (click)="isBuildModalOpen = true"
+        (click)="toggleBuildInfo()"
       >
         About Octant
       </div>
       <div
         aria-label="Dropdown header Show Releases"
         clrDropdownItem
-        (click)="showReleases()"
+        (click)="toggleReleases()"
       >
         Release Information
       </div>
@@ -22,7 +24,7 @@
         class="with-shortcut"
         aria-label="Dropdown header Keyboard Shortcuts"
         clrDropdownItem
-        (click)="isShortcutModalOpen = true"
+        (click)="toggleShortcut()"
       >
         Keyboard Shortcuts
         <span class="label right-aligned">
@@ -48,49 +50,38 @@
   </clr-dropdown>
 </div>
 
-<clr-modal
-  [(clrModalOpen)]="isBuildModalOpen"
-  [clrModalStaticBackdrop]="false"
-  [clrModalSkipAnimation]="true"
->
-  <h3 class="modal-title">Build Information</h3>
-  <div class="modal-body">
+<cds-modal size="md" id="build-modal" [closable]="true" [hidden]="true" (closeChange)="toggleBuildInfo()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">Build Information</h3>
+  </cds-modal-header>
+  <cds-modal-content>
     <table class="table table-vertical table-noborder">
       <tbody>
-        <tr>
-          <th>Version</th>
-          <td>{{ version }}</td>
-        </tr>
-        <tr>
-          <th>Commit</th>
-          <td>{{ commit }}</td>
-        </tr>
-        <tr>
-          <th>Built</th>
-          <td>{{ time }}</td>
-        </tr>
+      <tr>
+        <th>Version</th>
+        <td>{{ version }}</td>
+      </tr>
+      <tr>
+        <th>Commit</th>
+        <td>{{ commit }}</td>
+      </tr>
+      <tr>
+        <th>Built</th>
+        <td>{{ time }}</td>
+      </tr>
       </tbody>
     </table>
-  </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="isBuildModalOpen = false"
-    >
-      Close
-    </button>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <cds-button (click)="toggleBuildInfo()">Close</cds-button>
+  </cds-modal-actions>
+</cds-modal>
 
-<clr-modal
-  [(clrModalOpen)]="isReleaseModalOpen"
-  [clrModalSize]= "'xl'"
-  [clrModalStaticBackdrop]="false"
-  [clrModalSkipAnimation]="true"
->
-  <h3 class="modal-title">Octant Release Information</h3>
-  <div class="modal-body">
+<cds-modal size="lg" id="release-modal" [closable]="true" [hidden]="true" (closeChange)="toggleReleases()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">Octant Release Information</h3>
+  </cds-modal-header>
+  <cds-modal-content>
     <ng-container *ngIf="releaseInfo.config.value; else loading">
       <p class="release-info">
         <app-view-text [view]="releaseInfo"></app-view-text>
@@ -103,26 +94,17 @@
         </span>
       </div>
     </ng-template>
-  </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="isReleaseModalOpen = false"
-    >
-      Close
-    </button>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <cds-button (click)="toggleReleases()">Close</cds-button>
+  </cds-modal-actions>
+</cds-modal>
 
-
-<clr-modal
-  [(clrModalOpen)]="isShortcutModalOpen"
-  [clrModalStaticBackdrop]="false"
-  [clrModalSkipAnimation]="true"
->
-  <h3 class="modal-title">Keyboard Shortcuts</h3>
-  <div class="modal-body">
+<cds-modal size="md" id="shortcut-modal" [closable]="true" [hidden]="true" (closeChange)="toggleShortcut()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">Keyboard Shortcuts</h3>
+  </cds-modal-header>
+  <cds-modal-content>
     <clr-stack-view>
       <clr-stack-block
         [clrSbExpandable]="false"
@@ -153,15 +135,15 @@
           </clr-stack-content>
         </clr-stack-block>
         <clr-stack-block
-        [clrStackViewLevel]="2"
-        [clrStackViewSetsize]="0"
-        [clrStackViewPosinset]="1"
-      >
-        <clr-stack-label>Apply YAML</clr-stack-label>
-        <clr-stack-content>
-          <span class="label">Ctrl<span class="badge">Y</span></span>
-        </clr-stack-content>
-      </clr-stack-block>
+          [clrStackViewLevel]="2"
+          [clrStackViewSetsize]="0"
+          [clrStackViewPosinset]="1"
+        >
+          <clr-stack-label>Apply YAML</clr-stack-label>
+          <clr-stack-content>
+            <span class="label">Ctrl<span class="badge">Y</span></span>
+          </clr-stack-content>
+        </clr-stack-block>
         <clr-stack-block
           [clrStackViewLevel]="2"
           [clrStackViewSetsize]="0"
@@ -213,14 +195,8 @@
         </clr-stack-block>
       </clr-stack-block>
     </clr-stack-view>
-  </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="isShortcutModalOpen = false"
-    >
-      Close
-    </button>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <cds-button action="outline" (click)="toggleShortcut()">Close</cds-button>
+  </cds-modal-actions>
+</cds-modal>

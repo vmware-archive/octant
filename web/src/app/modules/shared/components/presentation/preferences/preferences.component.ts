@@ -6,6 +6,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import '@cds/core/modal/register.js';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
 import {
   Condition,
@@ -142,6 +143,10 @@ export class PreferencesComponent implements OnChanges {
   onReset(): void {
     this.reset.emit();
     this.isOpen = false;
+  }
+
+  togglePreferences(): void {
+    this.isOpen = !this.isOpen;
   }
 
   private onValueChanged(update: StringDict) {
