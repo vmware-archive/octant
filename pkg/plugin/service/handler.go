@@ -4,8 +4,6 @@ import (
 	"context"
 	"sync"
 
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
-
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -62,8 +60,6 @@ func (p *Handler) Register(ctx context.Context, dashboardAPIAddress string) (plu
 
 // Print prints components for an object.
 func (p *Handler) Print(ctx context.Context, object runtime.Object) (plugin.PrintResponse, error) {
-	clientState := ocontext.ClientStateFrom(ctx)
-
 	if p.HandlerFuncs.Print == nil {
 		return plugin.PrintResponse{}, nil
 	}
@@ -72,7 +68,7 @@ func (p *Handler) Print(ctx context.Context, object runtime.Object) (plugin.Prin
 		baseRequest:     newBaseRequest(ctx, p.name),
 		DashboardClient: p.dashboardClient,
 		Object:          object,
-		ClientState:     clientState,
+		ClientState:     plugin.ClientStateFrom(ctx),
 	}
 
 	return p.HandlerFuncs.Print(request)
@@ -88,7 +84,7 @@ func (p *Handler) PrintTabs(ctx context.Context, object runtime.Object) ([]plugi
 		baseRequest:     newBaseRequest(ctx, p.name),
 		DashboardClient: p.dashboardClient,
 		Object:          object,
-		ClientState:     ocontext.ClientStateFrom(ctx),
+		ClientState:     plugin.ClientStateFrom(ctx),
 	}
 
 	var tabResponses []plugin.TabResponse
@@ -112,7 +108,7 @@ func (p *Handler) ObjectStatus(ctx context.Context, object runtime.Object) (plug
 		baseRequest:     newBaseRequest(ctx, p.name),
 		DashboardClient: p.dashboardClient,
 		Object:          object,
-		ClientState:     ocontext.ClientStateFrom(ctx),
+		ClientState:     plugin.ClientStateFrom(ctx),
 	}
 
 	return p.HandlerFuncs.ObjectStatus(request)
@@ -129,7 +125,7 @@ func (p *Handler) HandleAction(ctx context.Context, actionName string, payload a
 		DashboardClient: p.dashboardClient,
 		ActionName:      actionName,
 		Payload:         payload,
-		ClientState:     ocontext.ClientStateFrom(ctx),
+		ClientState:     plugin.ClientStateFrom(ctx),
 	}
 
 	return p.HandlerFuncs.HandleAction(request)
@@ -144,7 +140,7 @@ func (p *Handler) Navigation(ctx context.Context) (navigation.Navigation, error)
 	request := &NavigationRequest{
 		baseRequest:     newBaseRequest(ctx, p.name),
 		DashboardClient: p.dashboardClient,
-		ClientState:     ocontext.ClientStateFrom(ctx),
+		ClientState:     plugin.ClientStateFrom(ctx),
 	}
 
 	return p.HandlerFuncs.Navigation(request)

@@ -13,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
@@ -156,7 +155,7 @@ type PrintRequest struct {
 
 	DashboardClient Dashboard
 	Object          runtime.Object
-	ClientState     ocontext.ClientState
+	ClientState     plugin.ClientState
 }
 
 // ActionRequest is a request for actions.
@@ -166,7 +165,7 @@ type ActionRequest struct {
 	DashboardClient Dashboard
 	ActionName      string
 	Payload         action.Payload
-	ClientState     ocontext.ClientState
+	ClientState     plugin.ClientState
 }
 
 // NavigationRequest is a request for navigation.
@@ -174,7 +173,7 @@ type NavigationRequest struct {
 	baseRequest
 
 	DashboardClient Dashboard
-	ClientState     ocontext.ClientState
+	ClientState     plugin.ClientState
 }
 
 type HandlerPrinterFunc func(request *PrintRequest) (plugin.PrintResponse, error)

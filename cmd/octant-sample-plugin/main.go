@@ -180,8 +180,8 @@ func handleAction(request *service.ActionRequest) error {
 
 	if actionValue == pluginActionName {
 		// Sending an alert needs a clientID from the request context
-		alert := action.CreateAlert(action.AlertTypeInfo, fmt.Sprintf("My client ID is: %s", request.ClientState.ClientID), action.DefaultAlertExpiration)
-		request.DashboardClient.SendAlert(request.Context(), request.ClientState.ClientID, alert)
+		alert := action.CreateAlert(action.AlertTypeInfo, fmt.Sprintf("My client ID is: %s", request.ClientState.ClientID()), action.DefaultAlertExpiration)
+		request.DashboardClient.SendAlert(request.Context(), request.ClientState.ClientID(), alert)
 	}
 
 	return nil

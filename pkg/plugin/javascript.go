@@ -14,8 +14,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
-
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/eventloop"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -237,7 +235,7 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientState := ocontext.ClientStateFrom(ctx)
+		clientState := ClientStateFrom(ctx)
 
 		handler, err := vm.RunString("_concretePlugin.contentHandler")
 		if err != nil {
@@ -458,7 +456,7 @@ func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload 
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientState := ocontext.ClientStateFrom(ctx)
+		clientState := ClientStateFrom(ctx)
 
 		handler, err := vm.RunString("_concretePlugin.actionHandler")
 		if err != nil {
@@ -571,7 +569,7 @@ func (t *jsPlugin) objectRequestCall(ctx context.Context, handlerName string, ob
 	var response *goja.Object
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
-		clientState := ocontext.ClientStateFrom(ctx)
+		clientState := ClientStateFrom(ctx)
 
 		handler, err := vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
 		if err != nil {
