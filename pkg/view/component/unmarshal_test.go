@@ -186,7 +186,7 @@ func Test_unmarshal(t *testing.T) {
 			objectType: "expandableRowDetail",
 			expected: &ExpandableRowDetail{
 				Config: ExpandableDetailConfig{
-					Body:    NewText("test"),
+					Body:    []Component{NewText("test")},
 					Replace: true,
 				},
 				Base: newBase(TypeExpandableRowDetail, nil),

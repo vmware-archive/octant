@@ -12,6 +12,14 @@
         "config": {
           "value": "test"
         }
+      },
+      {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "test2"
+        }
       }
     ]
   }

@@ -10,12 +10,8 @@ const (
 )
 
 // AddExpandableDetail allows a row to be expandable
-func (t TableRow) AddExpandableDetail(body Component, replaceContent bool) {
-	er, ok := t[ExpandableRowKey].(*ExpandableRowDetail)
-	if !ok {
-		er = NewExpandableRowDetail(body, replaceContent)
-	}
-	t[ExpandableRowKey] = er
+func (t TableRow) AddExpandableDetail(details *ExpandableRowDetail) {
+	t[ExpandableRowKey] = details
 }
 
 // ExpandableRowDetail is a component hidden by a toggle under each table row.
@@ -29,44 +25,54 @@ type ExpandableRowDetail struct {
 
 // ExpandableDetailConfig is a configuration for an expandable row detail.
 type ExpandableDetailConfig struct {
-	Replace bool      `json:"replace"`
-	Body    Component `json:"body"`
+	Replace bool        `json:"replace"`
+	Body    []Component `json:"body"`
 }
 
-// Unmarshal unmarshals an expandable row detail config from JSON.
+// UnmarshalJSON unmarshals an expandable row detail config from JSON.
 func (e *ExpandableDetailConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Body    *TypedObject `json:"body"`
-		Replace bool         `json:"replace"`
+		Body    []TypedObject `json:"body"`
+		Replace bool          `json:"replace"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
 		return err
 	}
 
-	if x.Body != nil {
-		var err error
-		e.Body, err = x.Body.ToComponent()
+	e.Replace = x.Replace
+
+	if x.Body == nil {
+		return nil
+	}
+
+	for _, typedObject := range x.Body {
+		component, err := typedObject.ToComponent()
 		if err != nil {
 			return err
 		}
+
+		e.Body = append(e.Body, component)
 	}
-	e.Replace = x.Replace
 	return nil
 }
 
 var _ Component = &ExpandableRowDetail{}
 
 // NewExpandableRowDetail creates an expandable detail for a table row.
-func NewExpandableRowDetail(body Component, replaceContent bool) *ExpandableRowDetail {
+func NewExpandableRowDetail(body ...Component) *ExpandableRowDetail {
 	e := ExpandableRowDetail{
 		Base: newBase(TypeExpandableRowDetail, nil),
 		Config: ExpandableDetailConfig{
 			Body:    body,
-			Replace: replaceContent,
+			Replace: false,
 		},
 	}
 	return &e
+}
+
+func (e *ExpandableRowDetail) SetReplace(replace bool) {
+	e.Config.Replace = replace
 }
 
 type expandableDetailMarshal ExpandableRowDetail

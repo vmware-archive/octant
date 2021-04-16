@@ -113,7 +113,7 @@ export class DatagridComponent
 
     return rows.map(row => {
       let actions: GridAction[] = [];
-      let expandedDetail: View;
+      let expandedDetails: View[];
       let replace: boolean;
 
       if (row.hasOwnProperty('_action')) {
@@ -122,7 +122,8 @@ export class DatagridComponent
 
       if (row.hasOwnProperty('_expand')) {
         const erv = (row._expand as ExpandableRowDetailView).config;
-        expandedDetail = erv.body;
+
+        expandedDetails = erv.body.slice(0, this.columns.length);
         replace = erv.replace;
       }
 
@@ -132,7 +133,7 @@ export class DatagridComponent
         data: row,
         actions,
         isDeleted,
-        expandedDetail,
+        expandedDetails,
         replace,
       };
     });
