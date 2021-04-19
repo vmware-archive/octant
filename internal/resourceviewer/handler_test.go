@@ -89,28 +89,34 @@ func TestHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	mockRelations := func(a *unstructured.Unstructured, objects ...*unstructured.Unstructured) {
+	mockRelations := func(a *unstructured.Unstructured, level int, objects ...*unstructured.Unstructured) {
 		for _, b := range objects {
-			require.NoError(t, handler.AddEdge(ctx, a, b))
-			require.NoError(t, handler.AddEdge(ctx, b, a))
+			require.NoError(t, handler.AddEdge(ctx, a, b, level))
+			require.NoError(t, handler.AddEdge(ctx, b, a, level))
 			require.NoError(t, handler.Process(ctx, b))
+			require.NoError(t, handler.FinalizeEdge(ctx, a, b))
+			require.NoError(t, handler.FinalizeEdge(ctx, b, a))
 		}
 		require.NoError(t, handler.Process(ctx, a))
 	}
 
-	mockRelations(crUnstructured, deploymentUnstructured)
-	mockRelations(deploymentUnstructured, replicaSet1Unstructured, replicaSet2Unstructured, replicaSet3Unstructured)
-	mockRelations(replicaSet1Unstructured, pod1Unstructured, pod2Unstructured)
-	mockRelations(replicaSet3Unstructured, pod4Unstructured)
-	mockRelations(service1Unstructured, pod1Unstructured, pod2Unstructured)
-	mockRelations(service1Unstructured, pod4Unstructured)
+	mockRelations(crUnstructured, 1, deploymentUnstructured)
+	mockRelations(deploymentUnstructured, 2, replicaSet1Unstructured, replicaSet2Unstructured, replicaSet3Unstructured)
+	mockRelations(replicaSet1Unstructured, 3, pod1Unstructured, pod2Unstructured)
+	mockRelations(replicaSet3Unstructured, 3, pod4Unstructured)
+	mockRelations(service1Unstructured, 5, pod1Unstructured, pod2Unstructured)
+	mockRelations(service1Unstructured, 5, pod4Unstructured)
 
 	require.NoError(t, handler.Process(ctx, pod3Unstructured))
-	require.NoError(t, handler.AddEdge(ctx, pod1Unstructured, serviceAccountUnstructured))
-	require.NoError(t, handler.AddEdge(ctx, pod2Unstructured, serviceAccountUnstructured))
-	require.NoError(t, handler.AddEdge(ctx, pod3Unstructured, serviceAccountUnstructured))
-	require.NoError(t, handler.AddEdge(ctx, pod4Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.AddEdge(ctx, pod1Unstructured, serviceAccountUnstructured, 4))
+	require.NoError(t, handler.AddEdge(ctx, pod2Unstructured, serviceAccountUnstructured, 4))
+	require.NoError(t, handler.AddEdge(ctx, pod3Unstructured, serviceAccountUnstructured, 4))
+	require.NoError(t, handler.AddEdge(ctx, pod4Unstructured, serviceAccountUnstructured, 4))
 	require.NoError(t, handler.Process(ctx, serviceAccountUnstructured))
+	require.NoError(t, handler.FinalizeEdge(ctx, pod1Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.FinalizeEdge(ctx, pod2Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.FinalizeEdge(ctx, pod3Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.FinalizeEdge(ctx, pod4Unstructured, serviceAccountUnstructured))
 
 	mockLinkPath(t, dashConfig, cr)
 	mockLinkPath(t, dashConfig, deployment)

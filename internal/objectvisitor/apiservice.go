@@ -41,7 +41,7 @@ func (p *APIService) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a apiservice. It looks for service accounts and services.
-func (p *APIService) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (p *APIService) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitAPIService")
 	defer span.End()
 
@@ -53,6 +53,7 @@ func (p *APIService) Visit(ctx context.Context, object *unstructured.Unstructure
 	if err := kubernetes.FromUnstructured(object, apiservice); err != nil {
 		return err
 	}
+	level = handler.SetLevel(apiservice.Kind, level)
 
 	var g errgroup.Group
 
@@ -72,12 +73,12 @@ func (p *APIService) Visit(ctx context.Context, object *unstructured.Unstructure
 			return err
 		}
 
-		if err := visitor.Visit(ctx, service, handler, true); err != nil {
+		if err := visitor.Visit(ctx, service, handler, true, level); err != nil {
 			return errors.Wrapf(err, "apiservice %s visit service %s",
 				kubernetes.PrintObject(apiservice), kubernetes.PrintObject(service))
 		}
 
-		return handler.AddEdge(ctx, object, service)
+		return handler.AddEdge(ctx, object, service, level)
 	})
 
 	return g.Wait()

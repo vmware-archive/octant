@@ -29,14 +29,15 @@ func TestIngress_Visit(t *testing.T) {
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service), gomock.Any()).
 		Return(nil)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, true).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, true, gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			visited = append(visited, *object)
 			return nil
 		})
@@ -44,7 +45,7 @@ func TestIngress_Visit(t *testing.T) {
 	ingress := objectvisitor.NewIngress(q)
 
 	ctx := context.Background()
-	err := ingress.Visit(ctx, u, handler, visitor, true)
+	err := ingress.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 
@@ -66,13 +67,14 @@ func TestIngress_Visit_invalid_service_name(t *testing.T) {
 		Return(testutil.ToUnstructuredList(t), nil)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 
 	visitor := fake.NewMockVisitor(controller)
 
 	ingress := objectvisitor.NewIngress(q)
 
 	ctx := context.Background()
-	err := ingress.Visit(ctx, u, handler, visitor, true)
+	err := ingress.Visit(ctx, u, handler, visitor, true, 1)
 
 	assert.NoError(t, err)
 

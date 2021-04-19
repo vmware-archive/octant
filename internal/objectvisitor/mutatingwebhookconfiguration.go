@@ -41,7 +41,7 @@ func (p *MutatingWebhookConfiguration) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a mutatingwebhookconfiguration. It looks for service accounts and services.
-func (p *MutatingWebhookConfiguration) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (p *MutatingWebhookConfiguration) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitMutatingWebhookConfiguration")
 	defer span.End()
 
@@ -53,6 +53,7 @@ func (p *MutatingWebhookConfiguration) Visit(ctx context.Context, object *unstru
 	if err := kubernetes.FromUnstructured(object, mutatingwebhookconfiguration); err != nil {
 		return err
 	}
+	level = handler.SetLevel(mutatingwebhookconfiguration.Kind, level)
 
 	var g errgroup.Group
 
@@ -75,13 +76,13 @@ func (p *MutatingWebhookConfiguration) Visit(ctx context.Context, object *unstru
 				}
 
 				if visitDescendants {
-					if err := visitor.Visit(ctx, service, handler, false); err != nil {
+					if err := visitor.Visit(ctx, service, handler, false, level); err != nil {
 						return errors.Wrapf(err, "mutatingwebhookconfiguration %s visit service %s",
 							kubernetes.PrintObject(mutatingwebhookconfiguration), kubernetes.PrintObject(service))
 					}
 				}
 
-				return handler.AddEdge(ctx, object, service)
+				return handler.AddEdge(ctx, object, service, level)
 			})
 		}
 

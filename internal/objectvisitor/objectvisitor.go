@@ -29,13 +29,14 @@ import (
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.
 type ObjectHandler interface {
-	AddEdge(ctx context.Context, v1, v2 *unstructured.Unstructured) error
+	AddEdge(ctx context.Context, v1, v2 *unstructured.Unstructured, level int) error
 	Process(ctx context.Context, object *unstructured.Unstructured) error
+	SetLevel(objectKind string, level int) int
 }
 
 // DefaultTypedVisitor is the default typed visitors.
 type DefaultTypedVisitor interface {
-	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error
+	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error
 }
 
 // TypedVisitor is a typed visitor for a specific gvk.
@@ -47,7 +48,7 @@ type TypedVisitor interface {
 // Visitor is a visitor for cluster objects. It will visit an object and all of
 // its ancestors and descendants.
 type Visitor interface {
-	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool) error
+	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool, level int) error
 }
 
 // DefaultVisitorOption is an option for configuring DefaultVisitor.
@@ -131,7 +132,7 @@ func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
 }
 
 // Visit visits a runtime.Object.
-func (dv *DefaultVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool) error {
+func (dv *DefaultVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool, level int) error {
 	if ctx.Err() != nil {
 		return nil
 	}
@@ -153,12 +154,12 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object *unstructured.Unstru
 		return nil
 	}
 
-	return dv.visitObject(ctx, object, handler, visitDescendants)
+	return dv.visitObject(ctx, object, handler, visitDescendants, level)
 }
 
 // visitObject visits an object. If the object is a service, ingress, or pod, it
 // also runs custom visitor code for them.
-func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object, handler ObjectHandler, visitDescendants bool) error {
+func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object, handler ObjectHandler, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitObject")
 	defer span.End()
 
@@ -185,10 +186,10 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object
 
 	tv, ok := tvMap[objectGVK]
 	if ok {
-		if err := tv.Visit(ctx, u, handler, dv, visitDescendants); err != nil {
+		if err := tv.Visit(ctx, u, handler, dv, visitDescendants, level); err != nil {
 			return err
 		}
 	}
 
-	return dv.defaultHandler.Visit(ctx, u, handler, dv, visitDescendants)
+	return dv.defaultHandler.Visit(ctx, u, handler, dv, visitDescendants, level)
 }

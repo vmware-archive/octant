@@ -33,7 +33,7 @@ func (HorizontalPodAutoscaler) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a hpa. It looks for an associated scale target (replication controllers, deployments, and replica sets)
-func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitHorizontalPodAutoscaler")
 	defer span.End()
 
@@ -41,6 +41,7 @@ func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructure
 	if err := kubernetes.FromUnstructured(object, hpa); err != nil {
 		return err
 	}
+	level = handler.SetLevel(hpa.Kind, level)
 
 	var g errgroup.Group
 
@@ -53,12 +54,12 @@ func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructure
 		if target != nil {
 			g.Go(func() error {
 				u := &unstructured.Unstructured{Object: target}
-				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+				if err := visitor.Visit(ctx, u, handler, true, level); err != nil {
 					return errors.Wrapf(err, "horizontal pod scaler %s visit scale target",
 						kubernetes.PrintObject(hpa))
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 

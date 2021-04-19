@@ -47,25 +47,26 @@ func TestPod_Visit(t *testing.T) {
 		Return([]*corev1.PersistentVolumeClaim{pvc}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service)).
-		Return(nil)
-	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, serviceAccount)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service), gomock.Any()).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, configMap)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, serviceAccount), gomock.Any()).
 		Return(nil)
-	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, secret)).
+	handler.EXPECT().
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, configMap), gomock.Any()).
 		Return(nil)
-	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pvc)).
+	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, secret), gomock.Any()).
+		Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pvc), gomock.Any()).
 		Return(nil)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, true).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, true, gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			visited = append(visited, *object)
 			return nil
 		}).AnyTimes()
@@ -73,7 +74,7 @@ func TestPod_Visit(t *testing.T) {
 	pod := objectvisitor.NewPod(q)
 
 	ctx := context.Background()
-	err := pod.Visit(ctx, u, handler, visitor, true)
+	err := pod.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 

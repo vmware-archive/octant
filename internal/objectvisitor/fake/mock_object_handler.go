@@ -36,17 +36,17 @@ func (m *MockObjectHandler) EXPECT() *MockObjectHandlerMockRecorder {
 }
 
 // AddEdge mocks base method
-func (m *MockObjectHandler) AddEdge(arg0 context.Context, arg1, arg2 *unstructured.Unstructured) error {
+func (m *MockObjectHandler) AddEdge(arg0 context.Context, arg1, arg2 *unstructured.Unstructured, arg3 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddEdge", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "AddEdge", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddEdge indicates an expected call of AddEdge
-func (mr *MockObjectHandlerMockRecorder) AddEdge(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockObjectHandlerMockRecorder) AddEdge(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEdge", reflect.TypeOf((*MockObjectHandler)(nil).AddEdge), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEdge", reflect.TypeOf((*MockObjectHandler)(nil).AddEdge), arg0, arg1, arg2, arg3)
 }
 
 // Process mocks base method
@@ -61,4 +61,18 @@ func (m *MockObjectHandler) Process(arg0 context.Context, arg1 *unstructured.Uns
 func (mr *MockObjectHandlerMockRecorder) Process(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockObjectHandler)(nil).Process), arg0, arg1)
+}
+
+// SetLevel mocks base method
+func (m *MockObjectHandler) SetLevel(arg0 string, arg1 int) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLevel", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// SetLevel indicates an expected call of SetLevel
+func (mr *MockObjectHandlerMockRecorder) SetLevel(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLevel", reflect.TypeOf((*MockObjectHandler)(nil).SetLevel), arg0, arg1)
 }

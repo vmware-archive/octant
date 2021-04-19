@@ -38,15 +38,15 @@ func (m *MockVisitor) EXPECT() *MockVisitorMockRecorder {
 }
 
 // Visit mocks base method
-func (m *MockVisitor) Visit(arg0 context.Context, arg1 *unstructured.Unstructured, arg2 objectvisitor.ObjectHandler, arg3 bool) error {
+func (m *MockVisitor) Visit(arg0 context.Context, arg1 *unstructured.Unstructured, arg2 objectvisitor.ObjectHandler, arg3 bool, arg4 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Visit", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Visit", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Visit indicates an expected call of Visit
-func (mr *MockVisitorMockRecorder) Visit(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockVisitorMockRecorder) Visit(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Visit", reflect.TypeOf((*MockVisitor)(nil).Visit), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Visit", reflect.TypeOf((*MockVisitor)(nil).Visit), arg0, arg1, arg2, arg3, arg4)
 }

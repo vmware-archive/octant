@@ -34,7 +34,7 @@ func (Service) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a service. It looks for associated pods and ingresses.
-func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitService")
 	defer span.End()
 
@@ -42,6 +42,7 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	if err := kubernetes.FromUnstructured(object, service); err != nil {
 		return err
 	}
+	level = handler.SetLevel(service.Kind, level)
 
 	var g errgroup.Group
 
@@ -59,11 +60,10 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				if err := visitor.Visit(ctx, u, handler, visitDescendants); err != nil {
+				if err := visitor.Visit(ctx, u, handler, visitDescendants, level); err != nil {
 					return err
 				}
-
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 
 		}
@@ -86,13 +86,13 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 				}
 				u := &unstructured.Unstructured{Object: m}
 				if visitDescendants {
-					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+					if err := visitor.Visit(ctx, u, handler, false, level); err != nil {
 						return errors.Wrapf(err, "service %s visit ingress %s",
 							kubernetes.PrintObject(service), kubernetes.PrintObject(ingress))
 					}
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 
@@ -114,12 +114,12 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 				}
 				u := &unstructured.Unstructured{Object: m}
 				if visitDescendants {
-					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+					if err := visitor.Visit(ctx, u, handler, false, level); err != nil {
 						return err
 					}
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 
 		}
@@ -142,12 +142,12 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 				}
 				u := &unstructured.Unstructured{Object: m}
 				if visitDescendants {
-					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+					if err := visitor.Visit(ctx, u, handler, false, level); err != nil {
 						return err
 					}
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 
 		}
@@ -170,12 +170,12 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 				}
 				u := &unstructured.Unstructured{Object: m}
 				if visitDescendants {
-					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+					if err := visitor.Visit(ctx, u, handler, false, level); err != nil {
 						return err
 					}
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 
 		}

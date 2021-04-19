@@ -28,7 +28,7 @@ func NewObject(dashConfig config.Dash, q queryer.Queryer) *Object {
 }
 
 // Visit visits an objects. It looks at immediate ancestors and descendants.
-func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	if object == nil {
 		return errors.New("can't visit nil object")
 	}
@@ -46,6 +46,7 @@ func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, h
 	var g errgroup.Group
 
 	object = object.DeepCopy()
+	level = handler.SetLevel(object.GetKind(), level)
 
 	g.Go(func() error {
 		found, owners, err := o.queryer.OwnerReference(ctx, object)
@@ -59,12 +60,12 @@ func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, h
 					return errors.Errorf("unable to find owner for %s", object)
 				}
 
-				if err := visitor.Visit(ctx, owner, handler, false); err != nil {
+				if err := visitor.Visit(ctx, owner, handler, false, level); err != nil {
 					return errors.Wrapf(err, "visit ancestor %s for %s",
 						kubernetes.PrintObject(owner),
 						kubernetes.PrintObject(object))
 				}
-				if err := handler.AddEdge(ctx, object, owner); err != nil {
+				if err := handler.AddEdge(ctx, object, owner, level); err != nil {
 					return err
 				}
 			}
@@ -82,13 +83,13 @@ func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, h
 		for i := range children.Items {
 			child := &children.Items[i]
 			g.Go(func() error {
-				if err := visitor.Visit(ctx, child, handler, true); err != nil {
+				if err := visitor.Visit(ctx, child, handler, true, level); err != nil {
 					return errors.Wrapf(err, "visit child %s for %s",
 						kubernetes.PrintObject(child),
 						kubernetes.PrintObject(object))
 				}
 
-				return handler.AddEdge(ctx, object, child)
+				return handler.AddEdge(ctx, object, child, level)
 			})
 		}
 	}
