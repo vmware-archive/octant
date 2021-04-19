@@ -1,8 +1,12 @@
-<button
-  class="{{ class }}"
+<cds-button
+  action="{{ style }}"
+  status="{{ status }}"
+  size="{{ size }}"
+  disabled="{{ disabled }}"
+  block="{{ block }}"
   (click)="onClick(v.config.payload, v.config.confirmation, v.config.modal)">
   {{ v.config.name }}
-</button>
+</cds-button>
 
 <app-view-modal *ngIf="modalView" [view]="modalView"></app-view-modal>
 <clr-modal [(clrModalOpen)]="isModalOpen">

@@ -611,5 +611,8 @@ export interface ButtonView extends View {
     name: string;
     confirmation?: Confirmation;
     modal?: ModalView;
+    status?: string;
+    size?: string;
+    style?: string;
   };
 }

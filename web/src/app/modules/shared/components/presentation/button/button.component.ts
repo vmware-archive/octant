@@ -11,6 +11,7 @@ import {
   ModalView,
 } from '../../../models/content';
 
+import '@cds/core/button/register';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { parse } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -29,7 +30,11 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   modalTitle = '';
   modalBody = '';
   payload = {};
-  class = '';
+  style = 'outline';
+  status = '';
+  size = 'sm';
+  disabled = null;
+  block = null;
 
   modalView: View;
 
@@ -42,15 +47,32 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   }
 
   update() {
-    if (this.v.config.confirmation) {
-      this.class = 'btn btn-danger-outline btn-sm';
-    } else {
-      this.class = 'btn btn-outline btn-sm';
-    }
-    if (this.v.config.modal) {
+    let button = this.v.config;
+    if (button.modal) {
       this.modalView = this.v.config.modal;
       const modal = this.modalView as ModalView;
       this.modalService.setState(modal.config.opened);
+    }
+    if (button.confirmation) {
+      this.status = 'danger';
+    } else {
+      if (button.style) {
+        this.style = button.style;
+      }
+      if (button.status) {
+        if (button.status === 'disabled') {
+          this.disabled = true;
+        } else {
+          this.status = button.status;
+        }
+      }
+      if (button.size) {
+        if (button.size === 'block') {
+          this.block = true;
+        } else {
+          this.size = button.size;
+        }
+      }
     }
   }
 

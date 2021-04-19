@@ -2,14 +2,73 @@ import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import { ButtonComponent } from "../app/modules/shared/components/presentation/button/button.component";
 
-export const buttonDocs= { source: { code: `button := component.NewButton()
-component.NewButton("button",
-      action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
-      component.WithButtonConfirmation(
-        "Delete Pod",
-        "Are you sure you want to delete *Pod* **pod**?",
-      ))
-`}}
+export const buttonDocs= [
+  { source: { code: `
+        component.NewButton("button",
+              action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
+              component.WithButtonConfirmation(
+                "Delete Pod",
+                "Are you sure you want to delete *Pod* **pod**?",
+              ))`
+  }}
+]
+
+export const buttonStyleDocs= [
+  { source: { code: `
+      component.NewButton("Button Style Outline",
+        action.Payload{},
+        component.WithButtonStyle(component.ButtonStyleOutline))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Style Solid",
+        action.Payload{},
+        component.WithButtonStyle(component.ButtonStyleSolid))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Style Flat",
+        action.Payload{},
+        component.WithButtonStyle(component.ButtonStyleFlat))`
+  }}
+]
+
+export const buttonStatusDocs= [
+  { source: { code: `
+      component.NewButton("Button Status Success",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonStatusSuccess))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Status Info",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonStatusInfo))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Status Danger",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonStatusDanger))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Status Disabled",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonStatusDisabled))`
+  }}
+]
+
+export const buttonSizeDocs= [
+  { source: { code: `
+      component.NewButton("Button Size Block",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonSizeBlock))`
+  }},
+  { source: { code: `
+      component.NewButton("Button Size Large",
+        action.Payload{},
+        component.WithButtonStatus(component.ButtonSizeLarge))`
+  }},
+]
+
+
+
 
 
 <h1>Button component</h1>
@@ -23,25 +82,200 @@ component.NewButton("button",
 <Meta title="Components/Button" component={ButtonComponent} />
 
 <Canvas withToolbar>
-  <Story name="Button component" parameters={{ docs: buttonDocs }} height="150px" >
-  {{
+  <Story name="Button component" parameters={{ docs: buttonDocs[0] }} height="150px">
+    {{
+        props: {
+          view:  object('View', {
+            config: {
+              name: 'Delete',
+              payload: {},
+              confirmation: {
+                title: 'Delete Pod',
+                body: 'Are you sure you want to delete *Pod* **pod**?',
+              },
+            },
+            metadata: {
+              type: 'button',
+            },
+          }),
+        },
+        component: ButtonComponent,
+    }}
+  </Story>
+</Canvas>
+
+<h2>Buttons with size</h2>
+<p>Current available sizes are: <strong>ButtonSizeBlock</strong> and <strong>ButtonSizeLarge</strong>.</p>
+<h2>Example</h2>
+
+<Canvas withToolbar>
+  <Story name="Button size block" parameters={{ docs: buttonSizeDocs[0] }} height="150px">
+    {{
       props: {
         view:  object('View', {
           config: {
-            name: 'Delete',
+            name: 'Button Size Block',
             payload: {},
-            confirmation: {
-              title: 'Delete Pod',
-              body: 'Are you sure you want to delete *Pod* **pod**?',
-            },
+            size: 'block'
           },
           metadata: {
             type: 'button',
           },
-      }),
+        }),
       },
       component: ButtonComponent,
-      }}
+    }}
+  </Story>
+  <Story name="Button size large" parameters={{ docs: buttonSizeDocs[1] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Size Large',
+            payload: {},
+            size: 'lg'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+</Canvas>
+
+
+<h2>Buttons with status</h2>
+<p>Current available status are: <strong>ButtonStatusSuccess</strong>, <strong>ButtonStatusInfo</strong>, <strong>ButtonStatusDanger</strong> and <strong>ButtonStatusDisabled</strong>.</p>
+<h2>Example</h2>
+
+<Canvas withToolbar>
+  <Story name="Button status success" parameters={{ docs: buttonStatusDocs[0] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Status Success',
+            payload: {},
+            status: 'success'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+  <Story name="Button status info" parameters={{ docs: buttonStatusDocs[1] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Status Info',
+            payload: {},
+            status: 'info'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+  <Story name="Button status danger" parameters={{ docs: buttonStatusDocs[2] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Status Danger',
+            payload: {},
+            status: 'danger'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+  <Story name="Button status disabled" parameters={{ docs: buttonStatusDocs[3] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Status Disabled',
+            payload: {},
+            status: 'disabled'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+</Canvas>
+
+<h2>Buttons with style</h2>
+<p>Current available styles are: <strong>ButtonStyleOutline</strong>, <strong>ButtonStyleSolid</strong> and <strong>ButtonStyleFlat</strong>.</p>
+<h2>Example</h2>
+
+<Canvas withToolbar>
+  <Story name="Button style outline" parameters={{ docs: buttonStyleDocs[0] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Style Outline',
+            payload: {},
+            style: 'outline'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+  <Story name="Button style solid" parameters={{ docs: buttonStyleDocs[1] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Style Solid',
+            payload: {},
+            style: 'primary'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
+  </Story>
+  <Story name="Button style flat" parameters={{ docs: buttonStyleDocs[2] }} height="150px">
+    {{
+      props: {
+        view:  object('View', {
+          config: {
+            name: 'Button Style Flat',
+            payload: {},
+            style: 'link'
+          },
+          metadata: {
+            type: 'button',
+          },
+        }),
+      },
+      component: ButtonComponent,
+    }}
   </Story>
 </Canvas>
 
