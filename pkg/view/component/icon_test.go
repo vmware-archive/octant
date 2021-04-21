@@ -15,7 +15,7 @@ import (
 func Test_Icon_Marshal(t *testing.T) {
 	test := []struct {
 		name         string
-		input        Component
+		input        *Icon
 		expectedPath string
 		isErr        bool
 	}{
@@ -52,6 +52,36 @@ func Test_Icon_Marshal(t *testing.T) {
 			expected, err := ioutil.ReadFile(path.Join("testdata", tc.expectedPath))
 			require.NoError(t, err)
 			assert.JSONEq(t, string(expected), string(actual))
+		})
+	}
+}
+
+func Test_Icon_Options(t *testing.T) {
+	test := []struct {
+		name     string
+		optsFunc IconOption
+		expected *Icon
+	}{
+		{
+			name:     "Icon with tooltip",
+			optsFunc: WithTooltip("hello", TooltipLarge, TooltipTopRight),
+			expected: &Icon{
+				Base: newBase(TypeIcon, nil),
+				Config: IconConfig{
+					Tooltip: &TooltipConfig{
+						Message:  "hello",
+						Size:     TooltipLarge,
+						Position: TooltipTopRight,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range test {
+		t.Run(tc.name, func(t *testing.T) {
+			result := NewIcon("", tc.optsFunc)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

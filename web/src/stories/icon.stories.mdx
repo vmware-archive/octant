@@ -11,6 +11,10 @@ c.Config.Badge = component.BadgeDanger
 c.Config.AddLabel("label for accessibility")
 `}}
 
+export const iconWithTooltipDocs = {source: {code: `
+component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
+`}}
+
 <h1>Icon Component</h1>
 <h2>Description</h2>
 <p>An Icon component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a></p>
@@ -39,6 +43,42 @@ c.Config.AddLabel("label for accessibility")
             color: "",
             badgeColor: "",
             label: "label for accessibility",
+          }
+        }),
+      },
+      component: IconComponent,
+    }}
+  </Story>
+</Canvas>
+
+<h2>Icon with tooltip</h2>
+<p>An icon can be configured with a tooltip to display a message on hover.</p>
+
+<Canvas withToolbar>
+  <Story name="Icon with tooltip" parameters={{ docs: iconWithTooltipDocs }} height="200px" >
+    {{
+      props: {
+        view: object('View', {
+          metadata: {
+            type: 'icon',
+          },
+          config: {
+            shape: "user",
+            size: "",
+            direction: "",
+            flip: "",
+            solid: false,
+            status: "",
+            inverse: false,
+            badge: "",
+            color: "",
+            badgeColor: "",
+            label: "",
+            tooltip: {
+              message: "hello",
+              size: "md",
+              position: "right",
+            }
           }
         }),
       },
