@@ -1,4 +1,13 @@
-<cds-modal size="md" class="quick-switcher-modal" id="quick-switcher-modal" [closable]="false" [hidden]="true" (closeChange)="toggleQuickSwitcher()">
+<cds-modal
+  size="md"
+  class="quick-switcher-modal"
+  id="quick-switcher-modal"
+  [closable]="false"
+  [hidden]="true"
+  (keyup.enter)="onEnter()"
+  (keyup)="onKeyUp($event)"
+  (keydown)="onKeyDown($event)"
+  (closeChange)="toggleQuickSwitcher()">
   <cds-modal-content>
     <input
       class="filter-input"
