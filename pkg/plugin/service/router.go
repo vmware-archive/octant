@@ -5,7 +5,7 @@ import (
 
 	"github.com/gobwas/glob"
 
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -16,7 +16,7 @@ type Request interface {
 	Context() context.Context
 	DashboardClient() Dashboard
 	Path() string
-	ClientState() ocontext.ClientState
+	ClientState() plugin.ClientState
 }
 
 var _ Request = (*request)(nil)
@@ -30,11 +30,11 @@ type request struct {
 
 	path string
 
-	clientState ocontext.ClientState
+	clientState plugin.ClientState
 }
 
 // ClientState returns the octant plugin state
-func (r *request) ClientState() ocontext.ClientState {
+func (r *request) ClientState() plugin.ClientState {
 	return r.clientState
 }
 

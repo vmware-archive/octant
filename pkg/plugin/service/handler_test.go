@@ -109,6 +109,10 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
 	}
 
+	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
+	pluginClientState := plugin.ClientStateFrom(ctx)
+
 	dashboardClient := fake.NewMockDashboard(controller)
 
 	ran := false
@@ -118,15 +122,13 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, pod, r.Object)
-				assert.Equal(t, clientState, r.ClientState)
+				assert.Equal(t, pluginClientState, r.ClientState)
 				return plugin.PrintResponse{}, nil
 			},
 		},
 		dashboardClient: dashboardClient,
 	}
 
-	ctx := context.Background()
-	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.Print(ctx, pod)
 	require.NoError(t, err)
 
@@ -167,6 +169,10 @@ func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
 	}
 
+	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
+	pluginClientState := plugin.ClientStateFrom(ctx)
+
 	dashboardClient := fake.NewMockDashboard(controller)
 
 	ran := false
@@ -179,15 +185,13 @@ func TestHandler_PrintTabs_using_supplied_function(t *testing.T) {
 					ran = true
 					assert.Equal(t, dashboardClient, r.DashboardClient)
 					assert.Equal(t, pod, r.Object)
-					assert.Equal(t, clientState, r.ClientState)
+					assert.Equal(t, pluginClientState, r.ClientState)
 					return plugin.TabResponse{}, nil
 				},
 			},
 		},
 	}
 
-	ctx := context.Background()
-	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.PrintTabs(ctx, pod)
 	require.NoError(t, err)
 
@@ -231,6 +235,10 @@ func TestHandler_ObjectStatus_using_supplied_function(t *testing.T) {
 		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
 	}
 
+	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
+	pluginClientState := plugin.ClientStateFrom(ctx)
+
 	ran := false
 
 	h := Handler{
@@ -240,14 +248,12 @@ func TestHandler_ObjectStatus_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, pod, r.Object)
-				assert.Equal(t, clientState, r.ClientState)
+				assert.Equal(t, pluginClientState, r.ClientState)
 				return plugin.ObjectStatusResponse{}, nil
 			},
 		},
 	}
 
-	ctx := context.Background()
-	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.ObjectStatus(ctx, pod)
 	require.NoError(t, err)
 
@@ -288,6 +294,10 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
 	}
 
+	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
+	pluginClientState := plugin.ClientStateFrom(ctx)
+
 	ran := false
 
 	h := Handler{
@@ -297,15 +307,13 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
 				assert.Equal(t, payload, r.Payload)
-				assert.Equal(t, clientState, r.ClientState)
+				assert.Equal(t, pluginClientState, r.ClientState)
 
 				return nil
 			},
 		},
 	}
 
-	ctx := context.Background()
-	ctx = ocontext.WithClientState(ctx, clientState)
 	err := h.HandleAction(ctx, actionName, payload)
 	assert.NoError(t, err)
 	assert.True(t, ran)
@@ -341,6 +349,10 @@ func TestHandler_Navigation_using_supplied_function(t *testing.T) {
 		Filters:   []octant.Filter{{Key: "foo", Value: "bar"}},
 	}
 
+	ctx := context.Background()
+	ctx = ocontext.WithClientState(ctx, clientState)
+	pluginClientState := plugin.ClientStateFrom(ctx)
+
 	ran := false
 
 	h := Handler{
@@ -349,14 +361,12 @@ func TestHandler_Navigation_using_supplied_function(t *testing.T) {
 			Navigation: func(r *NavigationRequest) (navigation.Navigation, error) {
 				ran = true
 				assert.Equal(t, dashboardClient, r.DashboardClient)
-				assert.Equal(t, clientState, r.ClientState)
+				assert.Equal(t, pluginClientState, r.ClientState)
 				return navigation.Navigation{}, nil
 			},
 		},
 	}
 
-	ctx := context.Background()
-	ctx = ocontext.WithClientState(ctx, clientState)
 	got, err := h.Navigation(ctx)
 	require.NoError(t, err)
 
