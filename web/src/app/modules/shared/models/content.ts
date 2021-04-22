@@ -594,6 +594,7 @@ export interface IconView extends View {
     color?: string;
     badgeColor?: string;
     label?: string;
+    tooltip?: Tooltip;
   };
 }
 
@@ -603,6 +604,12 @@ export interface SignpostView extends View {
     message: string;
     position: string;
   };
+}
+
+export interface Tooltip {
+  message: string;
+  size: string;
+  position: string;
 }
 
 export interface ButtonView extends View {

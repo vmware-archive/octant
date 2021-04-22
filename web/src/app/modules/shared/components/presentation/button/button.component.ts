@@ -47,7 +47,7 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   }
 
   update() {
-    let button = this.v.config;
+    const button = this.v.config;
     if (button.modal) {
       this.modalView = this.v.config.modal;
       const modal = this.modalView as ModalView;

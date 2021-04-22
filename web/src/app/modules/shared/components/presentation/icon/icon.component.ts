@@ -16,7 +16,7 @@ import {
   loadTechnologyIconSet,
   loadChartIconSet,
 } from '@cds/core/icon';
-import { IconView } from '../../../models/content';
+import { IconView, Tooltip } from '../../../models/content';
 
 @Component({
   selector: 'app-view-icon',
@@ -35,6 +35,8 @@ export class IconComponent extends AbstractViewComponent<IconView> {
   status: string;
   iconStyle: string;
   label: string;
+  tooltip: Tooltip;
+  tooltipClass: string;
 
   constructor(private cdr: ChangeDetectorRef) {
     super();
@@ -51,6 +53,11 @@ export class IconComponent extends AbstractViewComponent<IconView> {
 
   protected update(): void {
     const view = this.v;
+    this.tooltip = view.config.tooltip;
+
+    if (this.tooltip) {
+      this.generateTooltipClassStyles();
+    }
 
     this.shape = view.config.shape;
     this.flip = view.config.flip;
@@ -71,5 +78,16 @@ export class IconComponent extends AbstractViewComponent<IconView> {
     }
     this.label = view.config.label;
     this.cdr.markForCheck();
+  }
+
+  generateTooltipClassStyles() {
+    this.tooltipClass = 'tooltip';
+    if (this.tooltip.size !== '') {
+      this.tooltipClass += ' tooltip-' + this.tooltip.size;
+    }
+    if (this.tooltip.position !== '') {
+      this.tooltipClass += ' tooltip-' + this.tooltip.position;
+    }
+    return this.tooltipClass;
   }
 }

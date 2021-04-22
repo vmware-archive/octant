@@ -10,17 +10,18 @@ type Icon struct {
 }
 
 type IconConfig struct {
-	Shape      string    `json:"shape"`
-	Size       string    `json:"size"`
-	Direction  Direction `json:"direction"`
-	Flip       Flip      `json:"flip"`
-	Solid      bool      `json:"solid"`
-	Status     Status    `json:"status"`
-	Inverse    bool      `json:"inverse"`
-	Badge      Badge     `json:"badge"`
-	Color      string    `json:"color"`
-	BadgeColor string    `json:"badgeColor"`
-	Label      string    `json:"label"`
+	Shape      string         `json:"shape"`
+	Size       string         `json:"size"`
+	Direction  Direction      `json:"direction"`
+	Flip       Flip           `json:"flip"`
+	Solid      bool           `json:"solid"`
+	Status     Status         `json:"status"`
+	Inverse    bool           `json:"inverse"`
+	Badge      Badge          `json:"badge"`
+	Color      string         `json:"color"`
+	BadgeColor string         `json:"badgeColor"`
+	Label      string         `json:"label"`
+	Tooltip    *TooltipConfig `json:"tooltip,omitempty"`
 }
 
 type Direction string
@@ -60,6 +61,34 @@ const (
 	BadgeInheritTriangle Badge = "inherit-triangle"
 )
 
+type IconOption func(icon *Icon)
+
+type TooltipConfig struct {
+	Message  string          `json:"message"`
+	Size     TooltipSize     `json:"size"`
+	Position TooltipPosition `json:"position"`
+}
+
+type TooltipSize string
+
+const (
+	TooltipExtraSmall TooltipSize = "xs"
+	TooltipSmall      TooltipSize = "sm"
+	TooltipMedium     TooltipSize = "md"
+	TooltipLarge      TooltipSize = "lg"
+)
+
+type TooltipPosition string
+
+const (
+	TooltipLeft        TooltipPosition = "left"
+	TooltipRight       TooltipPosition = "right"
+	TooltipTopLeft     TooltipPosition = "top-left"
+	TooltipTopRight    TooltipPosition = "top-right"
+	TooltipBottomLeft  TooltipPosition = "bottom-left"
+	TooltipBottomRight TooltipPosition = "bottom-right"
+)
+
 func NewIcon(shape string, options ...func(*Icon)) *Icon {
 	i := &Icon{
 		Base: newBase(TypeIcon, nil),
@@ -85,6 +114,17 @@ func (i *Icon) MarshalJSON() ([]byte, error) {
 	m.Metadata.Type = TypeIcon
 
 	return json.Marshal(&m)
+}
+
+// WithTooltip configures an icon with a tooltip
+func WithTooltip(message string, size TooltipSize, position TooltipPosition) IconOption {
+	return func(icon *Icon) {
+		icon.Config.Tooltip = &TooltipConfig{
+			Message:  message,
+			Size:     size,
+			Position: position,
+		}
+	}
 }
 
 // AddLabel adds an aria-label for screen readers

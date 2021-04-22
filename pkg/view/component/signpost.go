@@ -55,7 +55,7 @@ func NewSignpost(t Component, m string) *Signpost {
 	return so
 }
 
-// SetStatus sets the status of the text component.
+// SetPosition sets the status of the text component.
 func (t *Signpost) SetPosition(position Position) {
 	t.Config.Position = position
 }
