@@ -4,7 +4,6 @@ import {
   Component,
 } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
-import '@cds/core/icon/register';
 import {
   loadCoreIconSet,
   loadEssentialIconSet,

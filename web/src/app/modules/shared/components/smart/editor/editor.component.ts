@@ -101,7 +101,7 @@ export class EditorComponent
   }
 
   isUpdateEnabled() {
-    return !this.isModified;
+    return !this.isModified || this.editorValue.length === 0;
   }
 
   reset() {

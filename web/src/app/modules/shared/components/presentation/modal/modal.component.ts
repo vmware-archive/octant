@@ -1,4 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import '@cds/core/button/register.js';
+import '@cds/core/modal/register';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
   ActionForm,
@@ -81,5 +83,9 @@ export class ModalComponent
   onClick(payload: {}) {
     this.actionService.perform(payload);
     this.opened = false;
+  }
+
+  toggleModal(): void {
+    this.opened = !this.opened;
   }
 }

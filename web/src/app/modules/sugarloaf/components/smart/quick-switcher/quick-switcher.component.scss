@@ -2,6 +2,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+cds-modal {
+  --animation-duration: 0s;
+  position: absolute;
+
+  cds-modal-actions {
+    font-size: x-small;
+    color: var(--clr-global-font-color);
+
+    pre {
+      border: none;
+      margin: 0;
+    }
+
+    code {
+      background-color: var(--destinationActive-bg-color);
+      padding: 2px;
+      block-size: auto;
+    }
+  }
+}
+
+
 .quick-switcher-modal {
   // Color variables for Light Theme.
   :host-context(body) {
@@ -13,10 +35,6 @@
   :host-context(body.dark) {
     --destinationActive-color: #fff;
     --destinationActive-bg-color: #324f62;
-  }
-
-  ::ng-deep .clr-input-wrapper {
-    max-width: initial;
   }
 
   .filter-input {
@@ -53,43 +71,8 @@
     opacity: 0.6;
   }
 
-  ::ng-deep .clr-input,
-  ::ng-deep .clr-control-container {
-    width: 100%;
-  }
-
-  ::ng-deep .modal-dialog {
-    position: fixed;
-    top: 4rem;
-  }
-
-  ::ng-deep .modal-header--accessible {
-    display: none;
-  }
-
   .destination-active {
     background-color: var(--destinationActive-bg-color);
     color: var(--destinationActive-color);
-  }
-
-  .modal-body {
-    overflow-y: hidden;
-  }
-
-  .modal-footer {
-    padding-top: 10px;
-    justify-content: flex-start;
-    font-size: x-small;
-
-    pre {
-      border: none;
-      margin: 0;
-    }
-
-    code {
-      background-color: var(--destinationActive-bg-color);
-      padding: 2px;
-      block-size: auto;
-    }
   }
 }

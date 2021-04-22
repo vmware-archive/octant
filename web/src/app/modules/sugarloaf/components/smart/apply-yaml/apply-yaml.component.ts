@@ -4,6 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Component, HostListener, OnInit } from '@angular/core';
+import '@cds/core/modal/register';
+import { ClarityIcons, uploadIcon } from '@cds/core/icon';
 import { EditorView } from 'src/app/modules/shared/models/content';
 
 @Component({
@@ -12,7 +14,6 @@ import { EditorView } from 'src/app/modules/shared/models/content';
   styleUrls: ['./apply-yaml.component.scss'],
 })
 export class ApplyYAMLComponent implements OnInit {
-  isOpen: boolean;
   editorView: EditorView = {
     config: {
       value: '',
@@ -28,22 +29,23 @@ export class ApplyYAMLComponent implements OnInit {
     },
   };
 
-  constructor() {}
-
-  ngOnInit() {
-    this.isOpen = false;
+  constructor() {
+    ClarityIcons.addIcons(uploadIcon);
   }
+
+  ngOnInit() {}
 
   @HostListener('window:keydown', ['$event'])
   keyEvent(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === 'y') {
       event.preventDefault();
       event.cancelBubble = true;
-      this.isOpen = !this.isOpen;
+      this.toggleModal();
     }
   }
 
   toggleModal() {
-    this.isOpen = true;
+    const yamlModal = document.getElementById('apply-yaml-modal');
+    yamlModal.hidden = !yamlModal.hidden;
   }
 }

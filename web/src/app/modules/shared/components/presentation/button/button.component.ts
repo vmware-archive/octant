@@ -10,8 +10,8 @@ import {
   View,
   ModalView,
 } from '../../../models/content';
-
 import '@cds/core/button/register';
+import '@cds/core/modal/register';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { parse } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -26,7 +26,6 @@ import { ModalService } from '../../../services/modal/modal.service';
 export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);
 
-  isModalOpen = false;
   modalTitle = '';
   modalBody = '';
   payload = {};
@@ -88,10 +87,6 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
     }
   }
 
-  cancelModal() {
-    this.resetModal();
-  }
-
   acceptModal() {
     const payload = this.payload;
     this.resetModal();
@@ -112,15 +107,19 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
       SecurityContext.HTML,
       parse(confirmation.body)
     );
-    this.isModalOpen = true;
-
+    this.toggleModal();
     this.payload = payload;
   }
 
   private resetModal() {
-    this.isModalOpen = false;
+    this.toggleModal();
     this.modalBody = '';
     this.modalTitle = '';
     this.payload = {};
+  }
+
+  toggleModal(): void {
+    const modal = document.getElementById('confirmation-modal');
+    modal.hidden = !modal.hidden;
   }
 }

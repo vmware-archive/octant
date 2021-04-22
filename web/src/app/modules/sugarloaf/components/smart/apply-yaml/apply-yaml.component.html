@@ -1,17 +1,13 @@
 <div (click)="toggleModal()" class="header-upload">
-  <clr-icon shape="upload"></clr-icon>
+  <cds-icon shape="upload"></cds-icon>
   <span>Apply YAML</span>
 </div>
 
-<clr-modal
-  [(clrModalOpen)]="isOpen"
-  [clrModalSize]="'xl'"
-  [clrModalClosable]="true"
-  [clrModalStaticBackdrop]="false"
-  [clrModalSkipAnimation]="true"
->
-  <h3 class="modal-title">Apply YAML</h3>
-  <div class="modal-body">
-      <app-view-editor [view]="editorView"></app-view-editor>
-  </div>
-</clr-modal>
+<cds-modal size="xl" id="apply-yaml-modal" [closable]="true" [hidden]="true" (closeChange)="toggleModal()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">Apply YAML</h3>
+  </cds-modal-header>
+  <cds-modal-content>
+    <app-view-editor [view]="editorView"></app-view-editor>
+  </cds-modal-content>
+</cds-modal>

@@ -239,6 +239,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
   ],
   imports: [
     ClarityModule,
+    CdsModule,
     CommonModule,
     DataModule,
     FormsModule,

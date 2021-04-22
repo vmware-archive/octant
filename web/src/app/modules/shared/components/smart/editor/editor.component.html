@@ -8,7 +8,7 @@
   </div>
 
   <div class="controls">
-    <button (click)="reset()" [disabled]="isUpdateEnabled()" class="btn">
+    <button (click)="reset()" [disabled]="!isModified" class="btn">
       Reset
     </button>
     <button

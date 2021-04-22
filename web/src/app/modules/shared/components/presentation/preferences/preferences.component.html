@@ -1,10 +1,8 @@
-<clr-modal
-  [(clrModalOpen)]="isOpen"
-  [clrModalSize]="'lg'"
-  [clrModalStaticBackdrop]="true"
->
-  <h4 class="modal-title">Preferences</h4>
-  <div class="modal-body">
+<cds-modal size="lg" id="preferences-modal" [closable]="true" [hidden]="!isOpenValue" (closeChange)="togglePreferences()">
+  <cds-modal-header>
+    <h4 cds-text="title" cds-first-focus tabindex="-1">Preferences</h4>
+  </cds-modal-header>
+  <cds-modal-content>
     <form [formGroup]="form" class="clr-form">
       <clr-tabs clrLayout="vertical">
         <clr-tab
@@ -44,7 +42,7 @@
                         <label
                           [for]="'section.' + element.name"
                           class="clr-control-label"
-                          >{{ element.config.label }}</label
+                        >{{ element.config.label }}</label
                         >
                         <div class="clr-control-container">
                           <div class="clr-input-wrapper">
@@ -64,11 +62,11 @@
                       <clr-select-container>
                         <label>{{ element.label }}</label>
                         <select clrSelect name="options"
-                          [formControlName]="element.name">
-                          <option 
-                            *ngFor="let r of element.config.items; 
+                                [formControlName]="element.name">
+                          <option
+                            *ngFor="let r of element.config.items;
                               trackBy: trackByIdentity" [value]="r.name"
-                            >{{ r.label }}</option>
+                          >{{ r.label }}</option>
                         </select>
                       </clr-select-container>
                     </ng-container>
@@ -83,16 +81,11 @@
         </clr-tab>
       </clr-tabs>
     </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-outline" type="button" (click)="onReset()">
-      Reset
-    </button>
-    <button class="btn btn-outline btn-cancel" type="button" (click)="onCancel()">
-      Cancel
-    </button>
-    <button class="btn btn-primary" type="button" (click)="onSubmit()">
-      Ok
-    </button>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <cds-button action="outline" (click)="onReset()">Reset</cds-button>
+    <cds-button class="btn-cancel" action="outline" (click)="onCancel()">Cancel</cds-button>
+    <cds-button (click)="onSubmit()">Ok</cds-button>
+  </cds-modal-actions>
+</cds-modal>
+

@@ -1,12 +1,14 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="true" [clrModalSize]="size">
-  <h3 class="modal-title">
-    <app-view-title [views]="title"></app-view-title>
-  </h3>
-  <div class="modal-body">
+<cds-modal size="lg" id="app-modal" [hidden]="!opened" [closable]="true" (closeChange)="toggleModal()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">
+      <app-view-title [views]="title"></app-view-title>
+    </h3>
+  </cds-modal-header>
+  <cds-modal-content>
     <app-view-container [view]="body"></app-view-container>
     <app-form *ngIf="form?.fields" #modalAppForm [form]="form"></app-form>
-  </div>
-  <div class="modal-footer">
+  </cds-modal-content>
+  <cds-modal-actions>
     <ng-container *ngIf="buttons">
       <ng-container *ngFor="let button of buttons; trackBy: trackByFn; last as isLast">
         <button type="button" class="btn" [ngClass]="(isLast)?'btn-primary':'btn-outline'" (click)="onClick(button.payload)">
@@ -15,13 +17,11 @@
       </ng-container>
     </ng-container>
     <ng-container *ngIf="form?.fields">
-      <button type="button" class="btn btn-outline" (click)="opened = false">Cancel</button>
-      <button type="button" class="btn btn-primary submit" (click)="onFormSubmit()">Submit</button>
+      <cds-button action="outline" (click)="opened = false">Cancel</cds-button>
+      <cds-button (click)="onFormSubmit()">Submit</cds-button>
     </ng-container>
     <ng-container *ngIf="!buttons && !form?.fields">
-      <button type="button" class="btn btn-primary" (click)="opened = false">
-        Close
-      </button>
+      <cds-button (click)="opened = false">Close</cds-button>
     </ng-container>
-  </div>
-</clr-modal>
+  </cds-modal-actions>
+</cds-modal>

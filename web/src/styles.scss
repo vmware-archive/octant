@@ -10,6 +10,8 @@
 @import '~highlight.js/styles/github.css';
 @import '~overlayscrollbars/css/OverlayScrollbars.css';
 @import '~@ng-select/ng-select/themes/default.theme.css';
+@import '~@cds/core/styles/theme.dark.min.css';
+@import '~@cds/core/global.min';
 
 // Avoid Datagrid's header sticky position.
 .datagrid-table .datagrid-header {

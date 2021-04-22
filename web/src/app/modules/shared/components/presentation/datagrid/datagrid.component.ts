@@ -21,6 +21,8 @@ import {
   TableView,
   View,
 } from 'src/app/modules/shared/models/content';
+import '@cds/core/button/register.js';
+import '@cds/core/modal/register';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TimestampComparator } from '../../../../../util/timestamp-comparator';
@@ -159,7 +161,6 @@ export class DatagridComponent
       type: action.type,
       confirmation: action.confirmation,
     };
-
     this.isModalOpen = true;
   }
 
@@ -170,8 +171,8 @@ export class DatagridComponent
     return true;
   }
 
-  cancelModal() {
-    this.resetModal();
+  toggleModal(): void {
+    this.isModalOpen = !this.isModalOpen;
   }
 
   acceptModal() {
@@ -183,13 +184,7 @@ export class DatagridComponent
     const actionPath = this.actionDialogOptions.action.actionPath;
     const update = { ...action.payload, action: actionPath };
     this.actionService.perform(update);
-
-    this.resetModal();
-  }
-
-  private resetModal() {
     this.isModalOpen = false;
-    this.actionDialogOptions = undefined;
   }
 
   ngOnDestroy() {

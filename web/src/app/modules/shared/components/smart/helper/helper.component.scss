@@ -2,13 +2,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+.dropdown-button {
+  padding: 12px !important;
+}
+
 .dropdown > .dropdown-toggle {
   line-height: 2.5rem;
   color: white;
   outline: none;
 }
 
-.modal-body {
+.table {
   th {
     font-size: 13px;
     background: transparent;
@@ -23,12 +27,8 @@ clr-dropdown-menu .with-shortcut {
   padding-right: 12px;
 }
 
-clr-dropdown-menu div {
-  padding-right: 48px;
-}
-
-.release-info {
-  height: 30rem;
+clr-stack-view {
+  width: 100%;
 }
 
 .loading-spinner {

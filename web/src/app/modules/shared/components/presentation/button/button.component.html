@@ -9,17 +9,15 @@
 </cds-button>
 
 <app-view-modal *ngIf="modalView" [view]="modalView"></app-view-modal>
-<clr-modal [(clrModalOpen)]="isModalOpen">
-  <h3 class="modal-title">{{ modalTitle }}</h3>
-  <div class="modal-body">
+<cds-modal id="confirmation-modal" [closable]="true" [hidden]="true" (closeChange)="toggleModal()">
+  <cds-modal-header>
+    <h3 cds-text="title" cds-first-focus tabindex="-1">{{ modalTitle }}</h3>
+  </cds-modal-header>
+  <cds-modal-content>
     <div [innerHTML]="modalBody" ngPreserveWhitespaces></div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="cancelModal()">
-      Cancel
-    </button>
-    <button type="button" class="btn btn-primary" (click)="acceptModal()">
-      OK
-    </button>
-  </div>
-</clr-modal>
+  </cds-modal-content>
+  <cds-modal-actions>
+    <cds-button action="outline" (click)="toggleModal()">Cancel</cds-button>
+    <cds-button (click)="acceptModal()">OK</cds-button>
+  </cds-modal-actions>
+</cds-modal>

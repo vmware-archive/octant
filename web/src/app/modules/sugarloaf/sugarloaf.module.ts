@@ -11,6 +11,7 @@ import { ApplyYAMLComponent } from './components/smart/apply-yaml/apply-yaml.com
 import { ThemeSwitchButtonComponent } from './components/smart/theme-switch/theme-switch-button.component';
 import { UploaderComponent } from './components/smart/uploader/uploader.component';
 import { ClarityModule } from '@clr/angular';
+import { CdsModule } from '@cds/angular';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -53,6 +54,7 @@ export class UnstripTrailingSlashLocation extends Location {
   imports: [
     CommonModule,
     ClarityModule,
+    CdsModule,
     HttpClientModule,
     FormsModule,
     NgSelectModule,

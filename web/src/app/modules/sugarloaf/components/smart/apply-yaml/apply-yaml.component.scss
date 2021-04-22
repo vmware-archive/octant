@@ -2,9 +2,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.modal-body {
+cds-modal-content {
   overflow-y: hidden;
 
+  app-view-editor {
+    width: 100%;
+  }
   ::ng-deep ngx-monaco-editor {
     height: calc(60vh - 100px);
   }
@@ -25,7 +28,7 @@
     }
   }
 
-  clr-icon {
+  cds-icon {
     margin-right: 0.2rem;
   }
 }

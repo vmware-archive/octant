@@ -8,6 +8,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
+import '@cds/core/modal/register.js';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
@@ -36,8 +37,6 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<Navigation>(emptyNavigation);
 
   navigation: Navigation = emptyNavigation;
-
-  opened = false;
   searchingNamespace = false;
 
   destinations: Destination[];
@@ -51,6 +50,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   inputChanged: Subject<string> = new Subject<string>();
 
   activeIndex = 0;
+  styledShadowDom = false;
 
   private navigationSubscription: Subscription;
   private namespaceSubscription: Subscription;
@@ -98,12 +98,9 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
 
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent) {
-    if (this.opened) {
-      return;
-    }
     if (event.key === 'Enter' && event.ctrlKey) {
       this.resetModal();
-      this.opened = true;
+      this.toggleQuickSwitcher();
 
       // TODO(abrand): Hack for focusing on input. Need to figure this out. (GH#508)
       const el = this.el;
@@ -157,11 +154,6 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     );
   }
 
-  private handleEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data);
-    this.behavior.next(data);
-  };
-
   identifyDestinationItem(_: number, item: Destination): string {
     return item.title;
   }
@@ -173,7 +165,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   onEnter() {
     const d = this.filteredDestinations[this.activeIndex].path;
     this.router.navigateByUrl(d);
-    this.opened = false;
+    this.toggleQuickSwitcher();
     this.resetModal();
   }
 
@@ -227,5 +219,19 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     this.filteredDestinations = this.destinations;
     this.activeIndex = 0;
     this.searchingNamespace = false;
+  }
+
+  toggleQuickSwitcher(): void {
+    const qcModal = document.getElementById('quick-switcher-modal');
+    qcModal.hidden = !qcModal.hidden;
+
+    // Add styling to prevent modal from moving as number of results update
+    if (!this.styledShadowDom) {
+      const style = document.createElement('style');
+      style.innerHTML =
+        '.modal-dialog { position: fixed !important; top: 4rem; }';
+      qcModal.shadowRoot.appendChild(style);
+      this.styledShadowDom = true;
+    }
   }
 }

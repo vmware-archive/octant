@@ -3,6 +3,8 @@
 //
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import '@cds/core/icon/register.js';
+import { ClarityIcons, clusterIcon } from '@cds/core/icon';
 import {
   ContextDescription,
   KubeContextService,
@@ -20,7 +22,9 @@ export class ContextSelectorComponent implements OnInit, OnDestroy {
 
   private kubeContextSubscription: Subscription;
 
-  constructor(private kubeContext: KubeContextService) {}
+  constructor(private kubeContext: KubeContextService) {
+    ClarityIcons.addIcons(clusterIcon);
+  }
 
   ngOnInit() {
     this.kubeContextSubscription = this.kubeContext

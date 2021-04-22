@@ -1,11 +1,11 @@
-.modal-body {
+cds-modal-content {
   height: 50vh;
   min-height: 300px;
   max-height: 450px;
   overflow-y: auto;
 }
 
-.modal-footer {
+cds-modal-actions {
   justify-content: flex-start;
 
   .btn-cancel {
