@@ -28,7 +28,7 @@ type stubbedVisitor struct{ visitErr error }
 
 var _ objectvisitor.Visitor = (*stubbedVisitor)(nil)
 
-func (v *stubbedVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+func (v *stubbedVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 	return v.visitErr
 }
 

@@ -82,6 +82,13 @@ func (als adjListStorage) addEdgeForKey(uid, edgeUID string, object *unstructure
 	als[uid][edgeUID] = object
 }
 
+// EdgeEntry contains Edge info stored in edgeCache
+type EdgeEntry struct {
+	from  *unstructured.Unstructured
+	to    *unstructured.Unstructured
+	level int
+}
+
 // Handler is a visitor handler.
 type Handler struct {
 	objectStore   store.Store
@@ -93,6 +100,8 @@ type Handler struct {
 
 	mu           sync.Mutex
 	objectStatus ObjectStatus
+	edgeCache    []EdgeEntry
+	levels       map[string]int
 }
 
 var _ objectvisitor.ObjectHandler = (*Handler)(nil)
@@ -111,6 +120,8 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 		adjList:       adjListStorage{},
 		nodes:         nodesStorage{},
 		objectStatus:  NewHandlerObjectStatus(dashConfig.ObjectStore(), dashConfig.PluginManager()),
+		edgeCache:     []EdgeEntry{},
+		levels:        make(map[string]int),
 	}
 
 	for _, option := range options {
@@ -120,8 +131,30 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 	return h, nil
 }
 
-// AddEdge adds edges to the graph.
-func (h *Handler) AddEdge(ctx context.Context, from, to *unstructured.Unstructured) error {
+// SetLevel sets the next depth level for node tree and makes sure it's in level cache
+func (h *Handler) SetLevel(objectKind string, level int) int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	level = level + 1
+	if _, ok := h.levels[objectKind]; !ok {
+		h.levels[objectKind] = level
+	}
+	return level
+}
+
+// AddEdge adds edge to the cache
+func (h *Handler) AddEdge(ctx context.Context, from, to *unstructured.Unstructured, level int) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	realLevel := h.levels[from.GetKind()]
+	h.edgeCache = append(h.edgeCache, EdgeEntry{from: from, to: to, level: realLevel})
+	return nil
+}
+
+// FinalizeEdge is finalizing the edge creation process by applying edge from cache
+func (h *Handler) FinalizeEdge(ctx context.Context, from, to *unstructured.Unstructured) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 

@@ -33,7 +33,7 @@ func (i *Ingress) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits an ingress. It looks for associated services.
-func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitIngress")
 	defer span.End()
 
@@ -41,6 +41,7 @@ func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	if err := kubernetes.FromUnstructured(object, ingress); err != nil {
 		return err
 	}
+	level = handler.SetLevel(ingress.Kind, level)
 
 	services, err := i.queryer.ServicesForIngress(ctx, ingress)
 	if err != nil {
@@ -52,11 +53,11 @@ func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	for i := range services.Items {
 		service := &services.Items[i]
 		g.Go(func() error {
-			if err := visitor.Visit(ctx, service, handler, true); err != nil {
+			if err := visitor.Visit(ctx, service, handler, true, level); err != nil {
 				return errors.Wrapf(err, "ingress %s visit service %s",
 					kubernetes.PrintObject(ingress), kubernetes.PrintObject(service))
 			}
-			return handler.AddEdge(ctx, object, service)
+			return handler.AddEdge(ctx, object, service, level)
 		})
 
 	}

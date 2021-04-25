@@ -41,7 +41,7 @@ func (p *ValidatingWebhookConfiguration) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a validatingwebhookconfiguration. It looks for service accounts and services.
-func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitValidatingWebhookConfiguration")
 	defer span.End()
 
@@ -53,6 +53,7 @@ func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unst
 	if err := kubernetes.FromUnstructured(object, validatingwebhookconfiguration); err != nil {
 		return err
 	}
+	level = handler.SetLevel(validatingwebhookconfiguration.Kind, level)
 
 	var g errgroup.Group
 
@@ -75,13 +76,13 @@ func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unst
 				}
 
 				if visitDescendants {
-					if err := visitor.Visit(ctx, service, handler, false); err != nil {
+					if err := visitor.Visit(ctx, service, handler, false, level); err != nil {
 						return errors.Wrapf(err, "validatingwebhookconfiguration %s visit service %s",
 							kubernetes.PrintObject(validatingwebhookconfiguration), kubernetes.PrintObject(service))
 					}
 				}
 
-				return handler.AddEdge(ctx, object, service)
+				return handler.AddEdge(ctx, object, service, level)
 			})
 		}
 

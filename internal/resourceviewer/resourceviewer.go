@@ -8,6 +8,7 @@ package resourceviewer
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
@@ -126,9 +127,27 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object runtime.Object, hand
 
 	u := &unstructured.Unstructured{Object: m}
 
-	if err := rv.visitor.Visit(ctx, u, handler, true); err != nil {
+	level := 1
+	if err := rv.visitor.Visit(ctx, u, handler, true, level); err != nil {
 		return errors.Wrapf(err, "error unable to visit object %s", kubernetes.PrintObject(object))
 	}
 
+	sort.Slice(handler.edgeCache, func(i, j int) bool {
+		first := handler.edgeCache[i]
+		second := handler.edgeCache[j]
+
+		// Sort edges first by depth level (to ensure good layout),
+		// then by kind/name combination (to ensure repeatable layout)
+		if first.level != second.level {
+			return first.level < second.level
+		} else {
+			return fmt.Sprintf("%s(%s)-%s(%s)", first.from.GetKind(), first.from.GetName(), first.to.GetKind(), first.to.GetName()) <
+				fmt.Sprintf("%s(%s)-%s(%s)", second.from.GetKind(), second.from.GetName(), second.to.GetKind(), second.to.GetName())
+		}
+	})
+
+	for _, edge := range handler.edgeCache {
+		handler.FinalizeEdge(ctx, edge.from, edge.to)
+	}
 	return nil
 }

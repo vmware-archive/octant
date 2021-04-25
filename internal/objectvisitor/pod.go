@@ -36,7 +36,7 @@ func (p *Pod) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a pod. It looks for service accounts and services.
-func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
+func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool, level int) error {
 	ctx, span := trace.StartSpan(ctx, "visitPod")
 	defer span.End()
 
@@ -48,6 +48,7 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 	if err := kubernetes.FromUnstructured(object, pod); err != nil {
 		return err
 	}
+	handler.SetLevel(pod.Kind, level)
 
 	var g errgroup.Group
 
@@ -65,12 +66,12 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+				if err := visitor.Visit(ctx, u, handler, true, level); err != nil {
 					return errors.Wrapf(err, "pod %s visit service %s",
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(service))
 				}
 
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 
@@ -90,11 +91,11 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 			u := &unstructured.Unstructured{Object: m}
 
 			if serviceAccount != nil {
-				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+				if err := visitor.Visit(ctx, u, handler, true, level); err != nil {
 					return errors.Wrapf(err, "pod %s visit service account %s",
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(serviceAccount))
 				}
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			}
 		}
 
@@ -115,7 +116,7 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 
@@ -136,7 +137,7 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 
@@ -156,7 +157,7 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				return handler.AddEdge(ctx, object, u)
+				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
 

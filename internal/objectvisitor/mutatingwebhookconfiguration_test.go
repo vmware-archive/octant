@@ -45,15 +45,16 @@ func TestMutatingWebhookConfiguration_Visit(t *testing.T) {
 	u := testutil.ToUnstructured(t, object)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service), gomock.Any()).
 		Return(nil)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			visited = append(visited, *object)
 			return nil
 		})
@@ -73,7 +74,7 @@ func TestMutatingWebhookConfiguration_Visit(t *testing.T) {
 	mutatingWebhookConfiguration := objectvisitor.NewMutatingWebhookConfiguration(objectStore)
 
 	ctx := context.Background()
-	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true)
+	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 
@@ -103,12 +104,13 @@ func TestMutatingWebhookConfiguration_Visit_notfound(t *testing.T) {
 	u := testutil.ToUnstructured(t, object)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			visited = append(visited, *object)
 			return nil
 		}).AnyTimes()
@@ -128,7 +130,7 @@ func TestMutatingWebhookConfiguration_Visit_notfound(t *testing.T) {
 	mutatingWebhookConfiguration := objectvisitor.NewMutatingWebhookConfiguration(objectStore)
 
 	ctx := context.Background()
-	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true)
+	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 
@@ -154,12 +156,13 @@ func TestMutatingWebhookConfiguration_Visit_url(t *testing.T) {
 	u := testutil.ToUnstructured(t, object)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			visited = append(visited, *object)
 			return nil
 		}).AnyTimes()
@@ -169,7 +172,7 @@ func TestMutatingWebhookConfiguration_Visit_url(t *testing.T) {
 	mutatingWebhookConfiguration := objectvisitor.NewMutatingWebhookConfiguration(objectStore)
 
 	ctx := context.Background()
-	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true)
+	err := mutatingWebhookConfiguration.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 

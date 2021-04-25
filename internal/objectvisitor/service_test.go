@@ -49,28 +49,29 @@ func TestService_Visit(t *testing.T) {
 		Return([]*admissionregistrationv1.ValidatingWebhookConfiguration{validatingWebhookConfiguration}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
+	handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, ingress)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, ingress), gomock.Any()).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pod)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pod), gomock.Any()).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, apiService)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, apiService), gomock.Any()).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, mutatingWebhookConfiguration)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, mutatingWebhookConfiguration), gomock.Any()).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, validatingWebhookConfiguration)).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, validatingWebhookConfiguration), gomock.Any()).
 		Return(nil)
 
 	var visited []unstructured.Unstructured
 	var m sync.Mutex
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
-		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 			m.Lock()
 			defer m.Unlock()
 			visited = append(visited, *object)
@@ -82,7 +83,7 @@ func TestService_Visit(t *testing.T) {
 
 	ctx := context.Background()
 
-	err := service.Visit(ctx, u, handler, visitor, true)
+	err := service.Visit(ctx, u, handler, visitor, true, 1)
 
 	sortObjectsByName(t, visited)
 	expected := testutil.ToUnstructuredList(t, ingress, mutatingWebhookConfiguration, pod, apiService, validatingWebhookConfiguration)

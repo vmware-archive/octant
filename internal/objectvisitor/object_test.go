@@ -53,8 +53,9 @@ func TestObject_Visit(t *testing.T) {
 			},
 			handler: func(ctrl *gomock.Controller) *fake.MockObjectHandler {
 				handler := fake.NewMockObjectHandler(ctrl)
-				handler.EXPECT().AddEdge(gomock.Any(), replicaSet, pod).Return(nil)
-				handler.EXPECT().AddEdge(gomock.Any(), replicaSet, deployment).Return(nil)
+				handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
+				handler.EXPECT().AddEdge(gomock.Any(), replicaSet, pod, gomock.Any()).Return(nil)
+				handler.EXPECT().AddEdge(gomock.Any(), replicaSet, deployment, gomock.Any()).Return(nil)
 				handler.EXPECT().Process(gomock.Any(), replicaSet).Return(nil)
 				return handler
 			},
@@ -81,8 +82,9 @@ func TestObject_Visit(t *testing.T) {
 			visitObject: pod,
 			handler: func(ctrl *gomock.Controller) *fake.MockObjectHandler {
 				handler := fake.NewMockObjectHandler(ctrl)
-				handler.EXPECT().AddEdge(gomock.Any(), pod, replicaSet).Return(nil)
-				handler.EXPECT().AddEdge(gomock.Any(), pod, deployment).Return(nil)
+				handler.EXPECT().SetLevel(gomock.Any(), 1).Return(2)
+				handler.EXPECT().AddEdge(gomock.Any(), pod, replicaSet, gomock.Any()).Return(nil)
+				handler.EXPECT().AddEdge(gomock.Any(), pod, deployment, gomock.Any()).Return(nil)
 				handler.EXPECT().Process(gomock.Any(), pod).Return(nil)
 				return handler
 			},
@@ -109,8 +111,8 @@ func TestObject_Visit(t *testing.T) {
 			var mu sync.Mutex
 			visitor := fake.NewMockVisitor(controller)
 			visitor.EXPECT().
-				Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
-				DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+				Visit(gomock.Any(), gomock.Any(), handler, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool, _ int) error {
 					mu.Lock()
 					defer mu.Unlock()
 					visited = append(visited, *object)
@@ -121,7 +123,7 @@ func TestObject_Visit(t *testing.T) {
 			object := objectvisitor.NewObject(tt.ctorArgs.dashConfig(controller), tt.ctorArgs.queryer(controller))
 
 			ctx := context.Background()
-			err := object.Visit(ctx, tt.visitObject, handler, visitor, true)
+			err := object.Visit(ctx, tt.visitObject, handler, visitor, true, 1)
 			require.NoError(t, err)
 
 			sortObjectsByName(t, visited)
