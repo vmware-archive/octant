@@ -11,6 +11,10 @@
 @import '~overlayscrollbars/css/OverlayScrollbars.css';
 @import '~@ng-select/ng-select/themes/default.theme.css';
 
+@import 'normalize.css/normalize.css';
+@import '@cds/city/css/bundles/default.min.css';
+@import '@cds/core/global.min.css';
+
 // Avoid Datagrid's header sticky position.
 .datagrid-table .datagrid-header {
   position: initial;

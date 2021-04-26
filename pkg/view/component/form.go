@@ -22,6 +22,7 @@ const (
 	FieldTypeSelect   = "select"
 	FieldTypeTextarea = "textarea"
 	FieldTypeHidden   = "hidden"
+	FieldTypeLayout   = "layout"
 )
 
 type FormValidator string
@@ -115,6 +116,103 @@ func marshalFormField(ff FormField) ([]byte, error) {
 	}
 
 	return json.Marshal(&m)
+}
+
+type FormFieldLayout struct {
+	*BaseFormField
+
+	fields []FormField
+}
+
+func NewFormFieldLayout(label string, fields []FormField) *FormFieldLayout {
+	return &FormFieldLayout{
+		BaseFormField: newBaseFormField(label, "", FieldTypeLayout),
+		fields:        fields,
+	}
+}
+
+func (ff *FormFieldLayout) MarshalJSON() ([]byte, error) {
+	return marshalFormField(ff)
+}
+
+func (ff *FormFieldLayout) Configuration() map[string]interface{} {
+	return map[string]interface{}{
+		"fields": ff.fields,
+	}
+}
+
+func (ff *FormFieldLayout) Value() interface{} {
+	return nil
+}
+
+func (ff *FormFieldLayout) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Label         string                        `json:"label"`
+		Name          string                        `json:"name"`
+		Type          string                        `json:"type"`
+		Error         string                        `json:"error"`
+		Validators    map[FormValidator]interface{} `json:"validators"`
+		Configuration struct {
+			Fields []struct {
+				Label         string                 `json:"label"`
+				Name          string                 `json:"name"`
+				Type          string                 `json:"type"`
+				Configuration map[string]interface{} `json:"configuration"`
+				Value         interface{}            `json:"value"`
+				Placeholder   string                 `json:"placeholder"`
+				Error         string                 `json:"error"`
+				Validators    map[string]interface{} `json:"validators"`
+			} `json:"fields"`
+		} `json:"configuration"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	ff.BaseFormField = newBaseFormField(x.Label, x.Name, x.Type)
+	//ff.fields = x.Configuration.Fields
+	ff.errorMessage = x.Error
+	ff.validators = x.Validators
+
+	for i := range x.Configuration.Fields {
+		field := x.Configuration.Fields[i]
+		var fftmp FormField
+
+		fieldData, err := json.Marshal(field)
+		if err != nil {
+			return err
+		}
+
+		switch field.Type {
+		case FieldTypeCheckBox:
+			fftmp = &FormFieldCheckBox{}
+		case FieldTypeRadio:
+			fftmp = &FormFieldRadio{}
+		case FieldTypeText:
+			fftmp = &FormFieldText{}
+		case FieldTypePassword:
+			fftmp = &FormFieldPassword{}
+		case FieldTypeNumber:
+			fftmp = &FormFieldNumber{}
+		case FieldTypeSelect:
+			fftmp = &FormFieldSelect{}
+		case FieldTypeTextarea:
+			fftmp = &FormFieldTextarea{}
+		case FieldTypeHidden:
+			fftmp = &FormFieldHidden{}
+		default:
+			return errors.Errorf("unknown form field type %q", field)
+		}
+
+		if err := fftmp.UnmarshalJSON(fieldData); err != nil {
+			return err
+		}
+
+		ff.fields = append(ff.fields, fftmp)
+	}
+
+	return nil
 }
 
 type FormFieldCheckBox struct {
@@ -702,6 +800,8 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 			ff = &FormFieldTextarea{}
 		case FieldTypeHidden:
 			ff = &FormFieldHidden{}
+		case FieldTypeLayout:
+			ff = &FormFieldLayout{}
 		default:
 			return errors.Errorf("unknown form field type %q", field)
 		}

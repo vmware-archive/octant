@@ -1,86 +1,96 @@
-<div [formGroup]="formGroupContainer" *ngFor="let field of form?.fields; trackBy: trackByFn">
-  <ng-container [ngSwitch]="field.type">
+<cds-form-group layout="vertical" control-width="shrink">
+  <ng-container  *ngFor="let field of form?.fields; trackBy: trackByFn">
+    <ng-container *ngIf="field.type ==='layout'; else withoutLayout ">
+      <div cds-layout="horizontal gap:lg">
+        <label *ngIf="field.label">{{ field.label }}</label>
+        <ng-container *ngFor="let f of field.configuration.fields; trackBy: trackByFn">
+          <ng-container *ngTemplateOutlet="formInputs; context: { field: f }"></ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+    <ng-template #withoutLayout>
+      <ng-container *ngTemplateOutlet="formInputs; context: { field: field }"></ng-container>
+    </ng-template>
+  </ng-container>
+</cds-form-group>
+
+<ng-template #formInputs let-field="field">
+  <ng-container [formGroup]="formGroupContainer" [ngSwitch]="field.type">
 
     <ng-container *ngSwitchCase="'checkbox'">
-      <clr-checkbox-container>
-        <label [for]="field.name">{{ field.label }}</label>
-        <clr-checkbox-wrapper
-          *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-        >
-          <input
-            type="checkbox"
-            clrCheckbox
-            [formArrayName]="field.name"
-            [value]="opt.value"
-            [checked]="opt.checked"
-            (change)="onCheck($event, field.name)"
-          />
-          <label>{{ opt.label }}</label>
-        </clr-checkbox-wrapper>
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-checkbox-container>
+      <cds-checkbox>
+        <cds-checkbox-group>
+          <label [for]="field.name">{{ field.label }}</label>
+          <cds-checkbox *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
+            <input
+              type="checkbox"
+              clrCheckbox
+              [formArrayName]="field.name"
+              [value]="opt.value"
+              [checked]="opt.checked"
+              (change)="onCheck($event, field.name)"
+            />
+            <label>{{ opt.label }}</label>
+          </cds-checkbox>
+          <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+        </cds-checkbox-group>
+      </cds-checkbox>
     </ng-container>
 
     <ng-container *ngSwitchCase="'radio'">
-      <clr-radio-container>
+      <cds-radio-group>
         <label [for]="field.name">{{ field.label }}</label>
-        <clr-radio-wrapper
-          *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-        >
+        <cds-radio *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
           <input
             type="radio"
-            clrRadio
             [formControlName]="field.name"
             [value]="opt.value"
           />
           <label>{{ opt.label }}</label>
-        </clr-radio-wrapper>
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-radio-container>
+        </cds-radio>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-radio-group>
     </ng-container>
 
     <ng-container *ngSwitchCase="'text'">
-      <clr-input-container>
+      <cds-input>
         <label [for]="field.name">{{ field.label }}</label>
         <input
-          clrInput
           type="text"
           [formControlName]="field.name"
           [placeholder]="field.placeholder ? field.placeholder : ''"
         />
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-input-container>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-input>
     </ng-container>
 
     <ng-container *ngSwitchCase="'number'">
-      <clr-input-container>
+      <cds-input>
         <label [for]="field.name">{{ field.label }}</label>
         <input
-          clrInput
           type="number"
           [formControlName]="field.name"
         />
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-input-container>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-input>
     </ng-container>
 
     <ng-container *ngSwitchCase="'password'">
-      <clr-input-container>
+      <cds-input>
         <label [for]="field.name">{{ field.label }}</label>
         <input
           clrInput
           type="password"
           [formControlName]="field.name"
         />
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-input-container>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-input>
     </ng-container>
 
     <ng-container *ngSwitchCase="'select'">
-      <clr-select-container>
+      <cds-select>
         <label [for]="field.name">{{ field.label }}</label>
         <select
-          clrSelect
           [formControlName]="field.name"
           [multiple]="field.configuration.multiple"
         >
@@ -91,21 +101,21 @@
             {{ opt.label }}
           </option>
         </select>
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-select-container>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-select>
     </ng-container>
 
     <ng-container *ngSwitchCase="'textarea'">
-      <clr-textarea-container>
+      <cds-textarea>
         <label [for]="field.name">{{ field.label }}</label>
         <textarea clrTextarea [formControlName]="field.name"></textarea>
-        <clr-control-error>{{ field.error }}</clr-control-error>
-      </clr-textarea-container>
+        <cds-control-message *ngIf="isInvalid(field.name)" status="error">{{ field.error }}</cds-control-message>
+      </cds-textarea>
     </ng-container>
 
-    <ng-container *ngSwitchCase="'hidden'"> </ng-container>
+    <ng-container *ngSwitchCase="'hidden'"></ng-container>
     <ng-container *ngSwitchDefault>
       Unable to display form field type {{ field.type }}
     </ng-container>
   </ng-container>
-</div>
+</ng-template>

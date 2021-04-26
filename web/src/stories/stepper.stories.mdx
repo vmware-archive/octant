@@ -20,16 +20,30 @@ export const stepperView = {
         form: {
           fields: [
             {
-              placeholder: 'First name',
-              label: 'First Name',
-              name: 'firstName',
-              type: 'text',
-              value: '',
-              error: 'First name is required and it should be more than 10 chars.',
-              validators: {
-                required: "",
-                minLength: "10"
-              },
+              type: 'layout',
+              label: 'Name',
+              configuration: {
+                fields: [
+                  {
+                    placeholder: 'First name',
+                    label: 'First Name',
+                    name: 'firstName',
+                    type: 'text',
+                    value: '',
+                    error: 'First name is required and it should be more than 10 chars.',
+                    validators: {
+                      required: "",
+                      minLength: "10"
+                    },
+                  },
+                  {
+                    label: 'Last Name',
+                    name: 'lastName',
+                    type: 'text',
+                    value: '',
+                  },
+                ]
+              }
             },
             {
               placeholder: 'Age',
@@ -42,12 +56,6 @@ export const stepperView = {
                 required: "",
                 min: "21"
               },
-            },
-            {
-              label: 'Last Name',
-              name: 'lastName',
-              type: 'text',
-              value: '',
             },
           ],
         },

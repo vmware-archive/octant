@@ -33,23 +33,32 @@ export class FormHelper {
 
     const controls: { [name: string]: any } = {};
     form.fields.forEach(field => {
-      controls[field.name] = [
-        this.transformValue(field),
-        this.getValidators(field.validators),
-      ];
-
-      if (field.configuration?.choices && field.type === 'checkbox') {
-        const choices: Choice[] = field.configuration.choices;
-        controls[field.name] = new FormArray([]);
-        choices.forEach((choice: Choice) => {
-          if (choice.checked) {
-            controls[field.name].push(new FormControl(choice.value));
-          }
+      if (field.type === 'layout') {
+        field.configuration.fields.forEach(f => {
+          this.createControls(controls, f);
         });
+      } else {
+        this.createControls(controls, field);
       }
     });
-
     return formBuilder.group(controls);
+  }
+
+  createControls(controls: { [name: string]: any }, field) {
+    controls[field.name] = [
+      this.transformValue(field),
+      this.getValidators(field.validators),
+    ];
+
+    if (field.configuration?.choices && field.type === 'checkbox') {
+      const choices: Choice[] = field.configuration.choices;
+      controls[field.name] = new FormArray([]);
+      choices.forEach((choice: Choice) => {
+        if (choice.checked) {
+          controls[field.name].push(new FormControl(choice.value));
+        }
+      });
+    }
   }
 
   transformValue(field): any {
