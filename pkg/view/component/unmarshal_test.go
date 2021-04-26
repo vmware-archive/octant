@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"
-
-	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 func Test_unmarshal(t *testing.T) {
@@ -221,6 +221,52 @@ func Test_unmarshal(t *testing.T) {
 					},
 				},
 				Base: newBase(TypeFlexLayout, nil),
+			},
+		},
+		{
+			name:       "form field text",
+			configFile: "config_form_text.json",
+			objectType: TypeFormField,
+			expected: &FormField{
+				Base: newBase(TypeFormField, nil),
+				Config: FormFieldConfig{
+					Type:        FieldTypeText,
+					Label:       "label",
+					Name:        "name",
+					Value:       "value",
+					Placeholder: "placeholder",
+					Error:       "error message",
+					Validators: map[FormValidator]interface{}{
+						FormValidatorMaxLength: 100,
+					},
+				},
+			},
+		},
+		{
+			name:       "form field checkbox",
+			configFile: "config_form_checkbox.json",
+			objectType: TypeFormField,
+			expected: &FormField{
+				Base: newBase(TypeFormField, nil),
+				Config: FormFieldConfig{
+					Type:  FieldTypeCheckBox,
+					Label: "label",
+					Name:  "name",
+					Configuration: &FormFieldOptions{
+						Choices: []InputChoice{
+							{
+								Label:   "dog",
+								Value:   "dog",
+								Checked: true,
+							},
+							{
+								Label:   "cat",
+								Value:   "cat",
+								Checked: false,
+							},
+						},
+					},
+				},
 			},
 		},
 		{

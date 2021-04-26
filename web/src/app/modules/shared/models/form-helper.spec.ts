@@ -10,14 +10,20 @@ describe('FormHelper', () => {
   it('converts number', () => {
     expect(
       formHelper.transformValue({
-        configuration: null,
-        value: 3,
-        name: '',
-        type: 'number',
-        error: null,
-        label: null,
-        placeholder: null,
-        validators: null,
+        metadata: {
+          type: 'form',
+        },
+        config: {
+          configuration: {},
+          value: 3,
+          name: '',
+          type: 'number',
+          error: null,
+          label: null,
+          placeholder: null,
+          validators: null,
+          width: 0,
+        },
       })
     ).toEqual(3);
   });
@@ -25,14 +31,20 @@ describe('FormHelper', () => {
   it('converts stringed number', () => {
     expect(
       formHelper.transformValue({
-        configuration: null,
-        value: '123',
-        name: '',
-        type: 'number',
-        error: null,
-        label: null,
-        placeholder: null,
-        validators: null,
+        metadata: {
+          type: 'form',
+        },
+        config: {
+          configuration: null,
+          value: '123',
+          name: '',
+          type: 'number',
+          error: null,
+          label: null,
+          placeholder: null,
+          validators: null,
+          width: 0,
+        },
       })
     ).toEqual(123);
   });
@@ -40,14 +52,19 @@ describe('FormHelper', () => {
   it('converts text', () => {
     expect(
       formHelper.transformValue({
-        configuration: null,
-        value: 'hello',
-        name: '',
-        type: 'text',
-        error: null,
-        label: null,
-        placeholder: null,
-        validators: null,
+        metadata: {
+          type: 'form',
+        },
+        config: {
+          configuration: null,
+          value: 'hello',
+          name: '',
+          type: 'text',
+          error: null,
+          label: null,
+          placeholder: null,
+          validators: null,
+        },
       })
     ).toEqual('hello');
   });
@@ -55,14 +72,19 @@ describe('FormHelper', () => {
   it('converts NaN', () => {
     expect(
       formHelper.transformValue({
-        configuration: null,
-        value: NaN,
-        name: '',
-        type: 'number',
-        error: null,
-        label: null,
-        placeholder: null,
-        validators: null,
+        metadata: {
+          type: 'form',
+        },
+        config: {
+          configuration: null,
+          value: NaN,
+          name: '',
+          type: 'number',
+          error: null,
+          label: null,
+          placeholder: null,
+          validators: null,
+        },
       })
     ).toEqual(0);
   });

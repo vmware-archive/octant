@@ -310,15 +310,18 @@ export interface SummaryItem {
   content: View;
 }
 
-export interface ActionField {
-  configuration: any;
-  label: string;
-  name: string;
-  type: string;
-  value: any;
-  placeholder: string;
-  error: string;
-  validators: { string: any };
+export interface ActionField extends View {
+  config: {
+    configuration: any;
+    label: string;
+    name: string;
+    type: string;
+    value: any;
+    placeholder: string;
+    error: string;
+    validators: { string: any };
+    width?: number;
+  };
 }
 
 export interface ActionForm {
@@ -330,6 +333,7 @@ export interface Action {
   name: string;
   title: string;
   form: ActionForm;
+  modal?: boolean;
 }
 
 export interface SummaryView extends View {

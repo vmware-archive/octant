@@ -18,16 +18,20 @@
         "form": {
           "fields": [
             {
-              "error": "error message",
-              "placeholder": "placeholder",
-              "validators": {
-                "required": ""
+              "metadata": {
+                "type": "formField"
               },
-              "type": "text",
-              "label": "test",
-              "name": "test",
-              "value": "test",
-              "configuration": {}
+              "config": {
+                "label": "test",
+                "name": "test",
+                "type": "text",
+                "value": "test",
+                "error": "error message",
+                "placeholder": "placeholder",
+                "validators": {
+                  "required": ""
+                }
+              }
             }
           ]
         }
@@ -39,16 +43,20 @@
         "form": {
           "fields": [
             {
-              "error": "error message",
-              "placeholder": "placeholder",
-              "validators": {
-                "required": ""
+              "metadata": {
+                "type": "formField"
               },
-              "type": "text",
-              "label": "test",
-              "name": "test",
-              "value": "test",
-              "configuration": {}
+              "config": {
+                "label": "test",
+                "name": "test",
+                "type": "text",
+                "value": "test",
+                "error": "error message",
+                "placeholder": "placeholder",
+                "validators": {
+                  "required": ""
+                }
+              }
             }
           ]
         }

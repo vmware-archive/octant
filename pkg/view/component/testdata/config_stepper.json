@@ -8,11 +8,16 @@
         "form": {
           "fields": [
             {
-              "type": "text",
-              "label": "test",
-              "name": "test",
-              "value": "test",
-              "configuration": {}
+              "metadata": {
+                "type": "formField"
+              },
+              "config": {
+                "label": "test",
+                "name": "test",
+                "value": "test",
+                "type": "text",
+                "configuration": {}
+              }
             }
           ]
         }

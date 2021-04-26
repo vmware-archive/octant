@@ -2,8 +2,26 @@ import {Meta, Preview, Props, Story} from '@storybook/addon-docs';
 import { argTypesView } from "./helpers/helpers";
 
 export const stepperDocs = {
-  source: {code: `title = "Example Stepper" component.NewStepper()`},
-};
+  source: {code: `form : component.Form{Fields: []component.FormField{
+component.NewFormFieldHidden("action", pluginActionName),
+component.NewFormFieldText("Name", "name", "First Name"),
+}}
+stepConfig := []component.StepConfig{
+	{
+		Name:        "Step 1",
+		Title:       "First Step",
+		Description: "Setup step",
+		Form:        form,
+	},
+	{
+		Name:        "Step 2",
+		Description: "Confirmation step",
+		Form:        form,
+	},
+}
+component.NewStepper("Test", "action.octant.dev/stepperTest", stepConfig...)`
+  }
+}
 
 export const stepperView = {
   metadata: {
@@ -19,34 +37,49 @@ export const stepperView = {
         form: {
           fields: [
             {
-              placeholder: 'First name',
-              label: 'First Name',
-              name: 'firstName',
-              type: 'text',
-              value: '',
-              error: 'First name is required and it should be more than 10 chars.',
-              validators: {
-                required: "",
-                minLength: "10"
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                placeholder: 'First name',
+                label: 'First Name',
+                name: 'firstName',
+                type: 'text',
+                value: '',
+                error: 'First name is required and it should be more than 10 chars.',
+                validators: {
+                  required: "",
+                  minLength: "10"
+                },
               },
             },
             {
-              placeholder: 'Age',
-              label: 'Age',
-              name: 'age',
-              type: 'number',
-              value: '',
-              error: 'Need to be older than 21',
-              validators: {
-                required: "",
-                min: "21"
+              metadata: {
+                type: 'formField'
               },
+              config: {
+                placeholder: 'Age',
+                label: 'Age',
+                name: 'age',
+                type: 'number',
+                value: '',
+                error: 'Need to be older than 21',
+                validators: {
+                  required: "",
+                  min: "21"
+                },
+              }
             },
             {
-              label: 'Last Name',
-              name: 'lastName',
-              type: 'text',
-              value: '',
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                label: 'Last Name',
+                name: 'lastName',
+                type: 'text',
+                value: '',
+              }
             },
           ],
         },
@@ -58,30 +91,40 @@ export const stepperView = {
         form: {
           fields: [
             {
-              label: 'City',
-              name: 'city',
-              type: 'text',
-              value: '',
-              error: 'City should not have numbers.',
-              validators: {
-                required: "",
-                pattern: "[a-zA-Z ]*"
+              metadata: {
+                type: 'formField'
               },
+              config: {
+                label: 'City',
+                name: 'city',
+                type: 'text',
+                value: '',
+                error: 'City should not have numbers.',
+                validators: {
+                  required: "",
+                  pattern: "[a-zA-Z ]*"
+                },
+              }
             },
             {
-              label: 'State',
-              name: 'state',
-              type: 'select',
-              error: 'State is required',
-              validators: {
-                required: ""
+              metadata: {
+                type: 'formField'
               },
-              configuration: {
-                choices: [
-                  {label: '', value: ''},
-                  {label: 'North Carolina', value: 'NC'},
-                ],
-              },
+              config: {
+                label: 'State',
+                name: 'state',
+                type: 'select',
+                error: 'State is required',
+                validators: {
+                  required: ""
+                },
+                configuration: {
+                  choices: [
+                    {label: '', value: ''},
+                    {label: 'North Carolina', value: 'NC'},
+                  ],
+                },
+              }
             },
           ],
         },
@@ -115,3 +158,187 @@ export const StepperStoryTemplate = args => ({
 
 <h2>Props</h2>
 <Props story = "Stepper component"/>
+
+export const stepperHFDocs = {
+  source: {
+    code: `inputName := component.NewFormFieldText("First", "first", "First Name")
+inputName.SetWidth(50)
+inputLast := component.NewFormFieldNumber("Last", "Last", "21")
+inputLast.SetWidth(50)
+layout := component.NewFormFieldLayout(inputName, inputLast)
+layout.SetLabel("Name")
+form := component.Form{Fields: []component.FormField{
+	component.NewFormFieldHidden("action", pluginActionName),
+	layout,
+	component.NewFormFieldNumber("Age", "age", "21"),
+}}
+stepConfig := []component.StepConfig{
+	{
+		Name:        "Step 1",
+		Title:       "First Step",
+		Description: "Setup step",
+		Form:        form,
+	},
+	{
+		Name:        "Step 2",
+		Title:       "Second Step",
+		Description: "Confirmation step",
+		Form:        form,
+	},
+}
+component.NewStepper("Test", "action.octant.dev/stepperTest", stepConfig...)`
+  }
+}
+
+export const stepperHFView = {
+  metadata: {
+    type: 'stepper',
+  },
+  config: {
+    action: 'octant.dev/test-action',
+    steps: [
+      {
+        title: 'Contact Information',
+        description: 'Personal contact information.',
+        name: 'contact',
+        form: {
+          fields: [
+            {
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                type: 'layout',
+                label: 'Name',
+                configuration: {
+                  fields: [
+                    {
+                      metadata: {
+                        type: 'formField'
+                      },
+                      config: {
+                        placeholder: 'First name',
+                        label: 'First Name',
+                        name: 'firstName',
+                        type: 'text',
+                        value: '',
+                        width: 50,
+                        error: 'First name is required and it should be more than 10 chars.',
+                        validators: {
+                          required: "",
+                          minLength: "10"
+                        }
+                      },
+                    },
+                    {
+                      metadata: {
+                        type: 'formField'
+                      },
+                      config: {
+                        label: 'Last Name',
+                        name: 'lastName',
+                        type: 'text',
+                        value: '',
+                        width: 50,
+                      }
+                    },
+                  ]
+                }
+              },
+            },
+            {
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                placeholder: 'Age',
+                label: 'Age',
+                name: 'age',
+                type: 'number',
+                value: '',
+                error: 'Need to be older than 21',
+                validators: {
+                  required: "",
+                  min: "21"
+                }
+              },
+            },
+          ],
+        },
+      },
+      {
+        title: 'More Information',
+        description: 'Extended information.',
+        name: 'extended',
+        form: {
+          fields: [
+            {
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                label: 'City',
+                name: 'city',
+                type: 'text',
+                value: '',
+                error: 'City should not have numbers.',
+                validators: {
+                  required: "",
+                  pattern: "[a-zA-Z ]*"
+                },
+              }
+            },
+            {
+              metadata: {
+                type: 'formField'
+              },
+              config: {
+                label: 'State',
+                name: 'state',
+                type: 'select',
+                error: 'State is required',
+                validators: {
+                  required: ""
+                },
+                configuration: {
+                  multiple: true,
+                  choices: [
+                    {label: '', value: ''},
+                    {label: 'North Carolina', value: 'NC'},
+                  ],
+                },
+              },
+            }
+          ],
+        },
+      },
+    ],
+  },
+};
+
+export const StepperHFStoryTemplate = args => ({
+  template: `<app-stepper [view]= "view"></app-stepper>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+<h1>Stepper component with Horizontal Forms</h1>
+<h2>Description</h2>
+
+<p>The Stepper component provides guided steps to a user</p>
+<h2>Example</h2>
+
+
+
+<Preview withToolbar>
+  <Story
+    name="Stepper with horizontal form component"
+    parameters={{docs: stepperHFDocs}}
+    args= {{ view: stepperHFView }}>
+    { StepperHFStoryTemplate.bind({}) }
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props story = "Stepper with horizontal form component"/>
+

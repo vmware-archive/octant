@@ -1,8 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActionField, ActionForm } from '../../models/content';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
-import { Choice } from '../../models/form-helper';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
+
+import '@cds/core/checkbox/register.js';
+import '@cds/core/input/register.js';
+import '@cds/core/textarea/register.js';
+import '@cds/core/input/register.js';
+import '@cds/core/radio/register.js';
+import '@cds/core/select/register.js';
+import { Choice } from '../../models/form-helper';
 
 @Component({
   selector: 'app-form-view-container',
@@ -16,6 +23,7 @@ export class FormViewContainerComponent implements OnInit {
   formGroupContainer: FormGroup;
 
   formArray: FormArray;
+
   trackByFn = trackByIndex;
 
   ngOnInit(): void {}
@@ -34,6 +42,11 @@ export class FormViewContainerComponent implements OnInit {
   }
 
   fieldChoices(field: ActionField) {
-    return field.configuration.choices as Choice[];
+    return field.config.configuration.choices as Choice[];
+  }
+
+  isInvalid(fieldName: string) {
+    const field = this.formGroupContainer.get(fieldName);
+    return field.invalid && (field.dirty || field.touched);
   }
 }

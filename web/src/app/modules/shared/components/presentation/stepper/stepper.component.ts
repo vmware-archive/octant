@@ -41,7 +41,7 @@ export class StepperComponent
   }
 
   // Each Step is a form, so it creates a form group for every form and encapsulate
-  // them with another form group, Yes! a form group with many form groups :P
+  // them with another form group.
   createStepGroups(steps: StepItem[]): FormGroup {
     const stepGroups: { [name: string]: any } = {};
     const formHelper = new FormHelper();
@@ -77,7 +77,7 @@ export class StepperComponent
   }
 
   fieldChoices(field: ActionField) {
-    return field.configuration.choices as Choice[];
+    return field.config.configuration.choices as Choice[];
   }
 
   formGroupFromName(step: StepItem): FormGroup {

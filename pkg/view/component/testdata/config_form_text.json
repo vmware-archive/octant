@@ -1,0 +1,11 @@
+{
+  "type": "text",
+  "label": "label",
+  "name": "name",
+  "value": "value",
+  "placeholder": "placeholder",
+  "error": "error message",
+  "validators": {
+    "maxLength": 100
+  }
+}

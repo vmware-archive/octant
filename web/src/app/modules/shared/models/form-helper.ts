@@ -36,34 +36,46 @@ export class FormHelper {
 
     const controls: { [name: string]: any } = {};
     form.fields.forEach(field => {
-      controls[field.name] = [
-        this.transformValue(field),
-        this.getValidators(field.validators),
-      ];
-
-      if (field.configuration?.choices && field.type === 'checkbox') {
-        const choices: Choice[] = field.configuration.choices;
-        controls[field.name] = new FormArray([]);
-        choices.forEach((choice: Choice) => {
-          if (choice.checked) {
-            controls[field.name].push(new FormControl(choice.value));
-          }
+      if (field?.config.type === 'layout') {
+        field?.config.configuration.fields.forEach(f => {
+          this.createControls(controls, f);
         });
+      } else {
+        this.createControls(controls, field);
       }
     });
-
     return formBuilder.group(controls);
   }
 
+  createControls(controls: { [name: string]: any }, field: ActionField) {
+    controls[field.config.name] = [
+      this.transformValue(field),
+      this.getValidators(field.config.validators),
+    ];
+
+    if (
+      field.config?.configuration?.choices &&
+      field.config.type === 'checkbox'
+    ) {
+      const choices: Choice[] = field.config.configuration.choices;
+      controls[field.config.name] = new FormArray([]);
+      choices.forEach((choice: Choice) => {
+        if (choice.checked) {
+          controls[field.config.name].push(new FormControl(choice.value));
+        }
+      });
+    }
+  }
+
   transformValue(field: ActionField): any {
-    if (field.type === 'number') {
-      if (field.value === '') {
+    if (field.config.type === 'number') {
+      if (field.config.value === '') {
         return null;
       }
-      const value = +field.value;
+      const value = +field.config.value;
       return Number.isNaN(value) ? 0 : value;
     }
-    return field.value;
+    return field.config.value;
   }
 
   // Receive a hash with the validation name and the expected

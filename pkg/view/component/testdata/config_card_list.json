@@ -30,11 +30,16 @@
             "form": {
               "fields": [
                 {
-                  "configuration": {},
-                  "label": "Revision",
-                  "name": "revision",
-                  "type": "text",
-                  "value": "12345"
+                  "metadata": {
+                    "type": "formField"
+                  },
+                  "config": {
+                    "configuration": {},
+                    "label": "Revision",
+                    "name": "revision",
+                    "type": "text",
+                    "value": "12345"
+                  }
                 }
               ]
             }

@@ -198,6 +198,7 @@ func initRoutes(router *service.Router) {
 		form := component.Form{Fields: []component.FormField{
 			component.NewFormFieldHidden("action", pluginActionName),
 		}}
+
 		testButton := component.Action{
 			Name:  "Test Button",
 			Title: "Test Button",
