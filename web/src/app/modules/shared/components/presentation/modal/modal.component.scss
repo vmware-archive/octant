@@ -5,3 +5,9 @@
 app-view-container {
   width: 100%;
 }
+
+cds-modal-content {
+  ::ng-deep ngx-monaco-editor {
+    height: calc(60vh - 100px);
+  }
+}
