@@ -11,12 +11,12 @@ function docsVersionToggle() {
 }
 
 window.onclick = function(event) {
-    var 
+    var
         target = event.target,
         menu = document.getElementById('dropdown-menu')
     ;
 
-    if(!target.classList.contains('dropdown-toggle')) {
+    if(!target.classList.contains('dropdown-toggle') && menu !== null) {
         menu.classList.remove('dropdown-menu-visible');
     }
 }

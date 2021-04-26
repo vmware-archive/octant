@@ -19,6 +19,9 @@
 <body>
 	{{ partial "header" . }}
 	{{ block "main" . }}{{ end }}
+	{{ if eq .Title "Community" }}
+		{{ partial "team.html" . }}
+	{{ end }}
 	{{ partial "getting-started" . }}
 	{{ partial "footer" . }}
     {{ if .Site.Params.docs_search }}

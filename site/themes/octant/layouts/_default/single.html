@@ -3,16 +3,15 @@
 		<article>
 			<div class="hero subpage-hero">
 				<div class="wrapper">
-					<h1>Blog</h1>
+					<h1>{{ .Title }}</h1>
 				</div>
 			</div>
 			<div class="wrapper blog">
 				<div class="blog-post">
-					<h2>{{ .Title }}</h2>
-					<p class="author">
+					<div class="author">
 						<a href="/tags/{{ .Params.author | urlize }}">{{ .Params.author }}</a>
-					</p>
-					<p class="date">{{ dateFormat "Jan 2, 2006" .Date }}</p>
+						<div class="date">{{ dateFormat "Jan 2, 2006" .Date }}</div>
+					</div>
 					{{ .Content }}
 				</div>
 				<h2>Related Content</h2>

@@ -3,7 +3,6 @@ title: "Octant 2020 Community Survey Results"
 image: /img/posts/2020/11/19/survey-results-banner.png
 excerpt: After launching our first Octant community survey, we want to share some of the insights we’ve gathered from your responses
 author: Isha Bagha
-author_name: Isha Bagha
 author_avatar: /img/contributors/isha-bagha.jpg
 categories: ['kubernetes']
 tags: ['survey', 'Isha Bagha']
