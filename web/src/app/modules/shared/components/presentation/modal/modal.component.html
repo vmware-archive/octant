@@ -1,4 +1,4 @@
-<cds-modal size="lg" id="app-modal" [hidden]="!opened" [closable]="true" (closeChange)="toggleModal()">
+<cds-modal [size]="size" id="app-modal" [hidden]="!opened" [closable]="true" (closeChange)="toggleModal()">
   <cds-modal-header>
     <h3 cds-text="title" cds-first-focus tabindex="-1">
       <app-view-title [views]="title"></app-view-title>
