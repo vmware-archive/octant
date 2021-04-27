@@ -1,0 +1,33 @@
+<div class="team">
+    <div class="wrapper">
+        <h2>{{ .Page.Title }} Members</h2>
+        <p>Octant is released as open source software and provides community support through our GitHub project page. If you encounter an issue or have a question, feel free to reach out on the <a href="https://github.com/vmware-tanzu/octant/issues">GitHub issues page for Octant</a>.</p>
+        <p>The Octant project team welcomes contributions from the community — please see our <a href="https://github.com/vmware-tanzu/octant/blob/master/CONTRIBUTING.md">contributing documentation</a>.</p>
+        <h2>Approvers</h2>
+        <div class="grid three">
+            {{ $contributors := .Site.GetPage "/contributors" }}
+            {{ range $contributors.Resources }}
+                <div class="bio">
+                    <div class="image"><img src="{{ .Params.image }}" /></div>
+                    <div class="info">
+                        <p class="name"><a href="https://github.com/{{ .Params.github_handle }}">{{ .Params.first_name }} {{ .Params.last_name }}</a></p>
+                        <p class="position">{{ .Content }}</p>
+                    </div>
+                </div>
+            {{ end }}
+        </div>
+        <h2 class="mb-2">Emeritus Approvers</h2>
+        <div class="grid three">
+            {{ $emeritus := .Site.GetPage "/emeritus" }}
+            {{ range $emeritus.Resources }}
+            <div class="bio">
+                <div class="image"><img src="{{ .Params.image }}" /></div>
+                <div class="info">
+                    <p class="name"><a href="https://github.com/{{ .Params.github_handle }}">{{ .Params.first_name }} {{ .Params.last_name }}</a></p>
+                    <p class="position">{{ .Content }}</p>
+                </div>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+</div>

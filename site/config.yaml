@@ -1,0 +1,50 @@
+baseURL: "https://octant.dev/"
+languageCode: "en-us"
+title: "Octant"
+theme: "octant"
+outputs:
+  home: [ "HTML", "REDIRECTS"]
+  posts: [ "HTML", "RSS" ]
+pygmentsCodefences: true
+pygmentsStyle: "pygments"
+markup:
+  highlight:
+    anchorLineNos: false
+    codeFences: true
+    guessSyntax: false
+    hl_Lines: ""
+    lineAnchors: ""
+    lineNoStart: 1
+    lineNos: false
+    lineNumbersInTable: true
+    noClasses: true
+    style: native
+    tabWidth: 4
+params:
+  twitter_url: "https://twitter.com/projectoctant"
+  github_url: "https://github.com/vmware-tanzu/octant"
+  slack_url: "https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG"
+  rss_url: "/blog/feed.xml"
+  github_base_url: "https://github.com/vmware-tanzu/octant"
+  use_advanced_docs: false
+  docs_right_sidebar: true
+  docs_search: false
+  docs_search_index_name: index_name
+  docs_search_api_key: api_key
+  docs_versioning: true
+  docs_latest: v0.40.0
+  docs_versions:
+    - v0.30.0
+    - v0.40.0
+mediaTypes:
+  "text/netlify":
+    delimiter: ""
+outputFormats:
+  REDIRECTS:
+    mediaType: "text/netlify"
+    baseName: "_redirects"
+  RSS:
+    mediatype: "application/rss"
+    baseName: "feed"
+permalinks:
+  posts: /:slug
