@@ -83,6 +83,25 @@ func Test_Text_Marshal(t *testing.T) {
             }
 `,
 		},
+		{
+			name: "with clipboard",
+			input: &Text{
+				Config: TextConfig{
+					Text:           "secret",
+					ClipboardValue: "my-secret",
+				},
+			},
+			expected: `
+            {
+                "metadata": {
+                  "type": "text"
+                },
+                "config": {
+                  "value": "secret",
+				  "clipboardValue": "my-secret"
+                }
+            }
+`},
 	}
 
 	for _, tc := range tests {

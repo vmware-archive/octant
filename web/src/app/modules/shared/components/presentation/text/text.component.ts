@@ -1,7 +1,14 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, OnInit, SecurityContext } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  SecurityContext,
+} from '@angular/core';
+import '@cds/core/button/register';
+import { ClarityIcons, clipboardIcon } from '@cds/core/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TextView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -16,13 +23,19 @@ export class TextComponent
   extends AbstractViewComponent<TextView>
   implements OnInit {
   value: string | SafeHtml;
+  clipboardValue: string;
+  copied: boolean;
 
   isMarkdown: boolean;
 
   hasStatus = false;
 
-  constructor(private readonly sanitizer: DomSanitizer) {
+  constructor(
+    private readonly sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
+  ) {
     super();
+    ClarityIcons.addIcons(clipboardIcon);
   }
 
   update() {
@@ -42,5 +55,23 @@ export class TextComponent
     if (view.config.status) {
       this.hasStatus = true;
     }
+
+    if (view.config.clipboardValue) {
+      this.clipboardValue = view.config.clipboardValue;
+    }
+  }
+
+  copyToClipboard(): void {
+    document.addEventListener('copy', (e: ClipboardEvent) => {
+      e.clipboardData.setData('text/plain', this.clipboardValue);
+      e.preventDefault();
+      document.removeEventListener('copy', null);
+    });
+    document.execCommand('copy');
+    this.copied = !this.copied;
+    setTimeout(() => {
+      this.copied = false;
+      this.cdr.detectChanges();
+    }, 1500);
   }
 }
