@@ -10,16 +10,14 @@
 </div>
 <clr-tabs *ngIf="tabs.length > 1; else noTabs">
   <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
-    <div clrTabLink class="tab-button">
-      <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
-        {{ tab.name }}
-      </button>
-      <clr-icon
-        shape="times"
-        *ngIf="closable"
-        (click)="closeTab(tab.accessor)"
-      ></clr-icon>
-    </div>
+    <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
+      {{ tab.name }}
+    </button>
+    <clr-icon
+      shape="times"
+      *ngIf="closable"
+      (click)="closeTab(tab.accessor)"
+    ></clr-icon>
     <ng-template [clrIfActive]="activeTab === tab.accessor">
       <clr-tab-content>
         <app-view-container [view]="tab.view"></app-view-container>
