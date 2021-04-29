@@ -99,22 +99,22 @@ func TestObjectDescriber(t *testing.T) {
 
 	summary := component.NewText("summary")
 
-	buttonGroup := component.NewButtonGroup()
-
-	buttonGroup.AddButton(
-		component.NewButton("Delete",
-			action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
-			component.WithButtonConfirmation(
-				"Delete Pod",
-				"Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
-			)))
+	button := component.NewButton("Delete",
+		action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
+		component.WithButtonConfirmation(
+			"Delete Pod",
+			"Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
+		),
+	)
 
 	expected := component.ContentResponse{
 		Title: component.Title(component.NewText("pod")),
 		Components: []component.Component{
 			summary,
 		},
-		ButtonGroup: buttonGroup,
+		TitleComponents: []component.Component{
+			button,
+		},
 	}
 
 	testutil.AssertJSONEqual(t, &expected, &cResponse)

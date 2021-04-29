@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { Params, Router, UrlSegment } from '@angular/router';
 import {
-  ButtonGroupView,
   ContentResponse,
   ExtensionView,
   View,
@@ -39,9 +38,9 @@ export class ContentComponent implements OnInit, OnDestroy {
   hasReceivedContent = false;
   title: View[] = null;
   views: View[] = null;
+  titleComponents: View[] = null;
   extView: ExtensionView = null;
   singleView: View = null;
-  buttonGroup: ButtonGroupView = null;
   private contentSubscription: Subscription;
   private previousUrl = '';
   private defaultPath: string;
@@ -131,6 +130,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   private resetView() {
     this.title = null;
     this.views = null;
+    this.titleComponents = null;
   }
 
   private setContent = (contentResponse: ContentResponse) => {
@@ -147,11 +147,10 @@ export class ContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.buttonGroup = contentResponse.content.buttonGroup;
-
     this.extView = contentResponse.content.extensionComponent;
     this.views = views;
     this.title = contentResponse.content.title;
+    this.titleComponents = contentResponse.content.titleComponents;
 
     this.hasReceivedContent = true;
   };

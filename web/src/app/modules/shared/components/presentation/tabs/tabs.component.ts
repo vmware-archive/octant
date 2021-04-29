@@ -9,10 +9,11 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ButtonGroupView, View } from 'src/app/modules/shared/models/content';
+import { View } from 'src/app/modules/shared/models/content';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
+import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 
 interface Tab {
   name: string;
@@ -29,17 +30,18 @@ interface Tab {
 export class TabsComponent implements OnChanges, OnInit {
   @Input() title: View[];
   @Input() views: View[];
+  @Input() titleComponents: View[];
   @Input() payloads: [{ [key: string]: string }];
   @Input() iconName: string;
   @Input() closable: boolean;
   @Input() extView: boolean;
-  @Input() buttonGroup: ButtonGroupView;
 
   tabs: Tab[] = [];
   activeTab: string;
   activeTabIndex: number;
   closingTab: boolean;
   view: View;
+  trackByIndex = trackByIndex;
 
   constructor(
     private router: Router,

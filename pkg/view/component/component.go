@@ -23,14 +23,22 @@ type ContentResponse struct {
 	Title              []TitleComponent `json:"title,omitempty"`
 	Components         []Component      `json:"viewComponents"`
 	ExtensionComponent Component        `json:"extensionComponent,omitempty"`
-	ButtonGroup        *ButtonGroup     `json:"buttonGroup,omitempty"`
+	TitleComponents    []Component      `json:"titleComponents,omitempty"`
 }
 
 // NewContentResponse creates an instance of ContentResponse.
 func NewContentResponse(title []TitleComponent) *ContentResponse {
 	return &ContentResponse{
-		Title:       title,
-		ButtonGroup: NewButtonGroup(),
+		Title: title,
+	}
+}
+
+// AddTitleComponents Adds any number of components to accompany the title
+func (c *ContentResponse) AddTitleComponents(components ...Component) {
+	for i := range components {
+		if components[i] != nil {
+			c.TitleComponents = append(c.TitleComponents, components[i])
+		}
 	}
 }
 
@@ -52,14 +60,15 @@ func (c *ContentResponse) SetExtension(component *Extension) {
 // AddButton adds one or more actions to a content response.
 func (c *ContentResponse) AddButton(name string, payload action.Payload, buttonOptions ...ButtonOption) {
 	button := NewButton(name, payload, buttonOptions...)
-	c.ButtonGroup.AddButton(button)
+	c.TitleComponents = append(c.TitleComponents, button)
 }
 
 // UnmarshalJSON unmarshals a content response from JSON.
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	stage := struct {
-		Title      []TypedObject `json:"title,omitempty"`
-		Components []TypedObject `json:"viewComponents,omitempty"`
+		Title           []TypedObject `json:"title,omitempty"`
+		Components      []TypedObject `json:"viewComponents,omitempty"`
+		TitleComponents []TypedObject `json:"titleComponents,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &stage); err != nil {
@@ -87,6 +96,15 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 		}
 
 		c.Components = append(c.Components, vc)
+	}
+
+	for _, to := range stage.TitleComponents {
+		vc, err := to.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		c.TitleComponents = append(c.TitleComponents, vc)
 	}
 
 	return nil

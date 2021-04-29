@@ -6,6 +6,12 @@
   outline: none;
 }
 
-.action-buttons {
+.title-container {
   float: right;
+  display: flex;
+  justify-content: space-between;
+
+  .item {
+    margin: 0 5px;
+  }
 }

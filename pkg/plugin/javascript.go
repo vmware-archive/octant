@@ -342,7 +342,7 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 				return
 			}
 
-			cr.ButtonGroup = buttonGroup
+			cr.AddTitleComponents(buttonGroup)
 		}
 		errCh <- nil
 	})
