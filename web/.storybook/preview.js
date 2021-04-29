@@ -46,7 +46,6 @@ addDecorator(
         useFactory: themeService => () => {
           themeService.themeType.next('light')
           themeService.loadTheme();
-          console.log('theme', themeService.isLightThemeEnabled())
         },
         deps: [ThemeService],
         multi: true,

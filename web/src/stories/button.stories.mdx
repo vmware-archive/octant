@@ -92,7 +92,7 @@ export const buttonViewSize= {
   },
 };
 
-export const buttonSizeLarge =  {
+export const buttonLarge =  {
   config: {
     name: 'Button Size Large',
     payload: {},
@@ -218,6 +218,11 @@ export const ButtonStoryTemplate = args => ({
          args= {{ view: buttonViewSize }}>
     { ButtonStoryTemplate.bind({}) }
   </Story>
+  <Story name="Button size large"
+         parameters={{ docs: buttonSizeDocs[1] }}
+         args= {{ view: buttonLarge }}>
+    { ButtonStoryTemplate.bind({}) }
+  </Story>
 </Canvas>
 
 
@@ -229,18 +234,22 @@ export const ButtonStoryTemplate = args => ({
   <Story name="Button status success"
          parameters={{ docs: buttonStatusDocs[0] }}
          args= {{ view: buttonSuccess }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
   <Story name="Button status info"
          parameters={{ docs: buttonStatusDocs[1] }}
          args= {{ view: buttonInfo }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
   <Story name="Button status danger"
          parameters={{ docs: buttonStatusDocs[2] }}
          args= {{ view: buttonDanger }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
   <Story name="Button status disabled"
          parameters={{ docs: buttonStatusDocs[3] }}
          args= {{ view: buttonDisabled }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -252,14 +261,17 @@ export const ButtonStoryTemplate = args => ({
   <Story name="Button style outline"
          parameters={{ docs: buttonStyleDocs[0] }}
          args= {{ view: buttonOutline }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
   <Story name="Button style solid"
          parameters={{ docs: buttonStyleDocs[1] }}
          args= {{ view: buttonSolid }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
   <Story name="Button style flat"
          parameters={{ docs: buttonStyleDocs[2] }}
          args= {{ view: buttonFlat }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 

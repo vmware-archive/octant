@@ -30,12 +30,40 @@ export const iconView = {
   }
 };
 
+export const iconWithTooltipView=  {
+  metadata: {
+    type: 'icon',
+  },
+  config: {
+    shape: "user",
+    size: "",
+    direction: "",
+    flip: "",
+    solid: false,
+    status: "",
+    inverse: false,
+    badge: "",
+    color: "",
+    badgeColor: "",
+    label: "",
+    tooltip: {
+      message: "hello",
+      size: "md",
+      position: "right",
+    }
+  }
+};
+
 export const IconStoryTemplate = args => ({
   components: { IconComponent },
   template: `<app-view-icon [view]= "view" ></app-view-icon>`,
   argTypes: argTypesView,
   props: { view: args.view },
 });
+
+export const iconWithTooltipDocs = {source: {code: `
+component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
+`}}
 
 <h1>Icon Component</h1>
 <h2>Description</h2>
@@ -50,45 +78,9 @@ export const IconStoryTemplate = args => ({
          parameters={{ docs: iconDocs }}
          args={{ view: iconView }}>
     { IconStoryTemplate.bind({}) }
-export const iconWithTooltipDocs = {source: {code: `
-component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
-`}}
-
-<h1>Icon Component</h1>
-<h2>Description</h2>
-<p>An Icon component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a></p>
-
-<h2>Example</h2>
-
-<Meta title="Components/Icon" component={IconComponent} />
-
-<Canvas withToolbar>
-  <Story name="Icon component" parameters={{ docs: iconDocs }} height="200px" >
-    {{
-      props: {
-        view: object('View', {
-          metadata: {
-            type: 'icon',
-          },
-          config: {
-            shape: "user",
-            size: "md",
-            direction: "up",
-            flip: "horizontal",
-            solid: true,
-            status: "danger",
-            inverse: false,
-            badge: "danger",
-            color: "",
-            badgeColor: "",
-            label: "label for accessibility",
-          }
-        }),
-      },
-      component: IconComponent,
-    }}
   </Story>
 </Canvas>
+
 <h2>Props</h2>
 <ArgsTable story = "Icon component" />
 
@@ -96,38 +88,13 @@ component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium
 <p>An icon can be configured with a tooltip to display a message on hover.</p>
 
 <Canvas withToolbar>
-  <Story name="Icon with tooltip" parameters={{ docs: iconWithTooltipDocs }} height="200px" >
-    {{
-      props: {
-        view: object('View', {
-          metadata: {
-            type: 'icon',
-          },
-          config: {
-            shape: "user",
-            size: "",
-            direction: "",
-            flip: "",
-            solid: false,
-            status: "",
-            inverse: false,
-            badge: "",
-            color: "",
-            badgeColor: "",
-            label: "",
-            tooltip: {
-              message: "hello",
-              size: "md",
-              position: "right",
-            }
-          }
-        }),
-      },
-      component: IconComponent,
-    }}
+  <Story name="Icon with tooltip"
+         parameters={{ docs: iconWithTooltipDocs }}
+         args={{ view: iconWithTooltipView }}>
+    { IconStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={IconComponent} />
+<ArgsTable story = "Icon with tooltip" />
 
