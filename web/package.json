@@ -35,7 +35,7 @@
     "storybook": "npm run docs:json && start-storybook -p 6006 -s src/assets",
     "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook",
     "preinstall": "npx npm-force-resolutions",
-    "postinstall": "rm -rf ./node_modules/cytoscape-node-html-label/dist/cytoscape-node-html-label.d.ts"
+    "postinstall": "rimraf ./node_modules/cytoscape-node-html-label/dist/cytoscape-node-html-label.d.ts"
   },
   "prettier": {
     "trailingComma": "es5",
