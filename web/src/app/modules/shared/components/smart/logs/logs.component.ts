@@ -9,6 +9,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Input,
   IterableDiffer,
   IterableDiffers,
   OnDestroy,
@@ -39,7 +40,8 @@ export class LogsComponent
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
-  containerLogs: LogEntry[] = [];
+
+  @Input() containerLogs: LogEntry[] = [];
 
   selectedContainer = '';
   selectedSince = 0;

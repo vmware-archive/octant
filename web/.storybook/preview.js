@@ -8,7 +8,10 @@ import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from '../src/app/app-routing.module';
-import { setCompodocJson } from '@storybook/addon-docs/angular';
+import {
+  setCompodocJson,
+  prepareForInline,
+} from '@storybook/addon-docs/angular';
 import docJson from '../documentation.json';
 import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { windowProvider, WindowToken } from '../src/app/window';
@@ -43,6 +46,7 @@ addDecorator(
         useFactory: themeService => () => {
           themeService.themeType.next('light')
           themeService.loadTheme();
+          console.log('theme', themeService.isLightThemeEnabled())
         },
         deps: [ThemeService],
         multi: true,

@@ -1,7 +1,6 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {LinkComponent} from "../app/modules/shared/components/presentation/link/link.component";
+import { LinkComponent } from "../app/modules/shared/components/presentation/link/link.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const linkDocs= { source: { code: `title = "Example Link"
    ref = "https://example.org"
@@ -9,32 +8,41 @@ export const linkDocs= { source: { code: `title = "Example Link"
    component.NewLink(title, value, ref)`
 }}
 
+export const linkView =  {
+  metadata: {
+    type: 'link',
+  },
+  config: {
+    value: 'Example Link',
+    ref: 'https://example.org',
+  },
+};
+
+export const LinkStoryTemplate = args => ({
+  component: { LinkComponent },
+  template: `<app-view-link [view]= "view"></app-view-link>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Link component</h1>
 <h2>Description</h2>
 
 <p>The Link component is used to present simple links</p>
 <h2>Example</h2>
 
-<Meta title="Components/Link" component={LinkComponent} />
+<Meta title="Components/Link"
+      component={LinkComponent}
+      argTypes = { argTypesView }
+/>
 
 <Canvas withToolbar>
-  <Story name="Link component" parameters={{ docs: linkDocs }} height="75px">
-  {{
-      props: {
-        view:  object('View', {
-          metadata: {
-            type: 'link',
-          },
-          config: {
-            value: 'Example Link',
-            ref: 'https://example.org',
-          },
-        }),
-      },
-      component: LinkComponent,
-      }}
+  <Story name = "Link component"
+         parameters = {{ docs: linkDocs }}
+         args= {{ view: linkView, }}>
+    { LinkStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={LinkComponent} />
+<ArgsTable story = "Link component" />

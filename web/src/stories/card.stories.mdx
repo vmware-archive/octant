@@ -1,7 +1,7 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {CardComponent} from "../app/modules/shared/components/presentation/card/card.component";
-import {CardListComponent} from "../app/modules/shared/components/presentation/card-list/card-list.component";
+import { CardComponent} from "../app/modules/shared/components/presentation/card/card.component";
+import { CardListComponent} from "../app/modules/shared/components/presentation/card-list/card-list.component";
+import {argTypesView} from "./helpers/helpers";
 
 export const cardDocs= { source: { code: `card := component.NewCard([]component.TitleComponent{component.NewText("Card Title")})
   card.SetBody(component.NewText("Card text"))
@@ -96,43 +96,56 @@ export const cardListView = {
   },
 };
 
+export const CardStoryTemplate = args => ({
+  component: { CardComponent },
+  template: `<app-view-card [view]= "view"></app-view-card>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
+
+export const CardListStoryTemplate = args => ({
+  component: { CardListComponent },
+  template: `<app-view-card-list [view]= "view"></app-view-card-list>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
+
 <h1>Card and Card List component</h1>
-<h2>Description</h2>
+<h2>Card component</h2>
 
 <p>Card component consists of a title and a body containing one or more components.
 Cards can also contain a footer that performs an action.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Cards" component={CardComponent} />
+<Meta title="Components/Cards"
+      component= { CardComponent }
+      argTypes = { argTypesView }
+/>
 
 <Canvas withToolbar>
-  <Story name="Card component" parameters={{ docs: cardDocs }} height="200px" >
-  {{
-      props: {
-        view:  object('View', cardView),
-      },
-      component: CardComponent,
-      }}
+  <Story name="Card component"
+         parameters={{ docs: cardDocs }}
+         args= {{ view: cardView }}>
+    { CardStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={CardComponent} />
+<ArgsTable story = "Card component" />
+
+<h2>Card List component</h2>
 
 <p>
 Card List component contains a list of cards
 </p>
 
 <Canvas withToolbar>
-  <Story name="Card List component" parameters={{ docs: cardListDocs }} height="300px" >
-  {{
-      props: {
-        view:  object('View', cardListView),
-      },
-      component: CardListComponent,
-  }}
+  <Story name="Card List component"
+         parameters={{ docs: cardListDocs }}
+         args= {{ view: cardListView }}>
+    { CardListStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={CardListComponent} />
+<ArgsTable story = "Card List component" />

@@ -46,30 +46,32 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   }
 
   update() {
-    const button = this.v.config;
-    if (button.modal) {
-      this.modalView = this.v.config.modal;
-      const modal = this.modalView as ModalView;
-      this.modalService.setState(modal.config.opened);
-    }
-    if (button.confirmation) {
-      this.status = 'danger';
-    } else {
-      if (button.style) {
-        this.style = button.style;
+    const button = this.v?.config;
+    if (button) {
+      if (button.modal) {
+        this.modalView = button.modal;
+        const modal = this.modalView as ModalView;
+        this.modalService.setState(modal.config.opened);
       }
-      if (button.status) {
-        if (button.status === 'disabled') {
-          this.disabled = true;
-        } else {
-          this.status = button.status;
+      if (button.confirmation) {
+        this.status = 'danger';
+      } else {
+        if (button.style) {
+          this.style = button.style;
         }
-      }
-      if (button.size) {
-        if (button.size === 'block') {
-          this.block = true;
-        } else {
-          this.size = button.size;
+        if (button.status) {
+          if (button.status === 'disabled') {
+            this.disabled = true;
+          } else {
+            this.status = button.status;
+          }
+        }
+        if (button.size) {
+          if (button.size === 'block') {
+            this.block = true;
+          } else {
+            this.size = button.size;
+          }
         }
       }
     }

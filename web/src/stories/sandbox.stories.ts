@@ -1,13 +1,15 @@
-import { storiesOf } from '@storybook/angular';
-import { object } from '@storybook/addon-knobs';
 import { big_data } from './overview.data';
+import { Meta, Story } from '@storybook/angular/types-6-0';
+import { argTypesView } from './helpers/helpers';
 
-storiesOf('Other/Sandbox', module).add('Component Sandbox', () => {
-  const view = object('JSON', big_data);
+export default {
+  title: 'Other/Sandbox',
+} as Meta;
 
+export const sandboxStory: Story = args => {
   return {
     props: {
-      view,
+      view: args.view,
     },
     template: `
       <div class="main-container">
@@ -20,4 +22,12 @@ storiesOf('Other/Sandbox', module).add('Component Sandbox', () => {
       </div>
       `,
   };
-});
+};
+
+sandboxStory.storyName = 'Component Sandbox';
+
+sandboxStory.argTypes = argTypesView;
+
+sandboxStory.args = {
+  view: big_data,
+};

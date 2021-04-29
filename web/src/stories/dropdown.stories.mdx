@@ -1,13 +1,167 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {DropdownComponent} from "../app/modules/shared/components/presentation/dropdown/dropdown.component";
+import { DropdownComponent } from "../app/modules/shared/components/presentation/dropdown/dropdown.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const dropdownDocs= { source: { code: `dropdown := component.NewDropdown("Select item", BottomLeft,
       DropdownButton, "action.octant.dev/dropdownAction", false)
-  dropdown.AddDropdownItem("first", PlainText, "First Item", "", "")
-  dropdown.AddDropdownItem("second", PlainText, "Second Item", "/links/item2", "")
+dropdown.AddDropdownItem("first", PlainText, "First Item", "", "")
+dropdown.AddDropdownItem("second", PlainText, "Second Item", "/links/item2", "")
   `
 }}
+
+export const buttonDropdownView = {
+  metadata: {
+    title: [{metadata: {type: "text"}, config: {value: "Select any item"}}],
+    type: "dropdown"
+  },
+  config: {
+    position: "bottom-left",
+    type: "button",
+    useSelection: true,
+    items: [
+      {
+        "name": "item-header",
+        "type": "header",
+        "label": "List of items"
+      },
+      {
+        "name": "first",
+        "type": "text",
+        "label": "First Item"
+      },
+      {
+        "name": "second",
+        "type": "link",
+        "label": "Second Item",
+        "url": "/items/second"
+      },
+      {
+        "name": "item-separator",
+        "type": "separator",
+      },
+      {
+        "name": "last",
+        "type": "text",
+        "label": "Very Last Item",
+      },
+    ],
+  }};
+
+export const labelDropdownView = {
+  metadata: {
+    title: [{metadata: {type: "text"}, config: {value: "Favorite fruit"}}],
+    type: "dropdown"
+  },
+  config: {
+    position: "bottom-left",
+    type: "label",
+    useSelection: false,
+    items: [
+      {
+        "name": "apple",
+        "type": "text",
+        "label": "Apple"
+      },
+      {
+        "name": "pear",
+        "type": "text",
+        "label": "Pear"
+      },
+      {
+        "name": "fig",
+        "type": "text",
+        "label": "Fig"
+      },
+      {
+        "name": "cherry",
+        "type": "text",
+        "label": "Cherry"
+      },
+    ],
+  }};
+
+export const linkDropdownView= {
+  metadata: {
+    title: [{metadata: {type: "text"}, config: {value: "Select any item"}}],
+    type: "dropdown"
+  },
+  config: {
+    position: "bottom-left",
+    type: "link",
+    "selection": "second",
+    useSelection: false,
+    items: [
+      {
+        "name": "item-header",
+        "type": "header",
+        "label": "List of items"
+      },
+      {
+        "name": "first",
+        "type": "text",
+        "label": "First Item"
+      },
+      {
+        "name": "second",
+        "type": "link",
+        "label": "Second Item",
+        "url": "/items/second"
+      },
+      {
+        "name": "item-separator",
+        "type": "separator",
+      },
+      {
+        "name": "last",
+        "type": "text",
+        "label": "Very Last Item",
+      },
+    ],
+  }}
+
+export const iconDropdownView= {
+  metadata: {
+    title: [{metadata: {type: "text"}, config: {value: "cog"}}],
+    type: "dropdown"
+  },
+  config: {
+    position: "bottom-left",
+    type: "icon",
+    items: [
+      {
+        "name": "apple",
+        "type": "text",
+        "label": "Apple"
+      },
+      {
+        "name": "pear",
+        "type": "text",
+        "label": "Pear"
+      },
+      {
+        "name": "fig",
+        "type": "text",
+        "label": "Fig"
+      },
+      {
+        "name": "cherry",
+        "type": "text",
+        "label": "Cherry"
+      },
+    ],
+  }}
+
+export const DropdownStoryTemplate = args => ({
+  component: { DropdownComponent },
+  template: `
+         <div class="main-container" style= "width: 100%; height: 100%;">
+            <app-view-dropdown [view]="view">
+            </app-view-dropdown>
+         </div>
+   `,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
 
 <h1>Dropdown component</h1>
 <h2>Description</h2>
@@ -23,61 +177,21 @@ When source contains text (e.g. for all dropdown types except for the icon), tha
 <p>Selecting an item inside the dropdown will generate an action specifying the selected item.
 Additionally, if dropdown has property <code>useSelection</code> set, the dropdown source text will be updated to match the selected item.</p>
 
-<Meta title="Components/Dropdown" component={DropdownComponent} />
+<Meta title="Components/Dropdown"
+      component= { DropdownComponent }
+      argTypes = { argTypesView }
+/>
 
 <h2>Dropdown with button</h2>
 
 <p>The source for this dropdown is a button. If <code>useSelection</code> is set, the dropdown source text will be updated every time the dropdown selection changes.</p>
 
 <Canvas withToolbar>
-  <Story name="Button Dropdown" parameters={{ docs: dropdownDocs }} height="220px">
-  {{
-    props: {
-      view: object('View',{
-        metadata: {
-          title: [{metadata: {type: "text"}, config: {value: "Select any item"}}],
-          type: "dropdown"
-        },
-        config: {
-          position: "bottom-left",
-          type: "button",
-          useSelection: true,
-          items: [
-            {
-              "name": "item-header",
-              "type": "header",
-              "label": "List of items"
-            },
-            {
-              "name": "first",
-              "type": "text",
-              "label": "First Item"
-            },
-            {
-              "name": "second",
-              "type": "link",
-              "label": "Second Item",
-              "url": "/items/second"
-            },
-            {
-              "name": "item-separator",
-              "type": "separator",
-            },
-            {
-              "name": "last",
-              "type": "text",
-              "label": "Very Last Item",
-            },
-          ],
-      }})
-    },
-    template: `
-         <div class="main-container" style= "width: 100%; height: 100%;">
-            <app-view-dropdown [view]="view">
-            </app-view-dropdown>
-         </div>
-   `,
-  }}
+  <Story name="Button Dropdown"
+         parameters={{ docs: dropdownDocs }}
+         height="220px"
+         args= {{ view: buttonDropdownView }}>
+    { DropdownStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -86,49 +200,11 @@ Additionally, if dropdown has property <code>useSelection</code> set, the dropdo
 <p>This dropdown has label as source, all other behavior is identical. </p>
 
 <Canvas withToolbar>
-  <Story name="Label Dropdown" parameters={{ docs: dropdownDocs }} height="220px">
-  {{
-    props: {
-      view: object('View',{
-        metadata: {
-          title: [{metadata: {type: "text"}, config: {value: "Favorite fruit"}}],
-          type: "dropdown"
-        },
-        config: {
-          position: "bottom-left",
-          type: "label",
-          useSelection: false,
-          items: [
-            {
-              "name": "apple",
-              "type": "text",
-              "label": "Apple"
-            },
-            {
-              "name": "pear",
-              "type": "text",
-              "label": "Pear"
-            },
-            {
-              "name": "fig",
-              "type": "text",
-              "label": "Fig"
-            },
-            {
-              "name": "cherry",
-              "type": "text",
-              "label": "Cherry"
-            },
-          ],
-      }})
-    },
-    template: `
-         <div class="main-container" style= "width: 100%; height: 100%;">
-            <app-view-dropdown [view]="view">
-            </app-view-dropdown>
-         </div>
-   `,
-  }}
+  <Story name="Label Dropdown"
+         parameters={{ docs: dropdownDocs }}
+         height="220px"
+         args= {{ view: labelDropdownView }}>
+    { DropdownStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -137,55 +213,11 @@ Additionally, if dropdown has property <code>useSelection</code> set, the dropdo
 <p>The source for this dropdown is a link. Clicking on link will open the specified url, so the only way to open the dropdown is to click on the down arrow.</p>
 
 <Canvas withToolbar>
-  <Story name="Link Dropdown" parameters={{ docs: dropdownDocs }} height="220px">
-  {{
-    props: {
-      view: object('View',{
-        metadata: {
-          title: [{metadata: {type: "text"}, config: {value: "Select any item"}}],
-          type: "dropdown"
-        },
-        config: {
-          position: "bottom-left",
-          type: "link",
-          "selection": "second",
-          useSelection: false,
-          items: [
-            {
-              "name": "item-header",
-              "type": "header",
-              "label": "List of items"
-            },
-            {
-              "name": "first",
-              "type": "text",
-              "label": "First Item"
-            },
-            {
-              "name": "second",
-              "type": "link",
-              "label": "Second Item",
-              "url": "/items/second"
-            },
-            {
-              "name": "item-separator",
-              "type": "separator",
-            },
-            {
-              "name": "last",
-              "type": "text",
-              "label": "Very Last Item",
-            },
-          ],
-      }})
-    },
-    template: `
-         <div class="main-container" style= "width: 100%; height: 100%;">
-            <app-view-dropdown [view]="view">
-            </app-view-dropdown>
-         </div>
-   `,
-  }}
+  <Story name="Link Dropdown"
+         parameters={{ docs: dropdownDocs }}
+         height="220px"
+         args= {{ view: linkDropdownView }}>
+    { DropdownStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -194,50 +226,13 @@ Additionally, if dropdown has property <code>useSelection</code> set, the dropdo
 <p>The source for this dropdown is a specified icon. Expectedly <code>useSelection</code> property has no effect for this dropdown</p>
 
 <Canvas withToolbar>
-  <Story name="Icon Dropdown" parameters={{ docs: dropdownDocs }} height="220px">
-  {{
-    props: {
-      view: object('View',{
-        metadata: {
-          title: [{metadata: {type: "text"}, config: {value: "cog"}}],
-          type: "dropdown"
-        },
-        config: {
-          position: "bottom-left",
-          type: "icon",
-          items: [
-            {
-              "name": "apple",
-              "type": "text",
-              "label": "Apple"
-            },
-            {
-              "name": "pear",
-              "type": "text",
-              "label": "Pear"
-            },
-            {
-              "name": "fig",
-              "type": "text",
-              "label": "Fig"
-            },
-            {
-              "name": "cherry",
-              "type": "text",
-              "label": "Cherry"
-            },
-          ],
-      }})
-    },
-    template: `
-         <div class="main-container" style= "width: 100%; height: 100%;">
-            <app-view-dropdown [view]="view">
-            </app-view-dropdown>
-         </div>
-   `,
-  }}
+  <Story name="Icon Dropdown"
+         parameters={{ docs: dropdownDocs }}
+         height="220px"
+         args= {{ view: iconDropdownView }}>
+    { DropdownStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={DropdownComponent} />
+<ArgsTable story = "Icon Dropdown" />

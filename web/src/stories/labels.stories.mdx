@@ -1,8 +1,8 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {LabelsComponent} from "../app/modules/shared/components/presentation/labels/labels.component";
-import {SelectorsComponent} from "../app/modules/shared/components/presentation/selectors/selectors.component";
-import {ExpressionSelectorComponent} from "../app/modules/shared/components/presentation/expression-selector/expression-selector.component";
+import { LabelsComponent } from "../app/modules/shared/components/presentation/labels/labels.component";
+import { SelectorsComponent } from "../app/modules/shared/components/presentation/selectors/selectors.component";
+import { ExpressionSelectorComponent } from "../app/modules/shared/components/presentation/expression-selector/expression-selector.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const labelsDocs= { source: { code: `labels = map[string]string{"foo": "bar"}
 component.NewLabels(labels)`
@@ -51,26 +51,47 @@ export const expressionSelectorView = {
   },
 };
 
+export const LabelsStoryTemplate = args => ({
+  component: { LabelsComponent },
+  template: `<app-view-labels [view]= "view"></app-view-labels>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+export const SelectorsStoryTemplate = args => ({
+  component: { SelectorsComponent },
+  template: `<app-view-selectors [view]= "view"></app-view-selectors>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+export const ExpressionSelectorStoryTemplate = args => ({
+  component: { ExpressionSelectorComponent },
+  template: `<app-view-expression-selector [view]= "view"></app-view-expression-selector>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Labels</h1>
 
 <p>The Labels component is used to labels that have key-value pairs.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Labels and Selectors" component={LabelsComponent} />
+<Meta title="Components/Labels and Selectors"
+      component={LabelsComponent}
+      argTypes = { argTypesView }
+/>
 
 <Canvas withToolbar>
-  <Story name="Labels" parameters={{ docs: labelsDocs }} height="75px" >
-  {{
-      props: {
-        view:  object('View', labelsView),
-      },
-      component: LabelsComponent,
-      }}
+  <Story name="Labels"
+         parameters={{ docs: labelsDocs }}
+         args= {{ view: labelsView }}>
+    { LabelsStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={LabelsComponent} />
+<ArgsTable story = "Labels" />
 
 <h1>Selectors</h1>
 
@@ -78,18 +99,15 @@ export const expressionSelectorView = {
 <h2>Example</h2>
 
 <Canvas withToolbar>
-  <Story name="Selectors" parameters={{ docs: selectorsDocs }} height="75px" >
-  {{
-      props: {
-        view:  object('View', selectorsView),
-      },
-      component: SelectorsComponent,
-      }}
+  <Story name="Selectors"
+         parameters={{ docs: selectorsDocs }}
+         args= {{ view: selectorsView }}>
+    { SelectorsStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={SelectorsComponent} />
+<ArgsTable  story = "Selectors" />
 
 <h1>Expression Selectors</h1>
 
@@ -97,15 +115,12 @@ export const expressionSelectorView = {
 <h2>Example</h2>
 
 <Canvas withToolbar>
-  <Story name="Expression Selectors" parameters={{ docs: expressionSelectorsDocs }} height="75px" >
-  {{
-      props: {
-        view:  object('View', expressionSelectorView),
-      },
-      component: ExpressionSelectorComponent,
-      }}
+  <Story name="Expression Selectors"
+         parameters={{ docs: expressionSelectorsDocs }}
+         args= {{ view: expressionSelectorView }}>
+    { ExpressionSelectorStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={ExpressionSelectorComponent} />
+<ArgsTable story = "Expression Selectors" />

@@ -1,6 +1,6 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object } from '@storybook/addon-knobs';
 import { IconComponent } from "../app/modules/shared/components/presentation/icon/icon.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const iconDocs= {source: {code: `c := component.NewIcon("user")
 c.Config.Inverse = false
@@ -11,6 +11,45 @@ c.Config.Badge = component.BadgeDanger
 c.Config.AddLabel("label for accessibility")
 `}}
 
+export const iconView = {
+  metadata: {
+    type: 'icon',
+  },
+  config: {
+    shape: "user",
+    size: "md",
+    direction: "up",
+    flip: "horizontal",
+    solid: true,
+    status: "danger",
+    inverse: false,
+    badge: "danger",
+    color: "",
+    badgeColor: "",
+    label: "label for accessibility",
+  }
+};
+
+export const IconStoryTemplate = args => ({
+  components: { IconComponent },
+  template: `<app-view-icon [view]= "view" ></app-view-icon>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+<h1>Icon Component</h1>
+<h2>Description</h2>
+<p>An Icon component is use to display icons use the API from <a href="https://clarity.design/foundation/icons/api/#icon-properties"> Clarity 5 </a></p>
+
+<h2>Example</h2>
+
+<Meta title="Components/Icon" component={IconComponent} />
+
+<Canvas withToolbar>
+  <Story name="Icon component"
+         parameters={{ docs: iconDocs }}
+         args={{ view: iconView }}>
+    { IconStoryTemplate.bind({}) }
 export const iconWithTooltipDocs = {source: {code: `
 component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
 `}}
@@ -50,6 +89,8 @@ component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium
     }}
   </Story>
 </Canvas>
+<h2>Props</h2>
+<ArgsTable story = "Icon component" />
 
 <h2>Icon with tooltip</h2>
 <p>An icon can be configured with a tooltip to display a message on hover.</p>
@@ -89,3 +130,4 @@ component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium
 
 <h2>Props</h2>
 <ArgsTable of={IconComponent} />
+

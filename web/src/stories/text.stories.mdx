@@ -1,8 +1,25 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {TextComponent} from "../app/modules/shared/components/presentation/text/text.component";
+import { TextComponent } from "../app/modules/shared/components/presentation/text/text.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const textDocs= { source: { code: `text := component.NewText("sampleText")`}}
+
+export const textView = {
+  metadata: {
+    type: 'text',
+  },
+  config: {
+    value: 'hello world',
+    isMarkdown: false,
+  },
+};
+
+export const TextStoryTemplate = args => ({
+  component: { TextComponent },
+  template: `<app-view-text [view]= "view"></app-view-text>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
 
 <h1>Text component</h1>
 <h2>Description</h2>
@@ -10,26 +27,18 @@ export const textDocs= { source: { code: `text := component.NewText("sampleText"
 <p>The Text component is used to present simple text</p>
 <h2>Example</h2>
 
-<Meta title="Components/Text" component={TextComponent} />
+<Meta title="Components/Text"
+      component={TextComponent}
+      argTypes = { argTypesView }
+/>
 
 <Canvas withToolbar>
-  <Story name="Text component" parameters={{ docs: textDocs }} height="75px" >
-  {{
-      props: {
-        view:  object('View', {
-          metadata: {
-            type: 'text',
-          },
-          config: {
-            value: 'hello world',
-            isMarkdown: false,
-          },
-        }),
-      },
-      component: TextComponent,
-      }}
+  <Story name="Text component"
+         parameters={{ docs: textDocs }}
+         args= {{ view: textView }}>
+    { TextStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={TextComponent} />
+<ArgsTable story = "Text component" />

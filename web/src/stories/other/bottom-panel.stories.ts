@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { storiesOf } from '@storybook/angular';
+import { Meta } from '@storybook/angular/types-6-0';
 
-storiesOf('Other/Bottom Panel', module).add('Panel', () => {
+export default {
+  title: 'Other/Bottom Panel',
+} as Meta;
+
+export const panelStory = () => {
   return {
     styles: [],
-
     template: `
     <div style="display: flex; flex-direction: column; height: 500px; background: hsl(198, 83%, 94%)">
         <div style="flex: 1 1 auto; background: hsl(198, 0%, 98%); overflow-y: scroll">
@@ -20,4 +23,5 @@ storiesOf('Other/Bottom Panel', module).add('Panel', () => {
     </div>
         `,
   };
-});
+};
+panelStory.storyName = 'Panel';

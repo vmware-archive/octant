@@ -1,6 +1,6 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {AccordionComponent} from "../app/modules/shared/components/presentation/accordion/accordion.component";
+import { AccordionComponent } from "../app/modules/shared/components/presentation/accordion/accordion.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const accordionDocs= { source: { code: `	accordion := component.NewAccordion("Test", []component.AccordionRow{
 		{
@@ -14,68 +14,78 @@ export const accordionDocs= { source: { code: `	accordion := component.NewAccord
 	})`
 }}
 
+export const AccordionStoryTemplate = args => ({
+  component: { AccordionComponent },
+  template: `<app-view-accordion [view]= "view"></app-view-accordion>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
+
+export const accordionView = {
+  config: {
+    rows: [
+      {
+        title: 'Row 1',
+        content: {
+          metadata: {
+            type: 'text',
+          },
+          config: {
+            value: 'row 1 component',
+          },
+        },
+      },
+      {
+        title: 'Row 2',
+        content: {
+          metadata: {
+            type: 'text',
+          },
+          config: {
+            value: 'row 2 component',
+          },
+        },
+      },
+    ],
+    allowMultipleExpanded: false,
+  },
+  metadata: {
+    type: 'accordion',
+    title: [
+      {
+        metadata: {
+          type: 'text',
+        },
+        config: {
+          value: 'accordion title',
+        },
+      },
+    ],
+  },
+};
+
 <h1>Accordion component</h1>
 <h2>Description</h2>
 
 <p>The Accordion component allows a user to view collapsed content in greater detail.</p>
 
-<Meta title="Components/Accordion" component={AccordionComponent} />
-
 <h2>Accordion component</h2>
 
 <p>By default, the accordion only allows opening one panel at a time. This can be configured to allow multiple to open.</p>
 
+<Meta title="Components/Accordion"
+      component={ AccordionComponent }
+      argTypes = { argTypesView }
+/>
+
 <Canvas withToolbar>
-  <Story name="Accordion component" parameters={{ docs: accordionDocs }} height="400px" >
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            rows: [
-              {
-                title: 'Row 1',
-                content: {
-                  metadata: {
-                    type: 'text',
-                  },
-                  config: {
-                    value: 'row 1 component',
-                  },
-                },
-              },
-              {
-                title: 'Row 2',
-                content: {
-                  metadata: {
-                    type: 'text',
-                  },
-                  config: {
-                    value: 'row 2 component',
-                  },
-                },
-              },
-            ],
-            allowMultipleExpanded: false,
-          },
-          metadata: {
-            type: 'accordion',
-            title: [
-              {
-                metadata: {
-                  type: 'text',
-                },
-                config: {
-                  value: 'accordion title',
-                },
-              },
-            ],
-          },
-        }),
-      },
-      component: AccordionComponent,
-    }}
+  <Story name="Accordion component"
+         component={AccordionComponent}
+         parameters={{ docs: accordionDocs }}
+         args= {{ view: accordionView }}> >
+    { AccordionStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={AccordionComponent} />
+<ArgsTable story = "Accordion component" />

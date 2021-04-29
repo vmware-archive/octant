@@ -1,6 +1,6 @@
 import {Meta, Preview, Props, Story} from '@storybook/addon-docs/blocks';
-import {object} from '@storybook/addon-knobs';
-import {StepperComponent} from '../app/modules/shared/components/presentation/stepper/stepper.component';
+import { StepperComponent } from '../app/modules/shared/components/presentation/stepper/stepper.component';
+import { argTypesView } from "./helpers/helpers";
 
 export const stepperDocs = {
   source: {code: `title = "Example Stepper" component.NewStepper()`},
@@ -91,28 +91,32 @@ export const stepperView = {
   },
 };
 
+export const StepperStoryTemplate = args => ({
+  component: { StepperComponent },
+  template: `<app-stepper [view]= "view"></app-stepper>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Stepper component</h1>
 <h2>Description</h2>
 
 <p>The Stepper component provides guided steps to a user</p>
 <h2>Example</h2>
 
-<Meta title="Components/Stepper" component={StepperComponent}/>
+<Meta title="Components/Stepper"
+      component= { StepperComponent }
+      argTypes = { argTypesView }
+/>
 
 <Preview withToolbar>
   <Story
     name="Stepper component"
     parameters={{docs: stepperDocs}}
-    height="450px"
-  >
-    {{
-      props: {
-        view: object('View', stepperView),
-      },
-      component: StepperComponent,
-    }}
+    args= {{ view: stepperView }}>
+    { StepperStoryTemplate.bind({}) }
   </Story>
 </Preview>
 
 <h2>Props</h2>
-<Props of={StepperComponent}/>
+<Props story = "Stepper component"/>
