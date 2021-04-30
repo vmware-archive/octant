@@ -6,8 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -79,6 +82,15 @@ func (m *Metadata) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 		return fmt.Errorf("add summary to layout: %w", err)
 	}
 
+	managedFields, err := m.managedFields()
+	if err != nil {
+		return err
+	}
+	if managedFields != nil {
+		if err := section.Add(managedFields, component.WidthFull); err != nil {
+			return fmt.Errorf("add managedFields to layout: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -117,4 +129,43 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 
 	summary := component.NewSummary("Metadata", sections...)
 	return summary, nil
+}
+
+func (m *Metadata) managedFields() (*component.Table, error) {
+	a, err := meta.Accessor(m.object)
+	if err != nil {
+		return nil, err
+	}
+	if len(a.GetManagedFields()) == 0 {
+		return nil, nil
+	}
+
+	table := component.NewTable("Managed Fields", "There are no managed fields!", component.NewTableCols("Manager", "Operation", "Time", "Fields"))
+	for _, field := range a.GetManagedFields() {
+		fields, err := convertFieldsToFormattedString(field.FieldsV1)
+		if err != nil {
+			return nil, err
+		}
+
+		row := component.TableRow{}
+		row["Manager"] = component.NewText(field.Manager)
+		row["Operation"] = component.NewText(string(field.Operation))
+		row["Time"] = component.NewTimestamp(field.Time.Rfc3339Copy().UTC())
+		row["Fields"] = component.NewCodeBlock(fields)
+		table.Add(row)
+	}
+	table.Sort("Time")
+	return table, nil
+}
+
+// convertFieldsToFormattedString formats managed fields
+func convertFieldsToFormattedString(field *metav1.FieldsV1) (string, error) {
+	if field == nil {
+		return "", fmt.Errorf("cannot convert nil field")
+	}
+	var out bytes.Buffer
+	if err := json.Indent(&out, field.Raw, "", "\t"); err != nil {
+		return "", err
+	}
+	return string(out.Bytes()), nil
 }

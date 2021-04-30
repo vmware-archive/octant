@@ -8,8 +8,9 @@ package printer
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -29,9 +30,25 @@ func Test_Metadata(t *testing.T) {
 	metadata, err := NewMetadata(deployment, tpo.link)
 	require.NoError(t, err)
 
+	fieldEntry := metav1.ManagedFieldsEntry{
+		Manager:    "octant",
+		Operation:  metav1.ManagedFieldsOperationUpdate,
+		Time:       testutil.CreateTimestamp(),
+		FieldsType: "FieldsV1",
+		FieldsV1: &metav1.FieldsV1{
+			Raw: []byte(`{"hello": "world"}`),
+		},
+	}
+	deployment.ManagedFields = []metav1.ManagedFieldsEntry{
+		fieldEntry,
+	}
+
 	require.NoError(t, metadata.AddToFlexLayout(fl))
 
 	got := fl.ToComponent("Summary")
+
+	fieldJSONData, err := convertFieldsToFormattedString(fieldEntry.FieldsV1)
+	require.NoError(t, err)
 
 	expected := component.NewFlexLayout("Summary")
 	expected.AddSections([]component.FlexLayoutSection{
@@ -45,8 +62,19 @@ func Test_Metadata(t *testing.T) {
 					},
 				}...),
 			},
+			{
+				Width: component.WidthFull,
+				View: component.NewTableWithRows("Managed Fields", "There are no managed fields!", component.NewTableCols("Manager", "Operation", "Time", "Fields"), []component.TableRow{
+					{
+						"Manager":   component.NewText("octant"),
+						"Operation": component.NewText(string(metav1.ManagedFieldsOperationUpdate)),
+						"Time":      component.NewTimestamp(testutil.Time()),
+						"Fields":    component.NewCodeBlock(fieldJSONData),
+					},
+				}),
+			},
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }

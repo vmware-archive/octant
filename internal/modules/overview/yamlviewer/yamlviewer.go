@@ -7,6 +7,7 @@ package yamlviewer
 
 import (
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -42,7 +43,14 @@ func new(object runtime.Object) (*yamlViewer, error) {
 func (yv *yamlViewer) ToComponent() (*component.Editor, error) {
 	y := component.NewEditor(component.TitleFromString("YAML"), "", false)
 	y.Config.Language = "yaml"
-	if err := y.SetValueFromObject(yv.object); err != nil {
+	obj := yv.object.DeepCopyObject()
+	a, err := meta.Accessor(obj)
+	if err != nil {
+		return nil, err
+	}
+	a.SetManagedFields(nil)
+
+	if err := y.SetValueFromObject(obj); err != nil {
 		return nil, errors.Wrap(err, "add YAML data")
 	}
 
