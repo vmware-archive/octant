@@ -29,7 +29,7 @@ type ButtonStatus string
 const (
 	// ButtonSizeBlock is a full width button
 	ButtonSizeBlock ButtonSize = "block"
-	// ButtonSizeLarge is a small button
+	// ButtonSizeMedium is a clarity small button
 	ButtonSizeMedium ButtonSize = "md"
 )
 
