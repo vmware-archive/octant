@@ -36,7 +36,7 @@ func daemonSet(_ context.Context, object runtime.Object, _ store.Store) (ObjectS
 			nodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
 		}, nil
-	case status.NumberAvailable != status.NumberReady:
+	case status.DesiredNumberScheduled != status.NumberReady:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
