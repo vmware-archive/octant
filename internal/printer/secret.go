@@ -103,10 +103,11 @@ func (s *SecretConfiguration) Create(options Options) (*component.Summary, error
 func describeSecretData(secret corev1.Secret) (*component.Table, error) {
 	table := component.NewTable("Data", "This secret has no data!", secretDataCols)
 
-	for key := range secret.Data {
+	for key, value := range secret.Data {
 		row := component.TableRow{}
-		row["Key"] = component.NewText(key)
-
+		keyText := component.NewText(key)
+		keyText.AddClipboard(string(value))
+		row["Key"] = keyText
 		table.Add(row)
 	}
 

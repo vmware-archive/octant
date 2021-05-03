@@ -136,9 +136,13 @@ func Test_describeSecretData(t *testing.T) {
 
 	cols := component.NewTableCols("Key")
 	expected := component.NewTable("Data", "This secret has no data!", cols)
+	barText := component.NewText("bar")
+	barText.AddClipboard(string([]byte{0, 1, 2, 3}))
+	fooText := component.NewText("foo")
+	fooText.AddClipboard(string([]byte{0, 1, 2, 3}))
 	expected.Add([]component.TableRow{
-		{"Key": component.NewText("bar")},
-		{"Key": component.NewText("foo")},
+		{"Key": barText},
+		{"Key": fooText},
 	}...)
 
 	component.AssertEqual(t, expected, got)

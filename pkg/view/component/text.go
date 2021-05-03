@@ -43,6 +43,8 @@ type TextConfig struct {
 	TrustedContent bool `json:"trustedContent,omitempty"`
 	// Status sets the status of the component.
 	Status TextStatus `json:"status,omitempty"`
+	// ClipboardValue adds a copy button with text to be added to clipboard
+	ClipboardValue string `json:"clipboardValue,omitempty"`
 }
 
 // NewText creates a text component
@@ -102,6 +104,11 @@ func (t *Text) DisableTrustedContent() {
 // DisableMarkdown disables markdown for this text component.
 func (t *Text) DisableMarkdown() {
 	t.Config.IsMarkdown = false
+}
+
+// AddClipboard adds a clipboard button next to text
+func (t *Text) AddClipboard(value string) {
+	t.Config.ClipboardValue = value
 }
 
 // SetStatus sets the status of the text component.

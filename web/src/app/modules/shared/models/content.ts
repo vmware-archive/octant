@@ -379,6 +379,7 @@ export interface TextView extends View {
     isMarkdown?: boolean;
     trustedContent?: boolean;
     status?: number;
+    clipboardValue?: string;
   };
 }
 
