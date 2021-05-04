@@ -1,6 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {FlexlayoutComponent} from "../app/modules/shared/components/presentation/flexlayout/flexlayout.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const flexDocs= { source: { code: `flexLayout := component.NewFlexLayout("Summary")
 flexLayout.AddSections([]component.FlexLayoutSection{
@@ -118,6 +117,12 @@ export const flexView = {
   },
 };
 
+export const FlexlayoutStoryTemplate = args => ({
+  template: `<app-view-flexlayout [view]= "view"></app-view-flexlayout>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Flex Layout component</h1>
 <h2>Description</h2>
 
@@ -126,18 +131,15 @@ The layout can be divided into three possible widths: full, half, and quarter.</
 
 <h2>Example</h2>
 
-<Meta title="Components/Flex Layout" component={FlexlayoutComponent} />
+<Meta title="Components/Flex Layout" argTypes = { argTypesView }/>
 
 <Canvas withToolbar>
-  <Story name="Flex Layout component" parameters={{ docs: flexDocs }} height="250px" >
-  {{
-      props: {
-        view: object('View', flexView),
-      },
-      component: FlexlayoutComponent,
-      }}
+  <Story name="Flex Layout component"
+         parameters={{ docs: flexDocs }}
+         args= {{ view: flexView }}>
+    { FlexlayoutStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={FlexlayoutComponent} />
+<ArgsTable story = "Flex Layout component" />

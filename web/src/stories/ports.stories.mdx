@@ -1,6 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {PortsComponent} from "../app/modules/shared/components/presentation/ports/ports.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const portsDocs= { source: { code: `apiVersion, kind := gvk.ToAPIVersionAndKind()
     pfs := component.PortForwardState{}
@@ -49,6 +48,12 @@ export const portsView = {
   },
 };
 
+export const PortsStoryTemplate = args => ({
+  template: `<app-view-ports [view]= "view"></app-view-ports>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Ports component</h1>
 <h2>Description</h2>
 <p>
@@ -58,18 +63,14 @@ export const portsView = {
 </p>
 <h2>Example</h2>
 
-<Meta title="Components/Ports" component={PortsComponent} />
+<Meta title="Components/Ports" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-  <Story name="Ports component" parameters={{ docs: portsDocs }} height="75px">
-  {{
-    props: {
-      view: object('View', portsView)
-    },
-    component: PortsComponent,
-  }}
-  </Story>
+  <Story name="Ports component"
+         parameters={{ docs: portsDocs }}
+         args= {{ view: portsView }}>
+    { PortsStoryTemplate.bind({}) }  </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={PortsComponent} />
+<ArgsTable story = "Ports component"/>

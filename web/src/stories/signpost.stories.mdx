@@ -1,6 +1,5 @@
 import {ArgsTable, Canvas, Meta, Story} from '@storybook/addon-docs/blocks';
-import {object} from '@storybook/addon-knobs';
-import {SignpostComponent} from "../app/modules/shared/components/presentation/signpost/signpost.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const signpostDocs = {
   source: {
@@ -10,6 +9,40 @@ c.SetPosition = PositionTopMiddle
   }
 }
 
+export const signpostView= {
+  "metadata": {
+    "type": "signpost"
+  },
+  "config": {
+    "trigger": {
+      "metadata": {
+        "type": "icon"
+      },
+      "config": {
+        "shape": "user",
+        "size": "",
+        "direction": "",
+        "solid": false,
+        "inverse": false,
+        "badge": "",
+        "color": "",
+        "badgeColor": "",
+        "label": "",
+      }
+    },
+    "message": "Message",
+    "position": "right-middle"
+  }
+};
+
+export const SignpostStoryTemplate = args => ({
+  template: `<div style="padding-top: 32px;">
+                <app-signpost [view]= "view"></app-signpost>
+             </div>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Signpost Component</h1>
 <h2>Description</h2>
 <p>An Signpost component is used to display a message by clicking on a component.</p>
@@ -18,42 +51,16 @@ c.SetPosition = PositionTopMiddle
 
 <h2>Example</h2>
 
-<Meta title="Components/Signpost" component={SignpostComponent}/>
+<Meta title="Components/Signpost" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-  <Story name="Signpost component" parameters={{docs: signpostDocs}} height="200px">
-    {{
-      props: {
-        view: object('View', {
-          "metadata": {
-            "type": "signpost"
-          },
-          "config": {
-            "trigger": {
-              "metadata": {
-                "type": "icon"
-              },
-              "config": {
-                "shape": "user",
-                "size": "",
-                "direction": "",
-                "solid": false,
-                "inverse": false,
-                "badge": "",
-                "color": "",
-                "badgeColor": "",
-                "label": "",
-              }
-            },
-            "message": "Message",
-            "position": "right-middle"
-          }
-        }),
-      },
-      component: SignpostComponent,
-    }}
+  <Story name="Signpost component"
+         parameters={{docs: signpostDocs}}
+         height="120px"
+         args= {{ view: signpostView }}>
+    { SignpostStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={SignpostComponent}/>
+<ArgsTable story = "Signpost component"/>

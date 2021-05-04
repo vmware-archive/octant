@@ -1,6 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import { ButtonComponent } from "../app/modules/shared/components/presentation/button/button.component";
+import {argTypesView} from './helpers/helpers';
 
 export const buttonDocs= [
   { source: { code: `
@@ -67,9 +66,124 @@ export const buttonSizeDocs= [
   }},
 ]
 
+export const buttonView= {
+  config: {
+    name: 'Delete',
+    payload: {},
+    confirmation: {
+      title: 'Delete Pod',
+      body: 'Are you sure you want to delete *Pod* **pod**?',
+    },
+  },
+  metadata: {
+    type: 'button',
+  }
+};
 
+export const buttonViewSize= {
+  config: {
+    name: 'Button Size Block',
+    payload: {},
+    size: 'block'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
 
+export const buttonLarge =  {
+  config: {
+    name: 'Button Size Large',
+    payload: {},
+    size: 'lg'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
 
+export const buttonSuccess = {
+  config: {
+    name: 'Button Status Success',
+    payload: {},
+    status: 'success'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonInfo = {
+  config: {
+    name: 'Button Status Info',
+    payload: {},
+    status: 'info'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonDanger= {
+  config: {
+    name: 'Button Status Danger',
+    payload: {},
+    status: 'danger'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonDisabled = {
+  config: {
+    name: 'Button Status Disabled',
+    payload: {},
+    status: 'disabled'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonOutline = {
+  config: {
+    name: 'Button Style Outline',
+    payload: {},
+    style: 'outline'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonSolid = {
+  config: {
+    name: 'Button Style Solid',
+    payload: {},
+    style: 'primary'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const buttonFlat = {
+  config: {
+    name: 'Button Style Flat',
+    payload: {},
+    style: 'link'
+  },
+  metadata: {
+    type: 'button',
+  },
+};
+
+export const ButtonStoryTemplate = args => ({
+  template: `<app-button [view]= "view"></app-button>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
 
 <h1>Button component</h1>
 <h2>Description</h2>
@@ -79,28 +193,13 @@ export const buttonSizeDocs= [
 
 <h2>Example</h2>
 
-<Meta title="Components/Button" component={ButtonComponent} />
+<Meta title="Components/Button" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-  <Story name="Button component" parameters={{ docs: buttonDocs[0] }} height="150px">
-    {{
-        props: {
-          view:  object('View', {
-            config: {
-              name: 'Delete',
-              payload: {},
-              confirmation: {
-                title: 'Delete Pod',
-                body: 'Are you sure you want to delete *Pod* **pod**?',
-              },
-            },
-            metadata: {
-              type: 'button',
-            },
-          }),
-        },
-        component: ButtonComponent,
-    }}
+  <Story name="Button component"
+         parameters={{ docs: buttonDocs[0] }}
+         args= {{ view: buttonView }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -109,39 +208,15 @@ export const buttonSizeDocs= [
 <h2>Example</h2>
 
 <Canvas withToolbar>
-  <Story name="Button size block" parameters={{ docs: buttonSizeDocs[0] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Size Block',
-            payload: {},
-            size: 'block'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button size block"
+         parameters={{ docs: buttonSizeDocs[0] }}
+         args= {{ view: buttonViewSize }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button size large" parameters={{ docs: buttonSizeDocs[1] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Size Large',
-            payload: {},
-            size: 'lg'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button size large"
+         parameters={{ docs: buttonSizeDocs[1] }}
+         args= {{ view: buttonLarge }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -151,73 +226,25 @@ export const buttonSizeDocs= [
 <h2>Example</h2>
 
 <Canvas withToolbar>
-  <Story name="Button status success" parameters={{ docs: buttonStatusDocs[0] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Status Success',
-            payload: {},
-            status: 'success'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button status success"
+         parameters={{ docs: buttonStatusDocs[0] }}
+         args= {{ view: buttonSuccess }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button status info" parameters={{ docs: buttonStatusDocs[1] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Status Info',
-            payload: {},
-            status: 'info'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button status info"
+         parameters={{ docs: buttonStatusDocs[1] }}
+         args= {{ view: buttonInfo }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button status danger" parameters={{ docs: buttonStatusDocs[2] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Status Danger',
-            payload: {},
-            status: 'danger'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button status danger"
+         parameters={{ docs: buttonStatusDocs[2] }}
+         args= {{ view: buttonDanger }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button status disabled" parameters={{ docs: buttonStatusDocs[3] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Status Disabled',
-            payload: {},
-            status: 'disabled'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button status disabled"
+         parameters={{ docs: buttonStatusDocs[3] }}
+         args= {{ view: buttonDisabled }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -226,58 +253,22 @@ export const buttonSizeDocs= [
 <h2>Example</h2>
 
 <Canvas withToolbar>
-  <Story name="Button style outline" parameters={{ docs: buttonStyleDocs[0] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Style Outline',
-            payload: {},
-            style: 'outline'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button style outline"
+         parameters={{ docs: buttonStyleDocs[0] }}
+         args= {{ view: buttonOutline }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button style solid" parameters={{ docs: buttonStyleDocs[1] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Style Solid',
-            payload: {},
-            style: 'primary'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button style solid"
+         parameters={{ docs: buttonStyleDocs[1] }}
+         args= {{ view: buttonSolid }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
-  <Story name="Button style flat" parameters={{ docs: buttonStyleDocs[2] }} height="150px">
-    {{
-      props: {
-        view:  object('View', {
-          config: {
-            name: 'Button Style Flat',
-            payload: {},
-            style: 'link'
-          },
-          metadata: {
-            type: 'button',
-          },
-        }),
-      },
-      component: ButtonComponent,
-    }}
+  <Story name="Button style flat"
+         parameters={{ docs: buttonStyleDocs[2] }}
+         args= {{ view: buttonFlat }}>
+    { ButtonStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={ButtonComponent} />
+<ArgsTable story = "Button component" />

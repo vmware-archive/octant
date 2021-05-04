@@ -1,7 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object } from '@storybook/addon-knobs';
-import {DatagridComponent} from "../app/modules/shared/components/presentation/datagrid/datagrid.component";
-import {TableComponent} from "../app/modules/shared/components/presentation/table/table.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const tableDocs= {source: {code: `cols := component.NewTableCols("A", "B")
 table := component.NewTable("Table Title", "Empty text", cols)
@@ -58,6 +56,208 @@ export const cardView = {
   },
 };
 
+export const tableView1 = {
+  metadata: {
+    type: 'table',
+    title: [textView],
+  },
+  config: {
+    columns: [
+      {
+        name: 'A',
+        accessor: 'A',
+      },
+      {
+        name: 'B',
+        accessor: 'B',
+      },
+      {
+        name: 'C',
+        accessor: 'C',
+      },
+    ],
+    rows: [
+      {
+        A: {
+          config: {
+            value: '1',
+          },
+          metadata: {
+            type: 'text'
+          },
+        },
+        B: {
+          config: {
+            value: '2',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+        C: {
+          config: {
+            value: '5',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+      },
+    ],
+    emptyContent: 'Empty text',
+    loading: false,
+    filters: {},
+  },
+};
+
+export const tableView2 = {
+  metadata: {
+    type: 'table',
+    title: [textView],
+  },
+  config: {
+    columns: [
+      {
+        name: 'A',
+        accessor: 'A',
+      },
+      {
+        name: 'B',
+        accessor: 'B',
+      },
+      {
+        name: 'C',
+        accessor: 'C',
+      },
+    ],
+    rows: [
+      {
+        _expand: {
+          metadata: {
+            type: 'expandableRow',
+          },
+          config: {
+            replace: false,
+            body: [cardView],
+          },
+        },
+        A: {
+          config: {
+            value: '1',
+          },
+          metadata: {
+            type: 'text'
+          },
+        },
+        B: {
+          config: {
+            value: '2',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+        C: {
+          config: {
+            value: '3',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+      },
+      {
+        _expand: {
+          metadata: {
+            type: 'expandableRow',
+          },
+          config: {
+            replace: false,
+            body: [cardView, cardView, cardView, cardView],
+          },
+        },
+        A: {
+          config: {
+            value: '4',
+          },
+          metadata: {
+            type: 'text'
+          },
+        },
+        B: {
+          config: {
+            value: '5',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+        C: {
+          config: {
+            value: '6',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+      },
+    ],
+    emptyContent: 'Empty text',
+    loading: false,
+    filters: {},
+  },
+};
+
+export const tableView3 = {
+  metadata: {
+    type: 'table',
+  },
+  config: {
+    columns: [
+      {
+        name: 'A',
+        accessor: 'A',
+      },
+      {
+        name: 'B',
+        accessor: 'B',
+      },
+    ],
+    rows: [
+      {
+        A: {
+          config: {
+            value: '1',
+          },
+          metadata: {
+            type: 'text'
+          },
+        },
+        B: {
+          config: {
+            value: '2',
+          },
+          metadata: {
+            type: 'text',
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const TableStoryTemplate = args => ({
+  template: `<app-view-table [view]= "view"></app-view-table>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+export const DatagridStoryTemplate = args => ({
+  template: `<app-view-datagrid [view]= "view"></app-view-datagrid>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Table Component</h1>
 <h2>Description</h2>
 
@@ -65,72 +265,17 @@ export const cardView = {
 
 <p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
 
-<Meta title="Components/Table" component={DatagridComponent} />
+<Meta title="Components/Table" argTypes = { argTypesView } />
 
 <h2>Table component</h2>
 
 <p>A table component with filtering, pagination, and title. The number of items per page can also be configured.</p>
 
 <Canvas withToolbar>
-  <Story name="Table component" parameters={{ docs: tableDocs }} height="250px" >
-  {{
-    props: {
-      view: object('View', {
-        metadata: {
-          type: 'table',
-          title: [textView],
-        },
-        config: {
-          columns: [
-            {
-              name: 'A',
-              accessor: 'A',
-            },
-            {
-              name: 'B',
-              accessor: 'B',
-            },
-            {
-              name: 'C',
-              accessor: 'C',
-            },
-          ],
-          rows: [
-            {
-              A: {
-                config: {
-                  value: '1',
-                },
-                metadata: {
-                  type: 'text'
-                },
-              },
-              B: {
-                config: {
-                  value: '2',
-                },
-                metadata: {
-                  type: 'text',
-                },
-              },
-              C: {
-                config: {
-                  value: '5',
-                },
-                metadata: {
-                  type: 'text',
-                },
-              },
-            },
-          ],
-          emptyContent: 'Empty text',
-          loading: false,
-          filters: {},
-        },
-      }),
-    },
-    component: DatagridComponent,
-  }}
+  <Story name="Table component"
+         parameters={{ docs: tableDocs }}
+         args= {{ view: tableView1 }}>
+    { DatagridStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -140,165 +285,27 @@ export const cardView = {
 The component can be configured to replace the contents of the row.</p>
 
 <Canvas withToolbar>
-  <Story name="Table component expandable row" parameters={{ docs: tableExpandableRowDocs }} height="390px" >
-    {{
-      props: {
-        view: object('View', {
-          metadata: {
-            type: 'table',
-            title: [textView],
-          },
-          config: {
-            columns: [
-              {
-                name: 'A',
-                accessor: 'A',
-              },
-              {
-                name: 'B',
-                accessor: 'B',
-              },
-              {
-                name: 'C',
-                accessor: 'C',
-              },
-            ],
-            rows: [
-              {
-                _expand: {
-                  metadata: {
-                    type: 'expandableRow',
-                  },
-                  config: {
-                    replace: false,
-                    body: [cardView],
-                  },
-                },
-                A: {
-                  config: {
-                    value: '1',
-                  },
-                  metadata: {
-                    type: 'text'
-                  },
-                },
-                B: {
-                  config: {
-                    value: '2',
-                  },
-                  metadata: {
-                    type: 'text',
-                  },
-                },
-                C: {
-                  config: {
-                    value: '3',
-                  },
-                  metadata: {
-                    type: 'text',
-                  },
-                },
-              },
-              {
-                _expand: {
-                  metadata: {
-                    type: 'expandableRow',
-                  },
-                  config: {
-                    replace: false,
-                    body: [cardView, cardView, cardView, cardView],
-                  },
-                },
-                A: {
-                  config: {
-                    value: '4',
-                  },
-                  metadata: {
-                    type: 'text'
-                  },
-                },
-                B: {
-                  config: {
-                    value: '5',
-                  },
-                  metadata: {
-                    type: 'text',
-                  },
-                },
-                C: {
-                  config: {
-                    value: '6',
-                  },
-                  metadata: {
-                    type: 'text',
-                  },
-                },
-              },
-            ],
-            emptyContent: 'Empty text',
-            loading: false,
-            filters: {},
-          },
-        }),
-      },
-      component: DatagridComponent,
-    }}
+  <Story name="Table component expandable row"
+         parameters={{ docs: tableExpandableRowDocs }}
+         args= {{ view: tableView2 }}>
+    { DatagridStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={DatagridComponent} />
+<ArgsTable story = "Table component expandable row" />
 
 <h2>Table with summary</h2>
 
 <p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
 
 <Canvas withToolbar>
-  <Story name="Table used with summary" parameters={{ docs: tableDocs }} height="" >
-  {{
-    props: {
-      view: object('View', {
-        metadata: {
-          type: 'table',
-        },
-        config: {
-          columns: [
-            {
-              name: 'A',
-              accessor: 'A',
-            },
-            {
-              name: 'B',
-              accessor: 'B',
-            },
-          ],
-          rows: [
-            {
-              A: {
-                config: {
-                  value: '1',
-                },
-                metadata: {
-                  type: 'text'
-                },
-              },
-              B: {
-                config: {
-                  value: '2',
-                },
-                metadata: {
-                  type: 'text',
-                },
-              },
-            },
-          ],
-        },
-      }),
-    },
-    component: TableComponent,
-  }}
+  <Story name="Table used with summary"
+         parameters={{ docs: tableDocs }}
+         args= {{ view: tableView3 }}>
+    { TableStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={TableComponent} />
+<ArgsTable story = "Table used with summary" />

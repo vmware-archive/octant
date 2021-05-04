@@ -4,8 +4,8 @@
   size="{{ size }}"
   disabled="{{ disabled }}"
   block="{{ block }}"
-  (click)="onClick(v.config.payload, v.config.confirmation, v.config.modal)">
-  {{ v.config.name }}
+  (click)="onClick(v?.config?.payload, v?.config?.confirmation, v?.config?.modal)">
+  {{ v?.config?.name }}
 </cds-button>
 
 <app-view-modal *ngIf="modalView" [view]="modalView"></app-view-modal>

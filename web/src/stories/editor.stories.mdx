@@ -1,7 +1,5 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import { EditorComponent } from '../app/modules/shared/components/smart/editor/editor.component';
+import { argTypesView } from "./helpers/helpers";
 
 export const editorDocs= { source: { code: `data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
        component.NewEditor(component.TitleFromString("YAML"), data, false)`
@@ -35,6 +33,16 @@ export const editorView = {
   },
 };
 
+export const EditorStoryTemplate = args => ({
+  template: `<div class="content-container">
+              <div class="content-area" style="height:500px">
+                  <app-view-editor [view]="view"></app-view-editor>
+              </div>
+            </div>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
 <h1>Editor component</h1>
 <h2>Description</h2>
 
@@ -43,26 +51,15 @@ export const editorView = {
 </p>
 <h2>Example</h2>
 
-<Meta title="Components/Editor" component={EditorComponent} />
+<Meta title="Components/Editor" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-  <Story name="Editor component" parameters={{ docs: editorDocs }} height="500px">
-  {{
-    props: {
-      view: object('View', editorView),
-    },
-    template: `
-      <div class="main-container">
-          <div class="content-container">
-              <div class="content-area">
-                  <app-view-editor [view]="view"></app-view-editor>
-              </div>
-          </div>
-      </div>
-      `,
-  }}
+  <Story name="Editor component"
+         parameters={{ docs: editorDocs }}
+         args= {{ view: editorView }}>
+    { EditorStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={EditorComponent} />
+<ArgsTable name = "Editor component" />

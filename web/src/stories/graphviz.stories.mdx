@@ -1,9 +1,22 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {GraphvizComponent} from "../app/modules/shared/components/presentation/graphviz/graphviz.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const graphvizDocs= { source: { code: `graph := component.NewGraphviz("digraph {a -> b}`}}
+
+export const graphvizView = {
+  metadata: {
+    type: 'graphviz',
+  },
+  config: {
+    dot: 'digraph {a -> b}'
+  },
+};
+
+export const GraphvizStoryTemplate = args => ({
+  template: `<app-view-graphviz [view]= "view" ></app-view-graphviz>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
 
 <h1>Graphviz component</h1>
 <h2>Description</h2>
@@ -11,25 +24,15 @@ export const graphvizDocs= { source: { code: `graph := component.NewGraphviz("di
 <p>The Graphviz component is used to graphviz markdown to PNGs graphs.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Graphviz" decorators={[ withKnobs({escapeHTML: false})]} component={GraphvizComponent} />
+<Meta title="Components/Graphviz" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-<Story name="Graphviz" parameters={{ docs: graphvizDocs }} height="250px">
-{{
-    props: {
-      view:  object('View', {
-        metadata: {
-          type: 'graphviz',
-        },
-        config: {
-          dot: 'digraph {a -> b}'
-        },
-      }),
-    },
-    component: GraphvizComponent,
-    }}
-</Story>
+  <Story name = "Graphviz component"
+         parameters={{ docs: graphvizDocs }}
+         args= {{ view: graphvizView }}>
+    { GraphvizStoryTemplate.bind({}) }
+  </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={GraphvizComponent} />
+<ArgsTable story = "Graphviz component"/>

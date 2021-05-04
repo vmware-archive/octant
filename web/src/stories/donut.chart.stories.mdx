@@ -1,6 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {DonutChartComponent} from "../app/modules/shared/components/presentation/donut-chart/donut-chart.component";
+import { argTypesView } from './helpers/helpers';
 
 export const donutDocs= { source: { code: `component.DonutChart{
 	Config: component.DonutChartConfig{
@@ -138,6 +137,15 @@ export const donutChartView3 = {
   },
 };
 
+export const DonutStoryTemplate = args => ({
+  template: `<div class="main-container" style= "width: 50%; height: 50%; margin: auto;">
+                <app-view-donut-chart [view]="view"></app-view-donut-chart>
+             </div>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
+
+
 <h1>Donut chart component</h1>
 <h2>Description</h2>
 
@@ -145,7 +153,7 @@ export const donutChartView3 = {
 to show application health and pod count.</p>
 <h2>Standard Donut chart</h2>
 
-<Meta title="Components/Donut" component={DonutChartComponent} />
+<Meta title="Components/Donut" argTypes = { argTypesView } />
 
 Donut chart displays data provided as array of segments inside a circular graph.
 Originally Donut chart was used only to visualize the application health,
@@ -154,17 +162,11 @@ The chart is using the <code>description</code> field for tooltip if that's prov
 otherwise it constructs the tooltip based on segment data like in example below.
 
 <Canvas withToolbar>
-  <Story name="Donut chart" parameters={{ docs: donutDocs }} height="400px" >
-  {{
-      props: {
-        view:  object('View', donutChartView),
-      },
-      template: `
-        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
-          <app-view-donut-chart [view]="view"></app-view-donut-chart>
-        </div>
-     `,
-      }}
+  <Story name="Donut chart"
+         parameters={{ docs: donutDocs }}
+         height="400px"
+         args= {{ view: donutChartView }}>
+    { DonutStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
@@ -175,20 +177,13 @@ for example segments with <code>error</code> status are displayed with red backg
 However, that behavior can be overridden if color info is provided for on a segment level.
 
 <Canvas withToolbar>
-  <Story name="Donut chart with custom colors" parameters={{ docs: donutWithCustomSegmentsDocs }} height="400px" >
-  {{
-      props: {
-        view:  object('View', donutChartView2),
-      },
-      template: `
-        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
-          <app-view-donut-chart [view]="view"></app-view-donut-chart>
-        </div>
-     `,
-      }}
+  <Story name="Donut chart with custom colors"
+         parameters={{ docs: donutWithCustomSegmentsDocs }}
+         height="400px"
+         args= {{ view: donutChartView2 }}>
+    { DonutStoryTemplate.bind({}) }
   </Story>
 </Canvas>
-
 
 <h2>Using variable segment thickness</h2>
 It is also possible to change the thickness,
@@ -197,20 +192,13 @@ Thickness value is trimmed to be inside [2-100] interval,
 where 2 is barely visible and 100 turns it to a pie chart.
 
 <Canvas withToolbar>
-  <Story name="Donut chart with custom thickness" parameters={{ docs: donutWithCustomSegmentsDocs }} height="400px" >
-  {{
-      props: {
-        view:  object('View', donutChartView3),
-      },
-      template: `
-        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
-          <app-view-donut-chart [view]="view"></app-view-donut-chart>
-        </div>
-     `,
-      }}
+  <Story name="Donut chart with custom thickness"
+         parameters={{ docs: donutWithCustomSegmentsDocs }}
+         height="400px"
+         args= {{ view: donutChartView3 }}>
+    { DonutStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
-
 <h2>Props</h2>
-<ArgsTable of={DonutChartComponent} />
+<ArgsTable story = 'Donut chart'/>

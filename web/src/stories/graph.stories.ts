@@ -1,6 +1,4 @@
-import { storiesOf } from '@storybook/angular';
 import { ELEMENTS_STYLE } from './graph.data';
-import { object } from '@storybook/addon-knobs';
 import {
   BaseShape,
   Deployment,
@@ -12,6 +10,7 @@ import {
   Service,
   ServiceAccount,
 } from '../app/modules/shared/components/presentation/cytoscape2/shape';
+import { Meta, Story } from '@storybook/angular/types-6-0';
 
 const layout = {
   name: 'cose-bilkent',
@@ -48,27 +47,22 @@ const shapes: BaseShape[] = [
 ];
 const style = ELEMENTS_STYLE;
 
-storiesOf('Other/Resources', module).add('Resource View', () => {
-  const eles = object(
-    'elements',
-    shapes.map(shape => shape.toNode(shapes))
-  );
-
+export const graphStory: Story = args => {
   return {
     props: {
-      elements: eles,
-      layout: layout,
-      zoom: zoom,
-      style: style,
+      elements: args.elements,
+      layout,
+      zoom,
+      style,
     },
     template: `
       <div class="main-container">
           <div class="content-container">
               <div class="content-area" style="background-color: white;">
                   <app-cytoscape2
-                    [elements]="elements" 
-                    [layout]="layout" 
-                    [zoom]="zoom" 
+                    [elements]="elements"
+                    [layout]="layout"
+                    [zoom]="zoom"
                     [style]="style">
                   </app-cytoscape2>
               </div>
@@ -76,4 +70,18 @@ storiesOf('Other/Resources', module).add('Resource View', () => {
       </div>
       `,
   };
-});
+};
+
+graphStory.storyName = 'Resource View prototype';
+
+graphStory.argTypes = {
+  elements: {
+    control: {
+      type: 'object',
+    },
+  },
+};
+
+graphStory.args = {
+  elements: shapes.map(shape => shape.toNode(shapes)),
+};

@@ -1,6 +1,5 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { object, withKnobs } from '@storybook/addon-knobs';
-import {TimelineComponent} from "../app/modules/shared/components/presentation/timeline/timeline.component";
+import { argTypesView } from "./helpers/helpers";
 
 export const timelineDocs= {source: {code: `steps := []component.TimelineStep{
   {
@@ -26,20 +25,54 @@ timeline.Add(component.TimelineStep{
 export const buttonGroupView = {
   config: {
     buttons: [
-      {
-        name: 'Testing',
-        payload: {},
-        confirmation: {
-          title: 'Confirm action',
-          body: 'Are you sure?',
+        {
+          metadata: {
+            type: "button"
+          },
+          config: {
+            name: 'Testing',
+            payload: {},
+            confirmation: {
+              title: 'Confirm action',
+              body: 'Are you sure?',
+            },
+          },
         },
-      },
-    ],
+      ],
   },
   metadata: {
     type: 'buttonGroup'
   }
 }
+
+export const timelineView = {
+  metadata: {
+    type: 'timeline',
+  },
+  config: {
+    steps: [
+      {
+        state: "current",
+        header: "current header",
+        title: 'Step 1',
+        description: 'this is a current step',
+        buttonGroup: buttonGroupView,
+      },
+      {
+        state: "processing",
+        header: 'processing header',
+        title: 'Step 2',
+        description: 'this is a processing step'
+      }
+    ]
+  },
+};
+
+export const TimelineStoryTemplate = args => ({
+  template: `<app-view-timeline [view]= "view"></app-view-timeline>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
 
 <h1>Timeline Component</h1>
 <h2>Description</h2>
@@ -48,39 +81,15 @@ export const buttonGroupView = {
 
 <h2>Example</h2>
 
-<Meta title="Components/Timeline" component={TimelineComponent} />
+<Meta title="Components/Timeline" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
-  <Story name="Timeline component" parameters={{ docs: timelineDocs }} height="800px" >
-    {{
-      props: {
-        view: object('View', {
-          metadata: {
-            type: 'timeline',
-          },
-          config: {
-            steps: [
-              {
-                state: "current",
-                header: "current header",
-                title: 'Step 1',
-                description: 'this is a current step',
-                buttonGroup: buttonGroupView,
-              },
-              {
-                state: "processing",
-                header: 'processing header',
-                title: 'Step 2',
-                description: 'this is a processing step'
-              }
-            ]
-          },
-        }),
-      },
-      component: TimelineComponent,
-    }}
+  <Story name="Timeline component"
+         parameters={{ docs: timelineDocs }}
+         args= {{ view: timelineView, }}>
+    { TimelineStoryTemplate.bind({}) }
   </Story>
 </Canvas>
 
 <h2>Props</h2>
-<ArgsTable of={TimelineComponent} />
+<ArgsTable story = "Timeline component" />
