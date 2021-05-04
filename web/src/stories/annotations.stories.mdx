@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { AnnotationsComponent } from "../app/modules/shared/components/presentation/annotations/annotations.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const annotationsDocs= { source: { code: `annotations := map[string]string{"Label": "Sample annotation"}
@@ -16,7 +15,6 @@ export const annotationsView = {
   },
 }
 export const AnnotationsStoryTemplate = args => ({
-  component: { AnnotationsComponent },
   template: `<app-view-annotations [view]= "view"></app-view-annotations>`,
   argTypes: argTypesView,
   props: {view: args.view},
@@ -29,10 +27,7 @@ export const AnnotationsStoryTemplate = args => ({
 It styles a key pair value of strings.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Annotations"
-      component= { AnnotationsComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Annotations" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="Annotations component"

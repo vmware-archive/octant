@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { FlexlayoutComponent } from "../app/modules/shared/components/presentation/flexlayout/flexlayout.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const flexDocs= { source: { code: `flexLayout := component.NewFlexLayout("Summary")
@@ -119,7 +118,6 @@ export const flexView = {
 };
 
 export const FlexlayoutStoryTemplate = args => ({
-  component: { FlexlayoutComponent },
   template: `<app-view-flexlayout [view]= "view"></app-view-flexlayout>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -133,10 +131,7 @@ The layout can be divided into three possible widths: full, half, and quarter.</
 
 <h2>Example</h2>
 
-<Meta title="Components/Flex Layout"
-      component={ FlexlayoutComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Flex Layout" argTypes = { argTypesView }/>
 
 <Canvas withToolbar>
   <Story name="Flex Layout component"

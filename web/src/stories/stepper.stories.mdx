@@ -1,5 +1,4 @@
 import {Meta, Preview, Props, Story} from '@storybook/addon-docs/blocks';
-import { StepperComponent } from '../app/modules/shared/components/presentation/stepper/stepper.component';
 import { argTypesView } from "./helpers/helpers";
 
 export const stepperDocs = {
@@ -92,7 +91,6 @@ export const stepperView = {
 };
 
 export const StepperStoryTemplate = args => ({
-  component: { StepperComponent },
   template: `<app-stepper [view]= "view"></app-stepper>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -104,10 +102,7 @@ export const StepperStoryTemplate = args => ({
 <p>The Stepper component provides guided steps to a user</p>
 <h2>Example</h2>
 
-<Meta title="Components/Stepper"
-      component= { StepperComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Stepper" argTypes = { argTypesView } />
 
 <Preview withToolbar>
   <Story

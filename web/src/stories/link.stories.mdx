@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { LinkComponent } from "../app/modules/shared/components/presentation/link/link.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const linkDocs= { source: { code: `title = "Example Link"
@@ -19,7 +18,6 @@ export const linkView =  {
 };
 
 export const LinkStoryTemplate = args => ({
-  component: { LinkComponent },
   template: `<app-view-link [view]= "view"></app-view-link>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -31,10 +29,7 @@ export const LinkStoryTemplate = args => ({
 <p>The Link component is used to present simple links</p>
 <h2>Example</h2>
 
-<Meta title="Components/Link"
-      component={LinkComponent}
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Link" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name = "Link component"

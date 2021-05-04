@@ -12,10 +12,6 @@ import {
 } from '../app/modules/shared/components/presentation/cytoscape2/shape';
 import { Meta, Story } from '@storybook/angular/types-6-0';
 
-export default {
-  title: 'Other/Resources',
-} as Meta;
-
 const layout = {
   name: 'cose-bilkent',
   padding: 30,

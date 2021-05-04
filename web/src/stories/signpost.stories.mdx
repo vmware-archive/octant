@@ -1,5 +1,4 @@
 import {ArgsTable, Canvas, Meta, Story} from '@storybook/addon-docs/blocks';
-import { SignpostComponent } from "../app/modules/shared/components/presentation/signpost/signpost.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const signpostDocs = {
@@ -37,7 +36,6 @@ export const signpostView= {
 };
 
 export const SignpostStoryTemplate = args => ({
-  component: { SignpostComponent },
   template: `<div style="padding-top: 32px;">
                 <app-signpost [view]= "view"></app-signpost>
              </div>`,
@@ -53,10 +51,7 @@ export const SignpostStoryTemplate = args => ({
 
 <h2>Example</h2>
 
-<Meta title="Components/Signpost"
-      component= { SignpostComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Signpost" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="Signpost component"

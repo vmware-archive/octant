@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { ButtonGroupComponent } from "../app/modules/shared/components/presentation/button-group/button-group.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const buttonDocs= { source: { code: `buttonGroup := component.NewButtonGroup()
@@ -36,7 +35,6 @@ export const buttonGroupView = {
 }
 
 export const ButtonGroupStoryTemplate = args => ({
-  component: { ButtonGroupComponent },
   template: `<app-button-group [view]= "view"></app-button-group>`,
   argTypes: argTypesView,
   props: {view: args.view},
@@ -51,9 +49,7 @@ Buttons requiring confirmation are red.</p>
 
 <h2>Example</h2>
 
-<Meta title="Components/Button Group"
-      component= { ButtonGroupComponent }
-      argTypes = { argTypesView } />
+<Meta title="Components/Button Group" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="ButtonGroup component"

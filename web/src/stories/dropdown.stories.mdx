@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { DropdownComponent } from "../app/modules/shared/components/presentation/dropdown/dropdown.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const dropdownDocs= { source: { code: `dropdown := component.NewDropdown("Select item", BottomLeft,
@@ -152,7 +151,6 @@ export const iconDropdownView= {
   }}
 
 export const DropdownStoryTemplate = args => ({
-  component: { DropdownComponent },
   template: `
          <div class="main-container" style= "width: 100%; height: 100%;">
             <app-view-dropdown [view]="view">
@@ -177,10 +175,7 @@ When source contains text (e.g. for all dropdown types except for the icon), tha
 <p>Selecting an item inside the dropdown will generate an action specifying the selected item.
 Additionally, if dropdown has property <code>useSelection</code> set, the dropdown source text will be updated to match the selected item.</p>
 
-<Meta title="Components/Dropdown"
-      component= { DropdownComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Dropdown" argTypes = { argTypesView } />
 
 <h2>Dropdown with button</h2>
 

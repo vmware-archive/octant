@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { TimestampComponent } from "../app/modules/shared/components/presentation/timestamp/timestamp.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const docs= { source: { code: "timestamp := component.NewTimestamp(time.Unix(1586469079, 0))"} }
@@ -7,7 +6,6 @@ export const docs= { source: { code: "timestamp := component.NewTimestamp(time.U
 export const timestampView = { metadata: {type: "timestamp"}, config: {timestamp: 1588716648} }
 
 export const TimestampStoryTemplate = args => ({
-  component: { TimestampComponent },
   template: `<app-view-timestamp [view]= "view"></app-view-timestamp>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -23,10 +21,7 @@ export const TimestampStoryTemplate = args => ({
 </p>
 <h2>Example</h2>
 
-<Meta title="Components/Timestamp"
-      component= { TimestampComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Timestamp" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="Timestamp"

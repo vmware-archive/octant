@@ -1,6 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { DatagridComponent } from "../app/modules/shared/components/presentation/datagrid/datagrid.component";
-import { TableComponent } from "../app/modules/shared/components/presentation/table/table.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const tableDocs= {source: {code: `cols := component.NewTableCols("A", "B")
@@ -249,14 +247,12 @@ export const tableView3 = {
 };
 
 export const TableStoryTemplate = args => ({
-  component: { TableComponent },
   template: `<app-view-table [view]= "view"></app-view-table>`,
   argTypes: argTypesView,
   props: { view: args.view },
 });
 
 export const DatagridStoryTemplate = args => ({
-  component: { DatagridComponent },
   template: `<app-view-datagrid [view]= "view"></app-view-datagrid>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -269,10 +265,7 @@ export const DatagridStoryTemplate = args => ({
 
 <p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
 
-<Meta title="Components/Table"
-      component= { DatagridComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Table" argTypes = { argTypesView } />
 
 <h2>Table component</h2>
 

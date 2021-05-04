@@ -13,6 +13,8 @@ import { Meta, Story } from '@storybook/angular/types-6-0';
 import { ResourceViewerComponent } from '../../app/modules/shared/components/presentation/resource-viewer/resource-viewer.component';
 import { argTypesView } from '../helpers/helpers';
 
+export * from '../graph.stories';
+
 export default {
   title: 'Other/Resources',
 } as Meta;

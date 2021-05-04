@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { PodStatusComponent } from "../app/modules/shared/components/presentation/pod-status/pod-status.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const podStatusDocs= { source: { code: `podStatus := component.NewPodStatus()`}}
@@ -25,7 +24,6 @@ export const podStatusView = {
 };
 
 export const PodStatusStoryTemplate = args => ({
-  component: { PodStatusComponent },
   template: `<app-pod-status [view]= "view"></app-pod-status>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -38,10 +36,7 @@ export const PodStatusStoryTemplate = args => ({
 </p>
 <h2>Example</h2>
 
-<Meta title="Components/Pod Status"
-      component={PodStatusComponent}
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Pod Status" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="Pod Status component"

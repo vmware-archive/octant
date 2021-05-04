@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { AccordionComponent } from "../app/modules/shared/components/presentation/accordion/accordion.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const accordionDocs= { source: { code: `	accordion := component.NewAccordion("Test", []component.AccordionRow{
@@ -15,7 +14,6 @@ export const accordionDocs= { source: { code: `	accordion := component.NewAccord
 }}
 
 export const AccordionStoryTemplate = args => ({
-  component: { AccordionComponent },
   template: `<app-view-accordion [view]= "view"></app-view-accordion>`,
   argTypes: argTypesView,
   props: {view: args.view},
@@ -73,14 +71,10 @@ export const accordionView = {
 
 <p>By default, the accordion only allows opening one panel at a time. This can be configured to allow multiple to open.</p>
 
-<Meta title="Components/Accordion"
-      component={ AccordionComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Accordion" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
   <Story name="Accordion component"
-         component={AccordionComponent}
          parameters={{ docs: accordionDocs }}
          args= {{ view: accordionView }}> >
     { AccordionStoryTemplate.bind({}) }

@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { TerminalComponent } from "../app/modules/shared/components/smart/terminal/terminal.component";
 import { argTypesView } from "./helpers/helpers";
 
 export const terminalDocs= { source: { code: `details := component.TerminalDetails{
@@ -28,7 +27,6 @@ export const terminalView = {
 };
 
 export const TerminalStoryTemplate = args => ({
-  component: { TerminalComponent },
   template: `<app-terminal [view]= "view"></app-terminal>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -43,10 +41,7 @@ Once connection is established,
 user can start typing shell commands and interact with the remote terminal.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Terminal"
-      component={TerminalComponent}
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Terminal" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
 <Story name="Terminal component"

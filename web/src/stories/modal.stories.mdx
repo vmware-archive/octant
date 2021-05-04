@@ -1,5 +1,4 @@
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
-import { ModalComponent } from '../app/modules/shared/components/presentation/modal/modal.component';
 import { argTypesView } from "./helpers/helpers";
 
 export const modalDocs = { source: { code: `modal := component.NewModal(component.TitleFromString("Modal Title"))
@@ -81,7 +80,6 @@ export const modalFormView = {
 };
 
 export const ModalStoryTemplate = args => ({
-  component: { ModalComponent },
   template: `<div><app-view-modal [view]= "view"></app-view-modal></div>`,
   argTypes: argTypesView,
   props: { view: args.view },
@@ -93,10 +91,7 @@ export const ModalStoryTemplate = args => ({
 <p>The modal component provides a modal</p>
 <h2>Example</h2>
 
-<Meta title="Components/Modal"
-      component= { ModalComponent }
-      argTypes = { argTypesView }
-/>
+<Meta title="Components/Modal" argTypes = { argTypesView } />
 
 <Canvas withToolbar>
 <Story name="Modal component"
