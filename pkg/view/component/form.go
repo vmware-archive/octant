@@ -120,15 +120,37 @@ func marshalFormField(ff FormField) ([]byte, error) {
 
 type FormFieldLayout struct {
 	*BaseFormField
-
+	value  string
 	fields []FormField
 }
 
-func NewFormFieldLayout(label string, fields []FormField) *FormFieldLayout {
+type RowSize string
+
+const (
+	RowSizeOne    RowSize = "grid cols@xs:1 gap:lg"
+	RowSizeTwo    RowSize = "grid cols@xs:2 gap:lg"
+	RowSizeThree  RowSize = "grid cols@xs:3 gap:lg"
+	RowSizeFour   RowSize = "grid cols@xs:4 gap:lg"
+	RowSizeFive   RowSize = "grid cols@xs:5 gap:lg"
+	RowSizeSix    RowSize = "grid cols@xs:6 gap:lg"
+	RowSizeSeven  RowSize = "grid cols@xs:7 gap:lg"
+	RowSizeEight  RowSize = "grid cols@xs:8 gap:lg"
+	RowSizeNine   RowSize = "grid cols@xs:9 gap:lg"
+	RowSizeTen    RowSize = "grid cols@xs:10 gap:lg"
+	RowSizeEleven RowSize = "grid cols@xs:11 gap:lg"
+	RowSizeTwelve RowSize = "grid cols@xs:12 gap:lg"
+)
+
+func NewFormFieldLayout(value RowSize, fields []FormField) *FormFieldLayout {
 	return &FormFieldLayout{
-		BaseFormField: newBaseFormField(label, "", FieldTypeLayout),
+		BaseFormField: newBaseFormField("", "", FieldTypeLayout),
+		value:         string(value),
 		fields:        fields,
 	}
+}
+
+func (ff *FormFieldLayout) SetLabel(value string) {
+	ff.label = value
 }
 
 func (ff *FormFieldLayout) MarshalJSON() ([]byte, error) {
@@ -142,7 +164,7 @@ func (ff *FormFieldLayout) Configuration() map[string]interface{} {
 }
 
 func (ff *FormFieldLayout) Value() interface{} {
-	return nil
+	return ff.value
 }
 
 func (ff *FormFieldLayout) UnmarshalJSON(data []byte) error {
@@ -151,6 +173,7 @@ func (ff *FormFieldLayout) UnmarshalJSON(data []byte) error {
 		Name          string                        `json:"name"`
 		Type          string                        `json:"type"`
 		Error         string                        `json:"error"`
+		Value         string                        `json:"value"`
 		Validators    map[FormValidator]interface{} `json:"validators"`
 		Configuration struct {
 			Fields []struct {
@@ -174,6 +197,7 @@ func (ff *FormFieldLayout) UnmarshalJSON(data []byte) error {
 	//ff.fields = x.Configuration.Fields
 	ff.errorMessage = x.Error
 	ff.validators = x.Validators
+	ff.value = x.Value
 
 	for i := range x.Configuration.Fields {
 		field := x.Configuration.Fields[i]

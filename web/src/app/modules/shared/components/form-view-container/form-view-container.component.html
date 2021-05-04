@@ -1,7 +1,7 @@
-<cds-form-group layout="vertical" control-width="shrink">
+<cds-form-group layout="vertical">
   <ng-container  *ngFor="let field of form?.fields; trackBy: trackByFn">
     <ng-container *ngIf="field.type ==='layout'; else withoutLayout ">
-      <div cds-layout="horizontal gap:lg">
+      <div [attr.cds-layout]="field?.value || 'horizontal gap:lg'">
         <label *ngIf="field.label">{{ field.label }}</label>
         <ng-container *ngFor="let f of field.configuration.fields; trackBy: trackByFn">
           <ng-container *ngTemplateOutlet="formInputs; context: { field: f }"></ng-container>

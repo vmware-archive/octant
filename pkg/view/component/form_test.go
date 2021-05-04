@@ -15,7 +15,7 @@ import (
 func TestFormFieldLayout_UnmarshalJSON(t *testing.T) {
 	textFieldOne := NewFormFieldText("Test Horizontal", "Test Horizontal", "")
 	textFieldTwo := NewFormFieldText("Cluster Name", "clusterName", "")
-	expected := NewFormFieldLayout("", []FormField{textFieldOne, textFieldTwo})
+	expected := NewFormFieldLayout(RowSizeSix, []FormField{textFieldOne, textFieldTwo})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
