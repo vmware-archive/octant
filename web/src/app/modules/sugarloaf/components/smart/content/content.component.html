@@ -6,9 +6,9 @@
   >
     <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
         <app-object-tabs
-          [buttonGroup]="buttonGroup"
           [title]="title"
           [views]="views"
+          [titleComponents]="titleComponents"
         ></app-object-tabs>
     </ng-container>
 

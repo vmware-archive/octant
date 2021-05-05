@@ -11,7 +11,7 @@ export interface Content {
   extensionComponent: ExtensionView;
   viewComponents: View[];
   title: View[];
-  buttonGroup?: ButtonGroupView;
+  titleComponents?: View[];
 }
 
 export interface Metadata {
