@@ -235,12 +235,13 @@ try {
       w.webContents.send('port-message', port);
     });
 
-    tray = new TrayMenu(win);
+    const websocketUrl = `ws://localhost:${port}/api/v1/stream`
+    tray = new TrayMenu(win, websocketUrl);
 
     // In event of a black background issue: https://github.com/electron/electron/issues/15947
     // setTimeout(createWindow, 400);
     session.defaultSession.webRequest.onBeforeSendHeaders(
-      { urls: ['ws://localhost:' + port + '/api/v1/stream'] },
+      { urls: [websocketUrl] },
       (details, callback) => {
         details.requestHeaders['Origin'] = null;
         callback({ cancel: false, requestHeaders: details.requestHeaders });

@@ -17,3 +17,8 @@ export const iconPath = path.join(
   app.getAppPath(),
   'dist/octant/assets/icons/icon.png'
 );
+
+export const greyIconPath = path.join(
+  app.getAppPath(),
+  'dist/octant/assets/icons/icon-grey.png'
+);

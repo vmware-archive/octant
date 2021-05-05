@@ -86,6 +86,7 @@
     "lodash-es": "^4.17.15",
     "monaco-editor": "^0.21.2",
     "ngx-highlightjs": "^4.1.2",
+    "open": "^8.0.7",
     "overlayscrollbars-ngx": "^0.2.2",
     "rxjs": "^6.6.3",
     "serialize-javascript": "^5.0.1",
