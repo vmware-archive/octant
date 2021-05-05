@@ -21,13 +21,15 @@ export class TrayMenu {
 
   constructor(public window: BrowserWindow, public websocketUrl: string) {
     this.tray = new Tray(this.createNativeImage());
-    this.wsConn = new WebSocket(this.websocketUrl);
     this.menuState = { contexts: [], namespaces: [], currentContext: null, 
       buildInfo: {version: '', commit: '', time: ''}
     }
 
     this.setMenu();
-    this.startOctantEventListener();
+
+    window.webContents.on('dom-ready', () => {
+      this.startOctantEventListener();
+    });
   }
   
   createNativeImage(): Electron.NativeImage {
@@ -37,6 +39,7 @@ export class TrayMenu {
   }
 
   startOctantEventListener() {
+    this.wsConn = new WebSocket(this.websocketUrl);
     this.wsConn.on('message', (msg) => {
       const config = JSON.parse(`${msg}`);
 
