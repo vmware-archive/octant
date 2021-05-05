@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	VERSION    = "v0.19.0"
+	VERSION    = "v0.20.0"
 	GOPATH     = os.Getenv("GOPATH")
 	GIT_COMMIT = gitCommit()
 	BUILD_TIME = time.Now().UTC().Format(time.RFC3339)
