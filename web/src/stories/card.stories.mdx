@@ -3,6 +3,7 @@ import {argTypesView} from "./helpers/helpers";
 
 export const cardDocs= { source: { code: `card := component.NewCard([]component.TitleComponent{component.NewText("Card Title")})
   card.SetBody(component.NewText("Card text"))
+  card.SetAlert(component.NewAlert(component.AlertStatusInfo, component.AlertTypeDefault, "Info alert", false, nil))
 `}}
 
 export const cardListDocs= { source: { code: `cardBody := component.NewText("Card body")
@@ -49,11 +50,17 @@ export const bodyView= {
   },
 };
 
+export const alertConfig = {
+  status: 'info',
+  type: 'default',
+  message: 'Info Alert'
+};
+
 export const cardView = {
   config: {
     body: bodyView,
     actions: null,
-    alert: null,
+    alert: alertConfig,
   },
   metadata: {
     title: [textView],
@@ -111,6 +118,7 @@ export const CardListStoryTemplate = args => ({
 
 <p>Card component consists of a title and a body containing one or more components.
 Cards can also contain a footer that performs an action.</p>
+<p>A Card component can optionally show an alert on the top of the component.</p>
 <h2>Example</h2>
 
 <Meta title="Components/Cards" argTypes = { argTypesView } />

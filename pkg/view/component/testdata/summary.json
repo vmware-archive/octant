@@ -10,8 +10,11 @@
   },
   "config": {
     "alert": {
+      "status": "info",
+      "type": "default",
       "message": "info",
-      "type": "info"
+      "buttonGroup": null,
+      "closable": false
     },
     "sections": [
       {

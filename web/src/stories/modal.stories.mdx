@@ -17,6 +17,7 @@ export const modalFormDocs = { source: { code: `modal := component.NewModal(comp
     },
   }
   modal.AddForm(form)
+  modal.SetAlert(component.NewAlert(component.AlertStatusInfo, component.AlertTypeDefault, "Info alert", false, nil))
   modal.SetSize(component.ModalSizeLarge)
   modal.Open()`
 }}
@@ -39,6 +40,12 @@ export const bodyView = {
   },
 };
 
+export const alertConfig = {
+  status: 'info',
+  type: 'default',
+  message: 'Info Alert'
+};
+
 export const modalView = {
   metadata: {
     type: 'modal',
@@ -46,6 +53,7 @@ export const modalView = {
   },
   config: {
     body: bodyView,
+    alert: alertConfig,
     opened: true,
     size: 'lg',
   },
@@ -89,6 +97,7 @@ export const ModalStoryTemplate = args => ({
 <h2>Description</h2>
 
 <p>The modal component provides a modal</p>
+<p>A modal component can optionally show an alert on the top of the component.</p>
 <h2>Example</h2>
 
 <Meta title="Components/Modal" argTypes = { argTypesView } />

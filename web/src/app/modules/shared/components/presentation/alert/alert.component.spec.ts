@@ -1,9 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AlertComponent } from './alert.component';
+import { ButtonGroupComponent } from '../button-group/button-group.component';
+import { ButtonComponent } from '../button/button.component';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { OctantTooltipComponent } from '../octant-tooltip/octant-tooltip';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('AlertComponent', () => {
   let component: AlertComponent;
@@ -12,7 +15,13 @@ describe('AlertComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [AlertComponent, OctantTooltipComponent],
+        declarations: [
+          AlertComponent,
+          OctantTooltipComponent,
+          ButtonGroupComponent,
+          ButtonComponent,
+        ],
+        providers: [{ provide: WindowToken, useFactory: windowProvider }],
       }).compileComponents();
     })
   );
@@ -23,7 +32,23 @@ describe('AlertComponent', () => {
 
     component.alert = {
       message: 'message',
-      type: 'warning',
+      type: 'default',
+      status: 'error',
+      closable: true,
+      buttonGroup: {
+        metadata: { type: 'buttonGroup' },
+        config: {
+          buttons: [
+            {
+              metadata: { type: 'button' },
+              config: {
+                payload: {},
+                name: 'Alert Button',
+              },
+            },
+          ],
+        },
+      },
     };
 
     fixture.detectChanges();
@@ -33,18 +58,19 @@ describe('AlertComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('sets the alert style', () => {
-    const el: DebugElement = fixture.debugElement.query(By.css('div'));
-    expect(el.classes.hasOwnProperty('alert-warning')).toBeTruthy();
-  });
-
-  it('sets the proper icon', () => {
-    const el: DebugElement = fixture.debugElement.query(By.css('.alert-icon'));
-    expect(el.attributes.shape).toEqual('exclamation-triangle');
+  it('sets the alert type', () => {
+    expect(component.status).toBe('danger');
   });
 
   it('sets the message', () => {
-    const el: DebugElement = fixture.debugElement.query(By.css('.alert-text'));
+    const el: DebugElement = fixture.debugElement.query(By.css('cds-alert'));
     expect(el.nativeElement.textContent.trim()).toBe('message');
+  });
+
+  it('sets button group', () => {
+    const el: DebugElement = fixture.debugElement.query(
+      By.css('app-button-group app-button')
+    );
+    expect(el.nativeElement.textContent.trim()).toContain('Alert Button');
   });
 });

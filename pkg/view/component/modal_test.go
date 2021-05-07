@@ -71,3 +71,14 @@ func TestModal_Open(t *testing.T) {
 	expected.Config.Opened = true
 	AssertEqual(t, expected, modal)
 }
+
+func TestModal_SetAlert(t *testing.T) {
+	modal := NewModal(TitleFromString("modal"))
+	alert := NewAlert(AlertStatusInfo, AlertTypeDefault, "alert message", false, nil)
+	modal.SetAlert(alert)
+
+	expected := NewModal(TitleFromString("modal"))
+	expected.Config.Alert = &alert
+
+	AssertEqual(t, expected, modal)
+}

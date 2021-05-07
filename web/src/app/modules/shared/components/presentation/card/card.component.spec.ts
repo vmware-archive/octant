@@ -67,6 +67,12 @@ describe('CardComponent', () => {
       config: {
         actions: [],
         body: textView,
+        alert: {
+          message: 'message',
+          type: 'default',
+          status: 'error',
+          closable: true,
+        },
       },
       metadata: {
         type: 'card',

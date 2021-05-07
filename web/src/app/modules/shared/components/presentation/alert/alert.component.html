@@ -1,10 +1,7 @@
-<div [ngClass]="['alert', alertClass]" role="alert">
-  <div class="alert-items">
-    <div class="alert-item static">
-      <div class="alert-icon-wrapper">
-        <clr-icon [attr.shape]="shape" class="alert-icon"></clr-icon>
-      </div>
-      <span class="alert-text">{{ message }}</span>
-    </div>
-  </div>
-</div>
+<cds-alert-group type="{{type}}" status="{{status}}" *ngIf="showAlert">
+  <cds-alert [closable]="closable" (closeChange)="close()">
+    {{message}}
+  </cds-alert>
+  <app-button-group [view]="buttonGroup" *ngIf="buttonGroup">
+  </app-button-group>
+</cds-alert-group>

@@ -8,8 +8,16 @@ export const summaryDocs= { source: { code: `sections := component.SummarySectio
       Content: contentLink,
     })
     sections.Add("Node", nodeLink)
-    summary := component.NewSummary("Configuration", sections...)`
-}}
+    summary := component.NewSummary("Configuration", sections...)
+    summary.SetAlert(component.NewAlert(component.AlertStatusInfo, component.AlertTypeDefault, "Info alert", false, nil))
+    `
+}};
+
+export const alertConfig = {
+  status: 'info',
+  type: 'default',
+  message: 'Info Alert'
+};
 
 export const summaryView= {
   metadata: {
@@ -20,7 +28,8 @@ export const summaryView= {
     sections: [{
       header: "Type",
       content: {metadata: {type: "text"}, "config": {value: "kubernetes.io/service-account-token"}}
-    }]
+    }],
+    alert: alertConfig
   }
 };
 
@@ -34,6 +43,7 @@ export const SummaryStoryTemplate = args => ({
 <h2>Description</h2>
 
 <p>The Summary component is used to show summary description of a specific resource.</p>
+<p>A Summary component can optionally show an alert on the top of the component.</p>
 <h2>Example</h2>
 
 <Meta title="Components/Summary" argTypes = { argTypesView } />

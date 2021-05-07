@@ -8,7 +8,8 @@ func TestCard_SetAlert(t *testing.T) {
 	card := NewCard(TitleFromString("card"))
 
 	alert := Alert{
-		Type:    AlertTypeError,
+		Status:  AlertStatusError,
+		Type:    AlertTypeBanner,
 		Message: "error",
 	}
 

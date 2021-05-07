@@ -7,6 +7,9 @@
     </div>
   </div>
 </ng-container>
+<ng-container *ngIf="alert">
+  <app-alert [alert]="alert"></app-alert>
+</ng-container>
 <ng-container *ngIf="v?.config?.sections">
   <div
     *ngFor="let section of sections; trackBy: identifySection"

@@ -2,60 +2,6 @@
   <div class="progress loop"><progress></progress></div>
 </ng-container>
 
-<ng-container *ngIf="!loading && error">
-  <div class="alert alert-app-level alert-danger">
-    <div class="alert-items">
-      <div class="alert-item static">
-        <div class="alert-icon-wrapper">
-          <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-        </div>
-        <div class="alert-text">
-          {{ error }}
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="!loading && warning">
-  <clr-alert
-    [clrAlertType]="'warning'"
-    (clrAlertClosedChange)="onWarningClose()"
-    [clrAlertIcon]="'exclamation-triangle'"
-    [clrAlertAppLevel]="true"
-  >
-    <clr-alert-item>
-      <span class="alert-text">
-        {{ warning }}
-      </span>
-    </clr-alert-item>
-  </clr-alert>
-</ng-container>
-
-<ng-container *ngIf="!loading && info">
-  <clr-alert
-    [clrAlertType]="'info'"
-    [clrAlertIcon]="'info-circle'"
-    [clrAlertAppLevel]="true"
-  >
-    <clr-alert-item>
-      <span class="alert-text">
-        {{ info }}
-      </span>
-    </clr-alert-item>
-  </clr-alert>
-</ng-container>
-
-<ng-container *ngIf="!loading && success">
-  <clr-alert
-    [clrAlertType]="'success'"
-    [clrAlertIcon]="'check-circle'"
-    [clrAlertAppLevel]="true"
-  >
-    <clr-alert-item>
-      <span class="alert-text">
-        {{ success }}
-      </span>
-    </clr-alert-item>
-  </clr-alert>
+<ng-container *ngIf="!loading && hasAlert()">
+  <app-alert [alert]="alertConfig"></app-alert>
 </ng-container>

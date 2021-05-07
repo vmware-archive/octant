@@ -1,28 +1,44 @@
 package component
 
+type AlertStatus string
+
+const (
+	// AlertStatusError is an error alert.
+	AlertStatusError AlertStatus = "error"
+	// AlertStatusWarning is a warning alert.
+	AlertStatusWarning AlertStatus = "warning"
+	// AlertStatusInfo is an info alert.
+	AlertStatusInfo AlertStatus = "info"
+	// AlertStatusSuccess is a success alert.
+	AlertStatusSuccess AlertStatus = "success"
+	// AlertStatusNeutral is a neutral alert.
+	AlertStatusNeutral AlertStatus = "neutral"
+)
+
 type AlertType string
 
 const (
-	// AlertTypeError is an error alert.
-	AlertTypeError AlertType = "error"
-	// AlertTypeWarning is a warning alert.
-	AlertTypeWarning AlertType = "warning"
-	// AlertTypeInfo is an info alert.
-	AlertTypeInfo AlertType = "info"
-	// AlertTypeSuccess is a success alert.
-	AlertTypeSuccess AlertType = "success"
+	AlertTypeBanner  AlertType = "banner"
+	AlertTypeDefault AlertType = "default"
+	AlertTypeLight   AlertType = "light"
 )
 
 // Alert is an alert. It can be used in components which support alerts.
 type Alert struct {
-	Type    AlertType `json:"type"`
-	Message string    `json:"message"`
+	Status      AlertStatus  `json:"status"`
+	Type        AlertType    `json:"type"`
+	Message     string       `json:"message"`
+	Closable    bool         `json:"closable"`
+	ButtonGroup *ButtonGroup `json:"buttonGroup"`
 }
 
 // NewAlert creates an instance of Alert.
-func NewAlert(alertType AlertType, message string) Alert {
+func NewAlert(alertStatus AlertStatus, alertType AlertType, message string, closable bool, buttonGroup *ButtonGroup) Alert {
 	return Alert{
-		Type:    alertType,
-		Message: message,
+		Status:      alertStatus,
+		Type:        alertType,
+		Message:     message,
+		ButtonGroup: buttonGroup,
+		Closable:    closable,
 	}
 }

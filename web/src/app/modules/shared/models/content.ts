@@ -54,8 +54,11 @@ export interface AnnotationsView extends View {
 }
 
 export interface Alert {
+  status: string;
   type: string;
   message: string;
+  closable?: boolean;
+  buttonGroup?: ButtonGroupView;
 }
 
 export interface CardView extends View {
@@ -222,6 +225,7 @@ export interface ModalView extends View {
     size?: string;
     form?: ActionForm;
     buttons?: ButtonView[];
+    alert?: Alert;
   };
 }
 

@@ -76,7 +76,8 @@ func Test_unmarshal(t *testing.T) {
 									},
 								},
 								Alert: &Alert{
-									Type:    AlertTypeWarning,
+									Status:  AlertStatusWarning,
+									Type:    AlertTypeBanner,
 									Message: "warning",
 								},
 							},
