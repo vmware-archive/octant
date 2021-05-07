@@ -66,6 +66,8 @@ const (
 	TypeQuadrant = "quadrant"
 	// TypeResourceViewer is a resource viewer component.
 	TypeResourceViewer = "resourceViewer"
+	// TypeSelectFile is a SelectFile component.
+	TypeSelectFile = "selectFile"
 	// TypeSelectors is a selectors component.
 	TypeSelectors = "selectors"
 	// TypeSingleStat is a single stat component.

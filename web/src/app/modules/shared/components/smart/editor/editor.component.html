@@ -8,15 +8,13 @@
   </div>
 
   <div class="controls">
-    <button (click)="reset()" [disabled]="!isModified" class="btn">
+    <app-view-select-file [view]= "selectFileView" (fileChanged)="inputFileChanged($event)"></app-view-select-file>
+    <cds-button size="sm" action="outline" (click)="reset()" [disabled]="!isModified" >
       Reset
-    </button>
-    <button
-      (click)="submit()"
-      [disabled]="isUpdateEnabled()"
-      class="btn btn-primary"
+    </cds-button>
+    <cds-button size="sm" action="outline" (click)="submit()" [disabled]="isUpdateEnabled()"
     >
       {{ submitLabel }}
-    </button>
+    </cds-button>
   </div>
 </div>

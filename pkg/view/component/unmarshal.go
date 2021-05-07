@@ -151,6 +151,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal resourceViewer config")
 		o = t
+	case TypeSelectFile:
+		t := &SelectFile{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal select file config")
+		o = t
 	case TypeSelectors:
 		t := &Selectors{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

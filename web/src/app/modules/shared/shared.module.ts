@@ -38,6 +38,7 @@ import { LabelSelectorComponent } from './components/presentation/label-selector
 import { ModalComponent } from './components/presentation/modal/modal.component';
 import { CytoscapeComponent } from './components/presentation/cytoscape/cytoscape.component';
 import { Cytoscape2Component } from './components/presentation/cytoscape2/cytoscape2.component';
+import { SelectFileComponent } from './components/presentation/select-file/select-file.component';
 import { SelectorsComponent } from './components/presentation/selectors/selectors.component';
 import { ResourceViewerComponent } from './components/presentation/resource-viewer/resource-viewer.component';
 import { SummaryComponent } from './components/presentation/summary/summary.component';
@@ -146,6 +147,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     RelativePipe,
     TruncatePipe,
     SelectorsComponent,
+    SelectFileComponent,
     SingleStatComponent,
     SliderViewComponent,
     SummaryComponent,
@@ -218,6 +220,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     ResourceViewerComponent,
     SignpostComponent,
     SelectorsComponent,
+    SelectFileComponent,
     SingleStatComponent,
     SliderViewComponent,
     SummaryComponent,
@@ -302,6 +305,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     ResourceViewerComponent,
     SignpostComponent,
     SelectorsComponent,
+    SelectFileComponent,
     SliderViewComponent,
     SingleStatComponent,
     SummaryComponent,

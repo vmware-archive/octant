@@ -1,0 +1,43 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
+import { argTypesView } from "./helpers/helpers";
+
+export const selectFileDocs= { source: { code: `text := component.NewText("sampleText")`}}
+
+export const selectFileView = {
+  metadata: {
+    type: 'selectFile',
+  },
+  config: {
+    label: 'Open File',
+    multiple: false,
+    status: 'success',
+    statusMessage: 'Success message',
+    layout: 'compact',
+    action: 'action.octant.dev/SelectFileAction'
+  },
+};
+
+export const SelectFileStoryTemplate = args => ({
+  template: `<app-view-select-file [view]= "view"></app-view-select-file>`,
+  argTypes: argTypesView,
+  props: { view: args.view },
+});
+
+<h1>Select File component</h1>
+<h2>Description</h2>
+
+<p>The Select File component is used to select a file or multiple files from a file system</p>
+<h2>Example</h2>
+
+<Meta title="Components/Select File" argTypes = { argTypesView } />
+
+<Canvas withToolbar>
+  <Story name="Select File component"
+         parameters={{ docs: selectFileDocs }}
+         args= {{ view: selectFileView }}>
+    { SelectFileStoryTemplate.bind({}) }
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable story = "Select File component" />

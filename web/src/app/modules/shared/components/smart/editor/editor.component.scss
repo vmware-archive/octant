@@ -29,9 +29,13 @@ ngx-monaco-editor {
 }
 
 .controls {
-  height: 50px;
+  display: flex;
 
-  button {
-    float: right;
+  cds-button {
+    margin-left: 16px;
+  }
+
+  app-view-select-file {
+    flex: 1;
   }
 }

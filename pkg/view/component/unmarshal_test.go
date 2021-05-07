@@ -411,6 +411,22 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "selectFile",
+			configFile: "config_select_file.json",
+			objectType: "selectFile",
+			expected: &SelectFile{
+				Config: SelectFileConfig{
+					Label:         "Open File",
+					Multiple:      false,
+					Status:        "success",
+					StatusMessage: "Success message",
+					Layout:        "compact",
+					Action:        "action.octant.dev/SelectFileAction",
+				},
+				Base: newBase(TypeSelectFile, nil),
+			},
+		},
+		{
 			name:       "selectors",
 			configFile: "config_selectors.json",
 			objectType: "selectors",

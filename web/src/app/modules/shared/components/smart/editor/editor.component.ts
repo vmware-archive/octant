@@ -3,13 +3,14 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { EditorView } from '../../../models/content';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { EditorView, SelectFileView } from '../../../models/content';
 import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { Subscription } from 'rxjs';
+import { SelectFileComponent } from '../../presentation/select-file/select-file.component';
 
 interface Options {
   readOnly: boolean;
@@ -50,6 +51,20 @@ export class EditorComponent
   submitAction = 'action.octant.dev/update';
   submitLabel = 'Update';
 
+  @ViewChild(SelectFileComponent)
+  private selectFileComponent: SelectFileComponent;
+
+  selectFileView: SelectFileView = {
+    config: {
+      label: 'Open File',
+      multiple: false,
+      layout: 'compact',
+    },
+    metadata: {
+      type: 'selectFile',
+    },
+  };
+
   constructor(
     private namespaceService: NamespaceService,
     private themeService: ThemeService,
@@ -72,6 +87,18 @@ export class EditorComponent
     this.subscriptionTheme = this.themeService.themeType.subscribe(() =>
       this.syncMonacoTheme()
     );
+  }
+
+  inputFileChanged(files: any) {
+    if (files && files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = e => {
+        this.editorValue = e.target.result as string;
+        this.isModified = true;
+      };
+      reader.readAsText(files[0]);
+    }
   }
 
   update() {
@@ -105,6 +132,7 @@ export class EditorComponent
   }
 
   reset() {
+    this.selectFileComponent.reset();
     this.value = this.pristineValue;
   }
 
