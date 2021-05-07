@@ -85,6 +85,7 @@ func main() {
 			Short: "client build, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				verifyRegistry()
+				verifyNpmCache()
 				webDeps("--prefer-offline", "--no-audit")
 				webBuild()
 			},
