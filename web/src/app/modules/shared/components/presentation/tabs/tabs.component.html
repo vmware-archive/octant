@@ -1,8 +1,8 @@
 <div class="clr-row clr-align-items-center clr-justify-content-between">
-  <div class="clr-col-6">
+  <div class="clr-col-7">
     <app-breadcrumb [path]="title"> </app-breadcrumb>
   </div>
-  <div class="clr-col-6">
+  <div class="clr-col-5">
     <div *ngIf="titleComponents?.length > 0" class="title-container">
       <div *ngFor="let component of titleComponents; trackBy: trackByIndex" class="item">
         <app-view-container [view]="component"></app-view-container>
