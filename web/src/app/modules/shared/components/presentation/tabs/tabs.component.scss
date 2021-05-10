@@ -6,10 +6,17 @@
   outline: none;
 }
 
+.breadcrumb-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
 .title-container {
-  float: right;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  max-width: 10rem;
+  margin-left: 0.8rem;
 
   .item {
     margin: 0 5px;
