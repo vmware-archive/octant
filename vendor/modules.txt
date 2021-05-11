@@ -125,7 +125,7 @@ github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-hclog v0.16.0
+# github.com/hashicorp/go-hclog v0.16.1
 ## explicit
 github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.1
