@@ -30,7 +30,7 @@ jobs:
         run: |
           go run build.go build-electron
       - name: Build electron
-        uses: samuelmeuli/action-electron-builder@v1
+        uses: samuelmeuli/action-electron-builder@v1.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           package_root: 'web'
