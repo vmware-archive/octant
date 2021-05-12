@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: install_prettier
         run: |
           npm i -g prettier
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16.x
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Get tag
         run: echo "GITHUB_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Verify tag
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/setup-node@v2.1.5
         with:
           node-version: '14'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: run_karma
         run: |
           go run build.go web-test
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Build web assets
         run: |
           go run build.go web-build
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     container: goreleaser/goreleaser:v0.161.0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v2
@@ -149,7 +149,7 @@ jobs:
     needs: [goreleaser, bundle_assets]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - uses: actions/download-artifact@v2
         with:
           name: binary-artifacts
