@@ -3,8 +3,6 @@ package resourceviewer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -17,7 +15,7 @@ type Details interface {
 }
 
 // GenerateComponent generates a resource viewer component given details.
-func GenerateComponent(ctx context.Context, details Details, selected types.UID) (*component.ResourceViewer, error) {
+func GenerateComponent(ctx context.Context, details Details, selected string) (*component.ResourceViewer, error) {
 	rv := component.NewResourceViewer("Resource Viewer")
 	rv.SetAccessor("resourceViewer")
 
@@ -44,7 +42,7 @@ func GenerateComponent(ctx context.Context, details Details, selected types.UID)
 		}
 	}
 
-	rv.Select(string(selected))
+	rv.Select(selected)
 
 	return rv, nil
 }

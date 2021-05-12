@@ -47,7 +47,7 @@ func TestGenerateComponent(t *testing.T) {
 
 	ctx := context.Background()
 
-	got, err := GenerateComponent(ctx, details, deployment.UID)
+	got, err := GenerateComponent(ctx, details, string(deployment.UID))
 	require.NoError(t, err)
 
 	expected := component.NewResourceViewer("Resource Viewer")

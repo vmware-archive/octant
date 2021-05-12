@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"sort"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -124,7 +125,12 @@ _%s_
 		objects = append(objects, &pods[i])
 	}
 
-	rv, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, objects...)
+	sort.Slice(objects, func(i, j int) bool {
+		return objects[i].GetName() < objects[j].GetName()
+	})
+
+	selection := objects[0].GetOwnerReferences()[0]
+	rv, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, fmt.Sprintf("%s pods", selection.Name), objects...)
 	if err != nil {
 		cr := d.createResponse(
 			component.NewError(component.TitleFromString("Unable to create resource viewer"), err),

@@ -74,9 +74,10 @@ func Test_ResourceViewer(t *testing.T) {
 
 	require.NoError(t, rv.Visit(ctx, deployment, handler))
 
-	vc, err := GenerateComponent(ctx, handler, "")
+	vc, err := GenerateComponent(ctx, handler, "deployment")
 	require.NoError(t, err)
 	assert.NotNil(t, vc)
+	require.Equal(t, vc.Config.Selected, "deployment")
 }
 
 func Test_ResourceViewer_visitor_fails(t *testing.T) {

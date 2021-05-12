@@ -46,6 +46,7 @@ describe('CytoscapeComponent', () => {
       edges: [],
     };
 
+    component.selectedNodeId = '16428c94-a848-47d5-b1e3-c8245b57959b';
     component.render();
     fixture.detectChanges();
 
