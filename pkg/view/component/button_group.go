@@ -57,7 +57,7 @@ func (bg *ButtonGroupConfig) UnmarshalJSON(data []byte) error {
 
 		button, ok := component.(*Button)
 		if !ok {
-			return fmt.Errorf("item was not a card")
+			return fmt.Errorf("item was not a button group")
 		}
 
 		bg.Buttons = append(bg.Buttons, *button)
