@@ -51,7 +51,7 @@ type ResourceViewer struct {
 }
 
 // Create creates a resource viewer given a list objects.
-func Create(ctx context.Context, dashConfig config.Dash, q queryer.Queryer, objects ...*unstructured.Unstructured) (*component.ResourceViewer, error) {
+func Create(ctx context.Context, dashConfig config.Dash, q queryer.Queryer, selection string, objects ...*unstructured.Unstructured) (*component.ResourceViewer, error) {
 	rv, err := New(dashConfig, WithDefaultQueryer(dashConfig, q))
 	if err != nil {
 		return nil, fmt.Errorf("create resource viewer: %w", err)
@@ -74,7 +74,7 @@ func Create(ctx context.Context, dashConfig config.Dash, q queryer.Queryer, obje
 		}
 	}
 
-	c, err := GenerateComponent(ctx, handler, "")
+	c, err := GenerateComponent(ctx, handler, selection)
 	if err != nil {
 		return nil, fmt.Errorf("generate resource viewer component: %w", err)
 	}

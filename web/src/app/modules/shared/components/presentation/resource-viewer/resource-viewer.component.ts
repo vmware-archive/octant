@@ -38,7 +38,7 @@ const edgeColorCode = '#003d79';
 export class ResourceViewerComponent
   extends AbstractViewComponent<ResourceViewerView>
   implements OnInit, OnDestroy {
-  selectedNode: Node;
+  selectedNodeId: string;
   private subscriptionTheme: Subscription;
 
   layout = {
@@ -156,11 +156,11 @@ export class ResourceViewerComponent
   }
 
   selectNode(id: string) {
-    const nodes = this.v.config.nodes;
+    this.selectedNodeId = id;
+  }
 
-    if (nodes && nodes[id]) {
-      this.selectedNode = nodes[id];
-    }
+  selectedNode(): string {
+    return this.v?.config?.nodes[this.selectedNodeId];
   }
 
   openNode(event) {

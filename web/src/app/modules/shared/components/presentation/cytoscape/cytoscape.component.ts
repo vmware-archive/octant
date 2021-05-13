@@ -33,6 +33,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
   @Input() public style: Stylesheet[];
   @Input() public layout: any;
   @Input() public zoom: any;
+  @Input() public selectedNodeId: string;
 
   @Output() select: EventEmitter<any> = new EventEmitter<any>();
   @Output() doubleClick: EventEmitter<any> = new EventEmitter<any>();
@@ -68,6 +69,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
     const localSelect = this.select;
     const localDoubleClick = this.doubleClick;
 
+    this.layout.padding = this.elements?.nodes?.length > 2 ? 20 : 200;
     this.instance = cytoscape({
       container: cyContainer,
       layout: this.layout,
@@ -91,9 +93,9 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
     });
 
     this.instance.one('render', _ => {
-      const firstNode = this.instance.nodes().first();
+      const selection = this.instance.getElementById(this.selectedNodeId);
       this.instance.nodes().unselect();
-      firstNode.select();
+      selection.select();
     });
 
     // @ts-ignore
