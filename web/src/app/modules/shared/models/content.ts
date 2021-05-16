@@ -624,3 +624,14 @@ export interface ButtonView extends View {
     style?: string;
   };
 }
+
+export interface SelectFileView extends View {
+  config: {
+    label: string;
+    multiple: boolean;
+    layout: 'horizontal' | 'vertical' | 'compact';
+    status?: 'success' | 'error';
+    statusMessage?: string;
+    action?: string;
+  };
+}

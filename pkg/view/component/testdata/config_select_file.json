@@ -1,0 +1,8 @@
+{
+  "label": "Open File",
+  "multiple": false,
+  "status": "success",
+  "statusMessage": "Success message",
+  "layout": "compact",
+  "action": "action.octant.dev/SelectFileAction"
+}

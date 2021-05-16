@@ -44,6 +44,7 @@ import { DropdownComponent } from './components/presentation/dropdown/dropdown.c
 import { IconComponent } from './components/presentation/icon/icon.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { ButtonComponent } from './components/presentation/button/button.component';
+import { SelectFileComponent } from './components/presentation/select-file/select-file.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -77,6 +78,7 @@ const DynamicComponentMapping: ComponentMapping = {
   ports: PortsComponent,
   quadrant: QuadrantComponent,
   resourceViewer: ResourceViewerComponent,
+  selectFile: SelectFileComponent,
   selectors: SelectorsComponent,
   singleStat: SingleStatComponent,
   stepper: StepperComponent,

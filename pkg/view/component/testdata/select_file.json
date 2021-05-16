@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "type": "selectFile"
+  },
+  "config": {
+    "label": "Open File",
+    "multiple": false,
+    "status": "success",
+    "statusMessage": "Success",
+    "layout": "compact",
+    "action": "action.octant.dev/SelectFileAction"
+  }
+}
