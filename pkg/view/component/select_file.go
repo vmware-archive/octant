@@ -1,6 +1,6 @@
 package component
 
-import "encoding/json"
+import "github.com/vmware-tanzu/octant/internal/util/json"
 
 type SelectFile struct {
 	Base
