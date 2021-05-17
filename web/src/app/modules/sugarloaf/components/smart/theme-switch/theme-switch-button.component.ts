@@ -33,7 +33,9 @@ export class ThemeSwitchButtonComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptionTheme.unsubscribe();
+    if (this.subscriptionTheme) {
+      this.subscriptionTheme.unsubscribe();
+    }
   }
 
   switchTheme(): void {

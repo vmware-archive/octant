@@ -64,14 +64,20 @@ func Test_Metadata(t *testing.T) {
 			},
 			{
 				Width: component.WidthFull,
-				View: component.NewTableWithRows("Managed Fields", "There are no managed fields!", component.NewTableCols("Manager", "Operation", "Time", "Fields"), []component.TableRow{
+				View: component.NewSummary(fieldEntry.Manager, []component.SummarySection{
 					{
-						"Manager":   component.NewText("octant"),
-						"Operation": component.NewText(string(metav1.ManagedFieldsOperationUpdate)),
-						"Time":      component.NewTimestamp(testutil.Time()),
-						"Fields":    component.NewCodeBlock(fieldJSONData),
+						Header:  "Operation",
+						Content: component.NewText(string(fieldEntry.Operation)),
 					},
-				}),
+					{
+						Header:  "Updated",
+						Content: component.NewTimestamp(fieldEntry.Time.Rfc3339Copy().Time),
+					},
+					{
+						Header:  "Fields",
+						Content: component.NewJSONEditor(fieldJSONData),
+					},
+				}...),
 			},
 		},
 	}...)

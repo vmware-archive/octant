@@ -512,6 +512,13 @@ export interface EditorView extends View {
   };
 }
 
+export interface JSONEditorView extends View {
+  config: {
+    mode: string;
+    content: string;
+  };
+}
+
 export interface Port extends View {
   config: {
     port: number;

@@ -106,6 +106,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal iframe config")
 		o = t
+	case TypeJSONEditor:
+		t := &JSONEditor{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal jsonEditor config")
+		o = t
 	case TypeLabels:
 		t := &Labels{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

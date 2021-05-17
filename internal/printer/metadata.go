@@ -82,12 +82,13 @@ func (m *Metadata) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 		return fmt.Errorf("add summary to layout: %w", err)
 	}
 
-	managedFields, err := m.managedFields()
+	fieldSummaryList, err := m.managedFields()
 	if err != nil {
 		return err
 	}
-	if managedFields != nil {
-		if err := section.Add(managedFields, component.WidthFull); err != nil {
+
+	for i, _ := range fieldSummaryList {
+		if err := section.Add(&fieldSummaryList[i], component.WidthFull); err != nil {
 			return fmt.Errorf("add managedFields to layout: %w", err)
 		}
 	}
@@ -131,31 +132,36 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 	return summary, nil
 }
 
-func (m *Metadata) managedFields() (*component.Table, error) {
+func (m *Metadata) managedFields() ([]component.Summary, error) {
 	a, err := meta.Accessor(m.object)
 	if err != nil {
 		return nil, err
 	}
-	if len(a.GetManagedFields()) == 0 {
-		return nil, nil
-	}
 
-	table := component.NewTable("Managed Fields", "There are no managed fields!", component.NewTableCols("Manager", "Operation", "Time", "Fields"))
+	var summaryList []component.Summary
 	for _, field := range a.GetManagedFields() {
 		fields, err := convertFieldsToFormattedString(field.FieldsV1)
 		if err != nil {
 			return nil, err
 		}
 
-		row := component.TableRow{}
-		row["Manager"] = component.NewText(field.Manager)
-		row["Operation"] = component.NewText(string(field.Operation))
-		row["Time"] = component.NewTimestamp(field.Time.Rfc3339Copy().UTC())
-		row["Fields"] = component.NewCodeBlock(fields)
-		table.Add(row)
+		summary := component.NewSummary(field.Manager, []component.SummarySection{
+			{
+				Header:  "Operation",
+				Content: component.NewText(string(field.Operation)),
+			},
+			{
+				Header:  "Updated",
+				Content: component.NewTimestamp(field.Time.Rfc3339Copy().UTC()),
+			},
+			{
+				Header:  "Fields",
+				Content: component.NewJSONEditor(fields),
+			},
+		}...)
+		summaryList = append(summaryList, *summary)
 	}
-	table.Sort("Time")
-	return table, nil
+	return summaryList, nil
 }
 
 // convertFieldsToFormattedString formats managed fields

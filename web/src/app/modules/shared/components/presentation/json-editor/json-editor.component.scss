@@ -1,0 +1,23 @@
+/* Copyright (c) 2021 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.jsoneditor {
+  width: 600px;
+  border: none;
+}
+
+div.jsoneditor-field,
+div.jsoneditor-value {
+  color: var(--tableValue-color);
+  font-family: var(--clr-font);
+}
+
+div.jsoneditor-tree button.jsoneditor-button:focus {
+  background-color: transparent;
+  outline: none;
+}
+
+div.jsoneditor-readonly {
+  font-family: var(--clr-font);
+}
