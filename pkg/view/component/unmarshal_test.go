@@ -239,6 +239,18 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "json editor",
+			configFile: "config_json_editor.json",
+			objectType: TypeJSONEditor,
+			expected: &JSONEditor{
+				Config: JSONEditorConfig{
+					Mode:    ViewMode,
+					Content: "{ \"hello\": 123 }",
+				},
+				Base: newBase(TypeJSONEditor, nil),
+			},
+		},
+		{
 			name:       "labels",
 			configFile: "config_labels.json",
 			objectType: "labels",

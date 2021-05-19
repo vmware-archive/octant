@@ -8,8 +8,9 @@ package printer
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -29,9 +30,25 @@ func Test_Metadata(t *testing.T) {
 	metadata, err := NewMetadata(deployment, tpo.link)
 	require.NoError(t, err)
 
+	fieldEntry := metav1.ManagedFieldsEntry{
+		Manager:    "octant",
+		Operation:  metav1.ManagedFieldsOperationUpdate,
+		Time:       testutil.CreateTimestamp(),
+		FieldsType: "FieldsV1",
+		FieldsV1: &metav1.FieldsV1{
+			Raw: []byte(`{"hello": "world"}`),
+		},
+	}
+	deployment.ManagedFields = []metav1.ManagedFieldsEntry{
+		fieldEntry,
+	}
+
 	require.NoError(t, metadata.AddToFlexLayout(fl))
 
 	got := fl.ToComponent("Summary")
+
+	fieldJSONData, err := convertFieldsToFormattedString(fieldEntry.FieldsV1)
+	require.NoError(t, err)
 
 	expected := component.NewFlexLayout("Summary")
 	expected.AddSections([]component.FlexLayoutSection{
@@ -45,8 +62,25 @@ func Test_Metadata(t *testing.T) {
 					},
 				}...),
 			},
+			{
+				Width: component.WidthFull,
+				View: component.NewSummary(fieldEntry.Manager, []component.SummarySection{
+					{
+						Header:  "Operation",
+						Content: component.NewText(string(fieldEntry.Operation)),
+					},
+					{
+						Header:  "Updated",
+						Content: component.NewTimestamp(fieldEntry.Time.Rfc3339Copy().Time),
+					},
+					{
+						Header:  "Fields",
+						Content: component.NewJSONEditor(fieldJSONData),
+					},
+				}...),
+			},
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }

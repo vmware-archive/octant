@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "type": "jsonEditor"
+  },
+  "config": {
+    "mode": "view",
+    "content": "{ \"hello\": 123 }"
+  }
+}

@@ -6,8 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -79,6 +82,16 @@ func (m *Metadata) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 		return fmt.Errorf("add summary to layout: %w", err)
 	}
 
+	fieldSummaryList, err := m.managedFields()
+	if err != nil {
+		return err
+	}
+
+	for i, _ := range fieldSummaryList {
+		if err := section.Add(&fieldSummaryList[i], component.WidthFull); err != nil {
+			return fmt.Errorf("add managedFields to layout: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -117,4 +130,48 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 
 	summary := component.NewSummary("Metadata", sections...)
 	return summary, nil
+}
+
+func (m *Metadata) managedFields() ([]component.Summary, error) {
+	a, err := meta.Accessor(m.object)
+	if err != nil {
+		return nil, err
+	}
+
+	var summaryList []component.Summary
+	for _, field := range a.GetManagedFields() {
+		fields, err := convertFieldsToFormattedString(field.FieldsV1)
+		if err != nil {
+			return nil, err
+		}
+
+		summary := component.NewSummary(field.Manager, []component.SummarySection{
+			{
+				Header:  "Operation",
+				Content: component.NewText(string(field.Operation)),
+			},
+			{
+				Header:  "Updated",
+				Content: component.NewTimestamp(field.Time.Rfc3339Copy().UTC()),
+			},
+			{
+				Header:  "Fields",
+				Content: component.NewJSONEditor(fields),
+			},
+		}...)
+		summaryList = append(summaryList, *summary)
+	}
+	return summaryList, nil
+}
+
+// convertFieldsToFormattedString formats managed fields
+func convertFieldsToFormattedString(field *metav1.FieldsV1) (string, error) {
+	if field == nil {
+		return "", fmt.Errorf("cannot convert nil field")
+	}
+	var out bytes.Buffer
+	if err := json.Indent(&out, field.Raw, "", "\t"); err != nil {
+		return "", err
+	}
+	return string(out.Bytes()), nil
 }

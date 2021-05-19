@@ -42,6 +42,8 @@ const (
 	TypeGridActions = "gridActions"
 	// TypeIFrame is an iframe component.
 	TypeIFrame = "iframe"
+	// TypeJSONEditor is a JSON Editor component.
+	TypeJSONEditor = "jsonEditor"
 	// TypeLabels is a labels component.
 	TypeLabels = "labels"
 	// TypeLabelSelector is a label selector component.

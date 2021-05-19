@@ -24,9 +24,11 @@ import { SingleStatComponent } from './components/presentation/single-stat/singl
 import { QuadrantComponent } from './components/presentation/quadrant/quadrant.component';
 import { IFrameComponent } from './components/presentation/iframe/iframe.component';
 import { EditorComponent } from './components/smart/editor/editor.component';
+import { JSONEditorComponent } from './components/presentation/json-editor/json-editor.component';
 import { ErrorComponent } from './components/presentation/error/error.component';
 import { ExpressionSelectorComponent } from './components/presentation/expression-selector/expression-selector.component';
 import { GraphvizComponent } from './components/presentation/graphviz/graphviz.component';
+import { ButtonComponent } from './components/presentation/button/button.component';
 import { ButtonGroupComponent } from './components/presentation/button-group/button-group.component';
 import { YamlComponent } from './components/presentation/yaml/yaml.component';
 import { TableComponent } from './components/presentation/table/table.component';
@@ -89,7 +91,6 @@ import { IconComponent } from './components/presentation/icon/icon.component';
 import { FormViewContainerComponent } from './components/form-view-container/form-view-container.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
-import { ButtonComponent } from './components/presentation/button/button.component';
 
 @NgModule({
   declarations: [
@@ -97,6 +98,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     AlertComponent,
     AnnotationsComponent,
     BreadcrumbComponent,
+    ButtonComponent,
     ButtonGroupComponent,
     CardComponent,
     CardListComponent,
@@ -126,6 +128,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     IFrameComponent,
     IndicatorComponent,
     IconComponent,
+    JSONEditorComponent,
     LabelsComponent,
     LabelSelectorComponent,
     LinkComponent,
@@ -171,7 +174,6 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     OctantTooltipComponent,
     BottomPanelComponent,
     JoinPipe,
-    ButtonComponent,
   ],
   entryComponents: [
     AccordionComponent,
@@ -290,6 +292,7 @@ import { ButtonComponent } from './components/presentation/button/button.compone
     HeptagonLabelComponent,
     IconComponent,
     IFrameComponent,
+    JSONEditorComponent,
     LabelsComponent,
     LabelSelectorComponent,
     LinkComponent,
