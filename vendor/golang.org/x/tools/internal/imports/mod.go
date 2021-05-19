@@ -1,3 +1,7 @@
+// Copyright 2019 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package imports
 
 import (
@@ -88,7 +92,11 @@ func (r *ModuleResolver) init() error {
 	if gmc := r.env.Env["GOMODCACHE"]; gmc != "" {
 		r.moduleCacheDir = gmc
 	} else {
-		r.moduleCacheDir = filepath.Join(filepath.SplitList(goenv["GOPATH"])[0], "/pkg/mod")
+		gopaths := filepath.SplitList(goenv["GOPATH"])
+		if len(gopaths) == 0 {
+			return fmt.Errorf("empty GOPATH")
+		}
+		r.moduleCacheDir = filepath.Join(gopaths[0], "/pkg/mod")
 	}
 
 	sort.Slice(r.modsByModPath, func(i, j int) bool {
