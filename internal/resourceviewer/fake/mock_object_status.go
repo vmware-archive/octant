@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
+	link "github.com/vmware-tanzu/octant/internal/link"
 	objectstatus "github.com/vmware-tanzu/octant/internal/objectstatus"
 )
 
@@ -38,16 +39,16 @@ func (m *MockObjectStatus) EXPECT() *MockObjectStatusMockRecorder {
 }
 
 // Status mocks base method
-func (m *MockObjectStatus) Status(arg0 context.Context, arg1 runtime.Object) (*objectstatus.ObjectStatus, error) {
+func (m *MockObjectStatus) Status(arg0 context.Context, arg1 runtime.Object, arg2 link.Interface) (*objectstatus.ObjectStatus, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Status", arg0, arg1)
+	ret := m.ctrl.Call(m, "Status", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*objectstatus.ObjectStatus)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Status indicates an expected call of Status
-func (mr *MockObjectStatusMockRecorder) Status(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockObjectStatusMockRecorder) Status(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockObjectStatus)(nil).Status), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockObjectStatus)(nil).Status), arg0, arg1, arg2)
 }

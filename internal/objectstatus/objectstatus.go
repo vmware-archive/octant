@@ -10,6 +10,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -22,7 +24,7 @@ type statusKey struct {
 	kind       string
 }
 
-type statusFunc func(context.Context, runtime.Object, store.Store) (ObjectStatus, error)
+type statusFunc func(context.Context, runtime.Object, store.Store, link.Interface) (ObjectStatus, error)
 
 type statusLookup map[statusKey]statusFunc
 
@@ -46,10 +48,25 @@ var (
 type ObjectStatus struct {
 	nodeStatus component.NodeStatus
 	Details    []component.Component
+	Properties []component.Property
 }
 
 func (os *ObjectStatus) AddDetail(detail string) {
 	os.Details = append(os.Details, component.NewText(detail))
+}
+
+func (os *ObjectStatus) AddProperty(label string, value component.Component) {
+	os.Properties = append(os.Properties, component.Property{
+		Label: label,
+		Value: value,
+	})
+}
+
+func (os *ObjectStatus) InsertProperty(label string, value component.Component) {
+	os.Properties = append([]component.Property{{
+		Label: label,
+		Value: value,
+	}}, os.Properties...)
 }
 
 func (os *ObjectStatus) AddDetailf(msg string, args ...interface{}) {
@@ -78,11 +95,11 @@ func (os *ObjectStatus) Status() component.NodeStatus {
 }
 
 // Status creates an ObjectStatus for an object.
-func Status(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
-	return status(ctx, object, o, defaultStatusLookup)
+func Status(ctx context.Context, object runtime.Object, o store.Store, link link.Interface) (ObjectStatus, error) {
+	return status(ctx, object, o, defaultStatusLookup, link)
 }
 
-func status(ctx context.Context, object runtime.Object, o store.Store, lookup statusLookup) (ObjectStatus, error) {
+func status(ctx context.Context, object runtime.Object, o store.Store, lookup statusLookup, link link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.New("object is nil")
 	}
@@ -108,14 +125,24 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 		return ObjectStatus{}, errors.New("status lookup is nil")
 	}
 
+	var oStatus ObjectStatus
 	fn, ok := lookup[statusKey{apiVersion: apiVersion, kind: kind}]
-	if !ok {
-		return ObjectStatus{
+
+	if ok {
+		oStatus, err = fn(ctx, object, o, link)
+	} else {
+		oStatus = ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))},
-		}, nil
-
+			Properties: []component.Property{},
+		}
 	}
 
-	return fn(ctx, object, o)
+	if labels := accessor.GetLabels(); len(labels) > 0 {
+		oStatus.InsertProperty("Labels", component.NewLabels(labels))
+	}
+	oStatus.InsertProperty("Created", component.NewTimestamp(accessor.GetCreationTimestamp().Time))
+	oStatus.InsertProperty("Namespace", component.NewText(accessor.GetNamespace()))
+
+	return oStatus, nil
 }

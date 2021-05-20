@@ -66,17 +66,29 @@ type Node struct {
 	Kind       string      `json:"kind,omitempty"`
 	Status     NodeStatus  `json:"status,omitempty"`
 	Details    []Component `json:"details,omitempty"`
+	Properties []Property  `json:"properties,omitempty"`
 	Path       *Link       `json:"path,omitempty"`
+}
+
+type Property struct {
+	Label string    `json:"label,omitempty"`
+	Value Component `json:"value,omitempty"`
+}
+
+type PropertyObject struct {
+	Label string       `json:"label,omitempty"`
+	Value *TypedObject `json:"value,omitempty"`
 }
 
 func (n *Node) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Name       string         `json:"name,omitempty"`
-		APIVersion string         `json:"apiVersion,omitempty"`
-		Kind       string         `json:"kind,omitempty"`
-		Status     NodeStatus     `json:"status,omitempty"`
-		Details    []*TypedObject `json:"details,omitempty"`
-		Path       *TypedObject   `json:"path,omitempty"`
+		Name       string           `json:"name,omitempty"`
+		APIVersion string           `json:"apiVersion,omitempty"`
+		Kind       string           `json:"kind,omitempty"`
+		Status     NodeStatus       `json:"status,omitempty"`
+		Details    []*TypedObject   `json:"details,omitempty"`
+		Properties []PropertyObject `json:"properties,omitempty"`
+		Path       *TypedObject     `json:"path,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -97,6 +109,18 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 			return errors.Wrap(err, "unmarshal-ing detail")
 		}
 		n.Details[i] = dc
+	}
+
+	if x.Properties != nil {
+		n.Properties = make([]Property, len(x.Properties))
+	}
+	for i, property := range x.Properties {
+		comp, err := property.Value.ToComponent()
+		if err != nil {
+			return errors.Wrap(err, "unmarshal-ing property")
+		}
+		prop := Property{property.Label, comp}
+		n.Properties[i] = prop
 	}
 
 	if x.Path != nil {

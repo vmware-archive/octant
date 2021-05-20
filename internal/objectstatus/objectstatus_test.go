@@ -9,6 +9,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
@@ -22,13 +25,16 @@ import (
 )
 
 func Test_status(t *testing.T) {
+	deployment := testutil.CreateDeployment("deployment")
 	deployObjectStatus := ObjectStatus{
 		nodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("apps/v1 Deployment is OK")},
+		Properties: []component.Property{{Label: "Namespace", Value: component.NewText("namespace")},
+			{Label: "Created", Value: component.NewTimestamp(deployment.CreationTimestamp.Time)}},
 	}
 
 	lookup := statusLookup{
-		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, store.Store) (ObjectStatus, error) {
+		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, store.Store, link.Interface) (ObjectStatus, error) {
 			return deployObjectStatus, nil
 		},
 	}
@@ -42,7 +48,7 @@ func Test_status(t *testing.T) {
 	}{
 		{
 			name:     "in general",
-			object:   testutil.CreateDeployment("deployment"),
+			object:   deployment,
 			lookup:   lookup,
 			expected: deployObjectStatus,
 		},
@@ -63,12 +69,13 @@ func Test_status(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 			defer controller.Finish()
 
 			o := storefake.NewMockStore(controller)
 
 			ctx := context.Background()
-			got, err := status(ctx, tc.object, o, tc.lookup)
+			got, err := status(ctx, tc.object, o, tc.lookup, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

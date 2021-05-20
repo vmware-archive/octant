@@ -285,7 +285,7 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 		pgn := podGroupNode{
 			objectStatus: h.objectStatus,
 		}
-		group, err := pgn.Create(ctx, podGroupName, objects)
+		group, err := pgn.Create(ctx, podGroupName, objects, h.link)
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +415,7 @@ func isObjectParent(child, parent runtime.Object) (bool, error) {
 }
 
 type ObjectStatus interface {
-	Status(ctx context.Context, object runtime.Object) (*objectstatus.ObjectStatus, error)
+	Status(ctx context.Context, object runtime.Object, link link.Interface) (*objectstatus.ObjectStatus, error)
 }
 
 type HandlerObjectStatus struct {
@@ -432,8 +432,8 @@ func NewHandlerObjectStatus(objectStore store.Store, pluginManager plugin.Manage
 	}
 }
 
-func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object) (*objectstatus.ObjectStatus, error) {
-	status, err := objectstatus.Status(ctx, object, h.objectStore)
+func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object, link link.Interface) (*objectstatus.ObjectStatus, error) {
+	status, err := objectstatus.Status(ctx, object, h.objectStore, link)
 	if err != nil {
 		return nil, err
 	}
@@ -444,6 +444,7 @@ func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object)
 	}
 
 	status.Details = append(status.Details, pluginStatus.ObjectStatus.Details...)
+	status.Properties = append(status.Properties, pluginStatus.ObjectStatus.Properties...)
 
 	return &status, nil
 }

@@ -11,6 +11,8 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	corev1 "k8s.io/api/core/v1"
@@ -219,7 +221,7 @@ func addResourceList(a corev1.ResourceList, q resource.Quantity, resourceName co
 // WorkloadLoaderInterface loads workloads from a namespace.
 type WorkloadLoaderInterface interface {
 	// Load loads workloads from a namespace.
-	Load(ctx context.Context, namespace string) ([]Workload, error)
+	Load(ctx context.Context, namespace string, link link.Interface) ([]Workload, error)
 }
 
 // WorkloadCardCollector creates cards for workloads in a namespace.
@@ -239,8 +241,8 @@ func NewWorkloadCardCollector(loader WorkloadLoaderInterface) (*WorkloadCardColl
 }
 
 // Collect collects cards.
-func (wc *WorkloadCardCollector) Collect(ctx context.Context, namespace string) ([]*component.Card, bool, error) {
-	workloads, err := wc.WorkloadLoader.Load(ctx, namespace)
+func (wc *WorkloadCardCollector) Collect(ctx context.Context, namespace string, link link.Interface) ([]*component.Card, bool, error) {
+	workloads, err := wc.WorkloadLoader.Load(ctx, namespace, link)
 	if err != nil {
 		return nil, false, fmt.Errorf("load workloads: %w", err)
 	}
@@ -320,7 +322,7 @@ type ClusterWorkloadLoaderOption func(wl *ClusterWorkloadLoader)
 
 // ClusterWorkloadLoader loads workloads from a Kubernetes cluster.
 type ClusterWorkloadLoader struct {
-	ObjectStatuser   func(context.Context, runtime.Object, store.Store) (objectstatus.ObjectStatus, error)
+	ObjectStatuser   func(context.Context, runtime.Object, store.Store, link.Interface) (objectstatus.ObjectStatus, error)
 	ObjectStore      store.Store
 	PodMetricsLoader PodMetricsLoader
 }
@@ -349,7 +351,7 @@ func NewClusterWorkloadLoader(objectStore store.Store, pml PodMetricsLoader, opt
 }
 
 // Load loads workloads from a cluster.
-func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]Workload, error) {
+func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string, link link.Interface) ([]Workload, error) {
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace is blank")
 	}
@@ -370,7 +372,7 @@ func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]
 	for i := range podList.Items {
 		object := &podList.Items[i]
 
-		status, err := wl.ObjectStatuser(ctx, object, wl.ObjectStore)
+		status, err := wl.ObjectStatuser(ctx, object, wl.ObjectStore, link)
 		if err != nil {
 			return nil, fmt.Errorf("get status for pod '%s': %w", object.GetName(), err)
 		}

@@ -2,6 +2,9 @@ package resourceviewer
 
 import (
 	"context"
+	"sort"
+
+	"github.com/vmware-tanzu/octant/internal/link"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -12,10 +15,15 @@ type podGroupNode struct {
 	objectStatus ObjectStatus
 }
 
-func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []unstructured.Unstructured) (*component.Node, error) {
+func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []unstructured.Unstructured, link link.Interface) (*component.Node, error) {
 	podStatus := component.NewPodStatus()
+	var podProperties []component.Property
 
-	for _, object := range objects {
+	sort.Slice(objects, func(i, j int) bool {
+		return objects[i].GetName() < objects[j].GetName()
+	})
+
+	for i, object := range objects {
 		if !isObjectPod(&object) {
 			continue
 		}
@@ -24,12 +32,15 @@ func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, object
 			return nil, err
 		}
 
-		status, err := pgn.objectStatus.Status(ctx, &object)
+		status, err := pgn.objectStatus.Status(ctx, &object, link)
 		if err != nil {
 			return nil, err
 		}
 
-		podStatus.AddSummary(pod.Name, status.Details, status.Status())
+		podStatus.AddSummary(pod.Name, status.Details, status.Properties, status.Status())
+		if i == 0 { // we add Properties that are common for all pods and only once
+			podProperties = append(podProperties, status.Properties...)
+		}
 	}
 
 	node := &component.Node{
@@ -37,6 +48,7 @@ func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, object
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Status:     podStatus.Status(),
+		Properties: podProperties,
 		Details:    []component.Component{podStatus},
 	}
 	return node, nil

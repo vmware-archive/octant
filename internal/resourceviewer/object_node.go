@@ -49,7 +49,7 @@ func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructur
 		return nil, err
 	}
 
-	status, err := o.objectStatus.Status(ctx, object)
+	status, err := o.objectStatus.Status(ctx, object, o.link)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +59,7 @@ func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructur
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Status:     status.Status(),
+		Properties: status.Properties,
 		Details:    status.Details,
 		Path:       objectPath,
 	}

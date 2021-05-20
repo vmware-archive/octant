@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +39,8 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				Details: []component.Component{component.NewText("Ingress is OK")},
+				Details:    []component.Component{component.NewText("Ingress is OK")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("single-service")}},
 			},
 		},
 		{
@@ -53,6 +56,7 @@ func Test_runIngressStatus(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Backend refers to service \"no-such-service\" which doesn't exist")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
 		},
 		{
@@ -65,6 +69,7 @@ func Test_runIngressStatus(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Backend for service \"service-wrong-port\" specifies an invalid port")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
 		},
 		{
@@ -80,6 +85,7 @@ func Test_runIngressStatus(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("No matching TLS host for rule \"not-the-tls-host.com\"")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
 		},
 		{
@@ -93,7 +99,8 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				Details: []component.Component{component.NewText("Ingress is OK")},
+				Details:    []component.Component{component.NewText("Ingress is OK")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
 		},
 		{
@@ -111,6 +118,7 @@ func Test_runIngressStatus(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Secret \"no-such-secret\" does not exist")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
 		},
 		{
@@ -132,6 +140,7 @@ func Test_runIngressStatus(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 			defer controller.Finish()
 
 			o := storefake.NewMockStore(controller)
@@ -139,7 +148,7 @@ func Test_runIngressStatus(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := runIngressStatus(ctx, object, o)
+			status, err := runIngressStatus(ctx, object, o, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

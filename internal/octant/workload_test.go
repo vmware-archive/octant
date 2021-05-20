@@ -10,6 +10,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -226,8 +229,10 @@ func TestClusterWorkloadLoader(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.Background()
+			linkInterface := linkFake.NewMockInterface(controller)
+
 			wl, err := octant.NewClusterWorkloadLoader(c.objectStore, c.podMetricLoader, func(wl *octant.ClusterWorkloadLoader) {
-				wl.ObjectStatuser = func(context.Context, runtime.Object, store.Store) (status objectstatus.ObjectStatus, e error) {
+				wl.ObjectStatuser = func(context.Context, runtime.Object, store.Store, link.Interface) (status objectstatus.ObjectStatus, e error) {
 					objectStatus := objectstatus.ObjectStatus{}
 					return objectStatus, nil
 
@@ -235,7 +240,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			actual, err := wl.Load(ctx, c.namespace)
+			actual, err := wl.Load(ctx, c.namespace, linkInterface)
 			if c.isErr {
 				require.Error(t, err)
 				return

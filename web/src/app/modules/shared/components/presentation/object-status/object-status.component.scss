@@ -9,3 +9,33 @@
 .node-status {
   list-style-type: none;
 }
+
+:host ::ng-deep .properties table {
+  width: 100%;
+  table-layout: fixed;
+
+  th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+
+    .selectors-container, .labels-container {
+      display: block;
+    }
+
+    .selectors-container .label, .labels-container .label {
+      margin-top: 4px;
+      margin-bottom: 0px;
+    }
+  }
+}
+
+.status div.card div.card-block div {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

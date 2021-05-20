@@ -69,7 +69,7 @@ func (ol *ObjectTable) AddRowForObject(ctx context.Context, object runtime.Objec
 		row["_isDeleted"] = component.NewText("deleted")
 	}
 
-	status, err := objectstatus.Status(ctx, object, ol.store)
+	status, err := objectstatus.Status(ctx, object, ol.store, nil)
 	if err != nil {
 		return fmt.Errorf("get status for object: %w", err)
 	}

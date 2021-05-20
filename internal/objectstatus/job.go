@@ -14,10 +14,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	"github.com/vmware-tanzu/octant/internal/conversion"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-func runJobStatus(_ context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
+func runJobStatus(_ context.Context, object runtime.Object, o store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("job is nil")
 	}
@@ -57,6 +61,10 @@ func runJobStatus(_ context.Context, object runtime.Object, o store.Store) (Obje
 		os.AddDetail("Job is in progress")
 	}
 
+	properties := []component.Property{{Label: "Completions", Value: component.NewText(conversion.PtrInt32ToString(job.Spec.Completions))},
+		{Label: "Parallelism", Value: component.NewText(conversion.PtrInt32ToString(job.Spec.Parallelism))}}
+
+	os.Properties = properties
 	return os, nil
 }
 

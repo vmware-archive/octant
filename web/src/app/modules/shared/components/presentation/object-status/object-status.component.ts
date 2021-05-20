@@ -28,7 +28,11 @@ export class ObjectStatusComponent {
     ];
   }
 
-  detailsTrackBy(index, item) {
+  detailsTrackBy(index, _) {
+    return index;
+  }
+
+  propertiesTrackBy(index, _) {
     return index;
   }
 }

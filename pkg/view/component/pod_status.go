@@ -9,8 +9,9 @@ import "github.com/vmware-tanzu/octant/internal/util/json"
 
 // PodSummary is a status summary for a pod.
 type PodSummary struct {
-	Details []Component `json:"details,omitempty"`
-	Status  NodeStatus  `json:"status,omitempty"`
+	Details    []Component `json:"details,omitempty"`
+	Properties []Property  `json:"properties,omitempty"`
+	Status     NodeStatus  `json:"status,omitempty"`
 }
 
 // PodStatusConfig is config for PodStatus.
@@ -48,10 +49,11 @@ func (ps *PodStatus) MarshalJSON() ([]byte, error) {
 }
 
 // AddSummary adds summary for a pod.
-func (ps *PodStatus) AddSummary(name string, details []Component, status NodeStatus) {
+func (ps *PodStatus) AddSummary(name string, details []Component, properties []Property, status NodeStatus) {
 	ps.Config.Pods[name] = PodSummary{
-		Details: details,
-		Status:  status,
+		Details:    details,
+		Properties: properties,
+		Status:     status,
 	}
 }
 
@@ -74,8 +76,9 @@ func (ps *PodStatus) Status() NodeStatus {
 
 func (podSummary *PodSummary) UnmarshalJSON(data []byte) error {
 	stage := struct {
-		Details []TypedObject `json:"details,omitempty"`
-		Status  NodeStatus    `json:"status,omitempty"`
+		Details    []TypedObject    `json:"details,omitempty"`
+		Properties []PropertyObject `json:"properties,omitempty"`
+		Status     NodeStatus       `json:"status,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &stage); err != nil {
@@ -91,6 +94,15 @@ func (podSummary *PodSummary) UnmarshalJSON(data []byte) error {
 		}
 
 		podSummary.Details = append(podSummary.Details, status)
+	}
+
+	for _, to := range stage.Properties {
+		val, err := to.Value.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		podSummary.Properties = append(podSummary.Properties, Property{Label: to.Label, Value: val})
 	}
 
 	return nil
