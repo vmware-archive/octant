@@ -14,6 +14,7 @@ import { NavigationService } from '../../../../shared/services/navigation/naviga
 import { ElectronService } from '../../../../shared/services/electron/electron.service';
 import { Subscription } from 'rxjs';
 import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
+import { HelperService } from '../../../../shared/services/helper/helper.service';
 
 @Component({
   selector: 'app-root',
@@ -26,8 +27,10 @@ export class ContainerComponent implements OnInit, OnDestroy {
 
   preferencesOpened = false;
   preferences: Preferences;
+  kubeConfigPath: string;
 
   private subscriptionPreferencesOpened: Subscription;
+  private localKubeConfigPath: Subscription;
 
   isElectron = false;
 
@@ -41,7 +44,8 @@ export class ContainerComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
     private preferencesService: PreferencesService,
     private electronService: ElectronService,
-    private iconService: IconService
+    private iconService: IconService,
+    private helperService: HelperService
   ) {
     iconService.load({
       iconName: 'octant-logo',
@@ -60,10 +64,17 @@ export class ContainerComponent implements OnInit, OnDestroy {
     );
 
     this.websocketService.open();
+    this.localKubeConfigPath = this.helperService
+      .localKubeConfigPath()
+      .subscribe(path => {
+        this.preferencesService.setKubeConfigPath(path);
+        this.preferences = this.preferencesService.getPreferences();
+      });
   }
 
   ngOnDestroy(): void {
     this.subscriptionPreferencesOpened.unsubscribe();
+    this.localKubeConfigPath.unsubscribe();
   }
 
   preferencesChanged(update: any) {

@@ -6,10 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	"bytes"
 	"context"
-
-	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
@@ -23,7 +20,7 @@ import (
 type HelperStateManagerOption func(manager *HelperStateManager)
 
 // HelperGenerateFunc is a function which generates a helper event
-type HelperGenerateFunc func(ctx context.Context, state octant.State) (oevent.Event, error)
+type HelperGenerateFunc func(ctx context.Context) ([]oevent.Event, error)
 
 // WithHelperGenerator sets the helper generator
 func WithHelperGenerator(fn HelperGenerateFunc) HelperStateManagerOption {
@@ -52,10 +49,10 @@ var _StateManager = (*HelperStateManager)(nil)
 func NewHelperStateManager(dashConfig config.Dash, options ...HelperStateManagerOption) *HelperStateManager {
 	hm := &HelperStateManager{
 		dashConfig: dashConfig,
-		poller:     NewInterruptiblePoller("buildInfo"),
+		poller:     NewInterruptiblePoller("helperManager"),
 	}
 
-	hm.helperGenerateFunc = hm.generateContexts
+	hm.helperGenerateFunc = hm.generateEvents
 
 	for _, option := range options {
 		option(hm)
@@ -75,27 +72,30 @@ func (h *HelperStateManager) Start(ctx context.Context, state octant.State, clie
 }
 
 func (h *HelperStateManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
-	var previous []byte
+	var buildInfoGenerated, kubeConfigPathGenerated bool
 
 	return func(ctx context.Context) bool {
 		logger := log.From(ctx)
 
-		ev, err := h.helperGenerateFunc(ctx, state)
+		events, err := h.helperGenerateFunc(ctx)
 		if err != nil {
-			logger.WithErr(err).Errorf("generate helper buildInfo")
+			logger.WithErr(err).Errorf("helper manager runUpdate")
 			return false
 		}
 
+		buildInfoEvent, _ := oevent.FindEvent(events, oevent.EventTypeBuildInfo)
+		kubeConfigPathEvent, _ := oevent.FindEvent(events, oevent.EventTypeKubeConfigPath)
+
 		if ctx.Err() == nil {
-			cur, err := json.Marshal(ev)
-			if err != nil {
-				logger.WithErr(err).Errorf("unable to marshal buildInfo")
-				return false
+
+			if !buildInfoGenerated {
+				buildInfoGenerated = !buildInfoGenerated
+				client.Send(buildInfoEvent)
 			}
 
-			if bytes.Compare(previous, cur) != 0 {
-				previous = cur
-				client.Send(ev)
+			if !kubeConfigPathGenerated {
+				kubeConfigPathGenerated = !kubeConfigPathGenerated
+				client.Send(kubeConfigPathEvent)
 			}
 		}
 
@@ -103,14 +103,7 @@ func (h *HelperStateManager) runUpdate(state octant.State, client OctantClient) 
 	}
 }
 
-func (h *HelperStateManager) generateContexts(ctx context.Context, state octant.State) (oevent.Event, error) {
-	generator, err := h.initGenerator(state)
-	if err != nil {
-		return oevent.Event{}, err
-	}
-	return generator.Event(ctx)
-}
-
-func (h *HelperStateManager) initGenerator(state octant.State) (*event.HelperGenerator, error) {
-	return event.NewHelperGenerator(h.dashConfig), nil
+func (h *HelperStateManager) generateEvents(ctx context.Context) ([]oevent.Event, error) {
+	generator := event.NewHelperGenerator(h.dashConfig)
+	return generator.Events(ctx)
 }

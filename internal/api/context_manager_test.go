@@ -50,8 +50,8 @@ func TestContext_GenerateContexts(t *testing.T) {
 	dashConfig.EXPECT().Logger().Return(logger).AnyTimes()
 
 	poller := api.NewSingleRunPoller()
-	generatorFunc := func(ctx context.Context, state octant.State) (event.Event, error) {
-		return ev, nil
+	generatorFunc := func(ctx context.Context, state octant.State) ([]event.Event, error) {
+		return []event.Event{ev}, nil
 	}
 	manager := api.NewContextManager(dashConfig,
 		api.WithContextGenerator(generatorFunc),

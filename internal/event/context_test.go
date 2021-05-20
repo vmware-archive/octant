@@ -31,9 +31,10 @@ func Test_kubeContextGenerator(t *testing.T) {
 	assert.Equal(t, "kubeConfig", kgc.Name())
 
 	ctx := context.Background()
-	e, err := kgc.Event(ctx)
+	evs, err := kgc.Events(ctx)
 	require.NoError(t, err)
 
+	e := evs[0]
 	assert.Equal(t, event.EventTypeKubeConfig, e.Type)
 
 	resp := kubeContextsResponse{

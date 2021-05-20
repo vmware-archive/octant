@@ -18,6 +18,7 @@ import { PreferencesEntry } from './preferences.entry';
 })
 export class PreferencesService implements OnDestroy {
   private electronStore: any;
+  private kubeConfigPath: string;
 
   public preferences: Map<string, PreferencesEntry<any>> = new Map();
   public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
@@ -86,6 +87,7 @@ export class PreferencesService implements OnDestroy {
         ''
       )
     );
+
     this.updateTheme();
   }
 
@@ -153,6 +155,10 @@ export class PreferencesService implements OnDestroy {
     };
   }
 
+  public setKubeConfigPath(path: string) {
+    this.kubeConfigPath = path;
+  }
+
   updateTheme() {
     if (
       this.themeService.themeType.value !==
@@ -197,7 +203,7 @@ export class PreferencesService implements OnDestroy {
             },
             {
               name: 'development.frontendUrl',
-              type: 'text',
+              type: 'input',
               value: this.preferences.get('development.frontendUrl').subject
                 .value,
               disableConditions: [
@@ -283,7 +289,7 @@ export class PreferencesService implements OnDestroy {
                 title: [
                   {
                     metadata: {
-                      type: 'text',
+                      type: 'input',
                     },
                     config: {
                       value: pageSize,
@@ -317,6 +323,22 @@ export class PreferencesService implements OnDestroy {
                     label: '100',
                   },
                 ],
+              },
+            },
+          ],
+        },
+        {
+          name: 'Current Kube Config Path',
+          elements: [
+            {
+              type: 'text',
+              name: 'general.kubeConfig',
+              value: '',
+              textConfig: {
+                config: {
+                  value: this.kubeConfigPath || 'unknown',
+                  clipboardValue: this.kubeConfigPath || 'unknown',
+                },
               },
             },
           ],

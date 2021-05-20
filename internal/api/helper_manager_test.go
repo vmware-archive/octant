@@ -17,7 +17,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
 )
 
@@ -28,10 +27,15 @@ func TestHelperManager_GenerateContent(t *testing.T) {
 	state := octantFake.NewMockState(controller)
 	octantClient := fake.NewMockOctantClient(controller)
 
-	ev := event.Event{
-		Type: "event.octant.dev/buildInfo",
+	bev := event.Event{
+		Type: event.EventTypeBuildInfo,
 	}
-	octantClient.EXPECT().Send(ev)
+	octantClient.EXPECT().Send(bev)
+
+	kEv := event.Event{
+		Type: event.EventTypeKubeConfigPath,
+	}
+	octantClient.EXPECT().Send(kEv)
 
 	logger := log.NopLogger()
 
@@ -39,8 +43,8 @@ func TestHelperManager_GenerateContent(t *testing.T) {
 	dashConfig.EXPECT().Logger().Return(logger).AnyTimes()
 
 	poller := api.NewSingleRunPoller()
-	generatorFunc := func(ctx context.Context, state octant.State) (event.Event, error) {
-		return ev, nil
+	generatorFunc := func(ctx context.Context) ([]event.Event, error) {
+		return []event.Event{bev, kEv}, nil
 	}
 
 	manager := api.NewHelperStateManager(dashConfig,

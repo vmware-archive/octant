@@ -10,49 +10,48 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
-
 	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
-// MockGenerator is a mock of Generator interface
+// MockGenerator is a mock of Generator interface.
 type MockGenerator struct {
 	ctrl     *gomock.Controller
 	recorder *MockGeneratorMockRecorder
 }
 
-// MockGeneratorMockRecorder is the mock recorder for MockGenerator
+// MockGeneratorMockRecorder is the mock recorder for MockGenerator.
 type MockGeneratorMockRecorder struct {
 	mock *MockGenerator
 }
 
-// NewMockGenerator creates a new mock instance
+// NewMockGenerator creates a new mock instance.
 func NewMockGenerator(ctrl *gomock.Controller) *MockGenerator {
 	mock := &MockGenerator{ctrl: ctrl}
 	mock.recorder = &MockGeneratorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockGenerator) EXPECT() *MockGeneratorMockRecorder {
 	return m.recorder
 }
 
-// Event mocks base method
-func (m *MockGenerator) Event(arg0 context.Context) (event.Event, error) {
+// Events mocks base method.
+func (m *MockGenerator) Events(arg0 context.Context) ([]event.Event, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", arg0)
-	ret0, _ := ret[0].(event.Event)
+	ret := m.ctrl.Call(m, "Events", arg0)
+	ret0, _ := ret[0].([]event.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Event indicates an expected call of Event
-func (mr *MockGeneratorMockRecorder) Event(arg0 interface{}) *gomock.Call {
+// Events indicates an expected call of Events.
+func (mr *MockGeneratorMockRecorder) Events(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockGenerator)(nil).Event), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockGenerator)(nil).Events), arg0)
 }
 
-// Name mocks base method
+// Name mocks base method.
 func (m *MockGenerator) Name() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Name")
@@ -60,13 +59,13 @@ func (m *MockGenerator) Name() string {
 	return ret0
 }
 
-// Name indicates an expected call of Name
+// Name indicates an expected call of Name.
 func (mr *MockGeneratorMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockGenerator)(nil).Name))
 }
 
-// ScheduleDelay mocks base method
+// ScheduleDelay mocks base method.
 func (m *MockGenerator) ScheduleDelay() time.Duration {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScheduleDelay")
@@ -74,7 +73,7 @@ func (m *MockGenerator) ScheduleDelay() time.Duration {
 	return ret0
 }
 
-// ScheduleDelay indicates an expected call of ScheduleDelay
+// ScheduleDelay indicates an expected call of ScheduleDelay.
 func (mr *MockGeneratorMockRecorder) ScheduleDelay() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleDelay", reflect.TypeOf((*MockGenerator)(nil).ScheduleDelay))

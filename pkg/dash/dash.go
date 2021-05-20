@@ -472,6 +472,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		portForwarder,
 		restConfigOptions,
 		buildInfo,
+		options.KubeConfig,
 		false,
 	)
 

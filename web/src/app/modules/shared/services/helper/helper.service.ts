@@ -13,6 +13,10 @@ export interface BuildInfoMessage {
   time: string;
 }
 
+export interface KubeConfigPathMessage {
+  path: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -20,6 +24,7 @@ export class HelperService {
   private version = new BehaviorSubject<string>('');
   private commit = new BehaviorSubject<string>('');
   private time = new BehaviorSubject<string>('');
+  private kubeConfigPath = new BehaviorSubject<string>('');
 
   constructor(
     private router: Router,
@@ -31,6 +36,14 @@ export class HelperService {
       this.commit.next(update.commit);
       this.time.next(update.time);
     });
+
+    websocketService.registerHandler(
+      'event.octant.dev/kubeConfigPath',
+      data => {
+        const update = data as KubeConfigPathMessage;
+        this.kubeConfigPath.next(update.path);
+      }
+    );
   }
 
   buildVersion() {
@@ -43,5 +56,9 @@ export class HelperService {
 
   buildTime() {
     return this.time;
+  }
+
+  localKubeConfigPath() {
+    return this.kubeConfigPath;
   }
 }
