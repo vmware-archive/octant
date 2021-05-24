@@ -21,17 +21,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+
 	"github.com/golang/mock/gomock"
+
 	"github.com/gorilla/websocket"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
@@ -175,36 +176,31 @@ func TestNewRunnerLoadsValidKubeConfigFilteringNonexistent(t *testing.T) {
 
 func TestNewRunnerUsesClusterClient(t *testing.T) {
 	namespace := "foobar-banana"
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-	clusterClient := mockClusterClientReturningNamespace(controller, namespace)
 	listener := NewInMemoryListener()
 
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	clusterClient := mockClusterClientReturningNamespace(controller, namespace)
+
 	sharedIndexInformer := clusterFake.NewMockSharedIndexInformer(controller)
-	sharedIndexInformer.EXPECT().SetWatchErrorHandler(gomock.Any())
-	sharedIndexInformer.EXPECT().AddEventHandlerWithResyncPeriod(gomock.Any(), gomock.Any())
 	sharedIndexInformer.EXPECT().Run(gomock.Any()).AnyTimes()
 
 	genericInformer := clusterFake.NewMockGenericInformer(controller)
 	genericInformer.EXPECT().Informer().Return(sharedIndexInformer).AnyTimes()
 	genericInformer.EXPECT().Lister().AnyTimes()
 
-	crds := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
-	dynamicInformerFactory := clusterFake.NewMockDynamicSharedInformerFactory(controller)
-	dynamicInformerFactory.EXPECT().ForResource(crds).Return(genericInformer)
-
-	logger := internalLog.NopLogger()
 	cancel, err := makeRunner(
-		logger,
+		internalLog.NopLogger(),
 		WithClusterClient(clusterClient),
 		WithListener(listener),
-		WithDynamicSharedInformerFactory(dynamicInformerFactory),
 	)
 	require.NoError(t, err)
+
 	defer cancel()
+
 	namespacesEvent, err := waitForEventOfType(listener, event.EventTypeNamespaces)
 	require.NoError(t, err)
-
 	require.Equal(t, []interface{}{namespace}, namespacesEvent.Data["namespaces"].([]interface{}))
 }
 
@@ -215,15 +211,13 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	nsClient.EXPECT().Names().AnyTimes()
 	nsClient.EXPECT().HasNamespace(namespace).Return(true)
 
-	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
-
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).MinTimes(1)
-	clusterClient.EXPECT().DynamicClient().Return(dynamicClient, nil)
 	clusterClient.EXPECT().RESTClient()
 	clusterClient.EXPECT().RESTConfig()
 	clusterClient.EXPECT().DefaultNamespace().Return(namespace)
-
+	clusterClient.EXPECT().Resource(gomock.Any()).AnyTimes()
+	clusterClient.EXPECT().DynamicClient().AnyTimes()
 	return clusterClient
 }
 

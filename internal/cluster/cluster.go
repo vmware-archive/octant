@@ -54,7 +54,7 @@ import (
 type ClientInterface interface {
 	DefaultNamespace() string
 	ResourceExists(schema.GroupVersionResource) bool
-	Resource(schema.GroupKind) (schema.GroupVersionResource, bool, error)
+	Resource(schema.GroupVersionKind) (schema.GroupVersionResource, bool, error)
 	ResetMapper()
 	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
@@ -169,8 +169,8 @@ func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
 	return err == nil
 }
 
-func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, bool, error) {
-	restMapping, err := c.restMapper.RESTMapping(gk)
+func (c *Cluster) Resource(gvk schema.GroupVersionKind) (schema.GroupVersionResource, bool, error) {
+	restMapping, err := c.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return schema.GroupVersionResource{}, false, err
 	}

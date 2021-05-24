@@ -73,7 +73,7 @@ data:
 	}
 
 	notFound := kerrors.NewNotFound(schema.GroupResource{}, "greeting-system")
-	clusterClient.EXPECT().Resource(schema.GroupKind{Kind: "ConfigMap"}).Return(gvr, true, nil)
+	clusterClient.EXPECT().Resource(schema.GroupVersionKind{Version: "v1", Kind: "ConfigMap"}).Return(gvr, true, nil)
 	dynamicCache.EXPECT().Get(context.TODO(), key).Return(nil, notFound)
 	dynamicCache.EXPECT().Create(context.TODO(), uGreeting)
 

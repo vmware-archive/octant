@@ -37,7 +37,7 @@ type DefaultCRDWatcher struct {
 var _ config.CRDWatcher = (*DefaultCRDWatcher)(nil)
 
 // NewDefaultCRDWatcher creates an instance of DefaultCRDWatcher.
-func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInterface, objectStore store.Store, errorStore oerrors.ErrorStore) (*DefaultCRDWatcher, error) {
+func NewDefaultCRDWatcher(_ context.Context, clusterClient cluster.ClientInterface, objectStore store.Store, errorStore oerrors.ErrorStore) (*DefaultCRDWatcher, error) {
 	if objectStore == nil {
 		return nil, errors.New("object store is nil")
 	}
@@ -62,7 +62,6 @@ var (
 // Watch watches for CRDs given a configuration.
 func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 	logger := log.From(ctx)
-
 	handler := &kcache.ResourceEventHandlerFuncs{
 		AddFunc: func(object interface{}) {
 			cw.mu.Lock()
