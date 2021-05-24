@@ -155,7 +155,7 @@
     "wait-on": "^5.2.0"
   },
   "resolutions": {
-    "marked": "2.0.3",
+    "marked": "2.0.5",
     "merge": "^2.1.1",
     "hosted-git-info": "^3.0.8",
     "yargs-parser": "^18.1.2"
