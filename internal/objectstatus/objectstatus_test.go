@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/vmware-tanzu/octant/internal/link"
 	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
 
@@ -73,6 +75,7 @@ func Test_status(t *testing.T) {
 			defer controller.Finish()
 
 			o := storefake.NewMockStore(controller)
+			o.EXPECT().List(gomock.Any(), gomock.Any()).Return(&unstructured.UnstructuredList{}, false, nil).AnyTimes()
 
 			ctx := context.Background()
 			got, err := status(ctx, tc.object, o, tc.lookup, linkInterface)

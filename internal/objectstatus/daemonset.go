@@ -36,9 +36,7 @@ func daemonSet(_ context.Context, object runtime.Object, _ store.Store, _ link.I
 
 	var properties []component.Property
 
-	if selector := ds.Spec.Selector; selector != nil {
-		properties = append(properties, component.Property{Label: "Selectors", Value: getSelectors(selector)})
-	}
+	properties = append(properties, component.Property{Label: "Selectors", Value: GetSelectors(ds.Spec.Selector)})
 
 	if nodeSelector := ds.Spec.Template.Spec.NodeSelector; nodeSelector != nil {
 		properties = append(properties, component.Property{Label: "Node Selectors", Value: getSelectorMap(nodeSelector)})
@@ -66,21 +64,24 @@ func daemonSet(_ context.Context, object runtime.Object, _ store.Store, _ link.I
 	}
 }
 
-func getSelectors(selector *metav1.LabelSelector) component.Component {
-	selectorComponent := component.NewSelectors(nil)
-	if selector == nil {
+func GetSelectors(selector *metav1.LabelSelector) component.Component {
+	if selector != nil {
+		selectorComponent := component.NewSelectors(nil)
+		if selector == nil {
+			return selectorComponent
+		}
+
+		for k, v := range selector.MatchLabels {
+			selectorComponent.Add(component.NewLabelSelector(k, v))
+		}
+
+		for _, e := range selector.MatchExpressions {
+			es := component.NewExpressionSelector(e.Key, component.Operator(e.Operator), e.Values)
+			selectorComponent.Add(es)
+		}
 		return selectorComponent
 	}
-
-	for k, v := range selector.MatchLabels {
-		selectorComponent.Add(component.NewLabelSelector(k, v))
-	}
-
-	for _, e := range selector.MatchExpressions {
-		es := component.NewExpressionSelector(e.Key, component.Operator(e.Operator), e.Values)
-		selectorComponent.Add(es)
-	}
-	return selectorComponent
+	return component.NewText("None")
 }
 
 func getSelectorMap(selector map[string]string) *component.Selectors {

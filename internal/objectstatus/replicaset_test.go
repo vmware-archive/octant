@@ -39,8 +39,8 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Replica Set is OK")},
-				Properties: []component.Property{{Label: "Replica Status", Value: component.NewText("Current 1 / Desired 1")},
-					{Label: "Replicas", Value: component.NewText("1")}},
+				Properties: []component.Property{{Label: "Current Replicas", Value: component.NewText("1")},
+					{Label: "Desired Replicas", Value: component.NewText("1")}},
 			},
 		},
 		{
@@ -53,8 +53,8 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
-				Properties: []component.Property{{Label: "Replica Status", Value: component.NewText("Current 1 / Desired 1")},
-					{Label: "Replicas", Value: component.NewText("0")}},
+				Properties: []component.Property{{Label: "Current Replicas", Value: component.NewText("1")},
+					{Label: "Desired Replicas", Value: component.NewText("1")}},
 			},
 		},
 		{
@@ -67,8 +67,8 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Replica Set is OK")},
-				Properties: []component.Property{{Label: "Replica Status", Value: component.NewText("Current 0 / Desired 0")},
-					{Label: "Replicas", Value: component.NewText("0")}},
+				Properties: []component.Property{{Label: "Current Replicas", Value: component.NewText("0")},
+					{Label: "Desired Replicas", Value: component.NewText("0")}},
 			},
 		},
 		{
@@ -81,8 +81,8 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
-				Properties: []component.Property{{Label: "Replica Status", Value: component.NewText("Current 1 / Desired 1")},
-					{Label: "Replicas", Value: component.NewText("1")}},
+				Properties: []component.Property{{Label: "Current Replicas", Value: component.NewText("1")},
+					{Label: "Desired Replicas", Value: component.NewText("1")}},
 			},
 		},
 		{

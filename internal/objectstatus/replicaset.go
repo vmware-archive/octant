@@ -41,8 +41,8 @@ func replicaSetAppsV1(_ context.Context, object runtime.Object, _ store.Store, _
 	current := fmt.Sprintf("%d", replicaSet.Status.ReadyReplicas)
 	desired := fmt.Sprintf("%d", specReplicas)
 
-	properties := []component.Property{{Label: "Replica Status", Value: component.NewText(fmt.Sprintf("Current %s / Desired %s", current, desired))},
-		{Label: "Replicas", Value: component.NewText(fmt.Sprintf("%d", replicaSet.Status.Replicas))}}
+	properties := []component.Property{{Label: "Current Replicas", Value: component.NewText(current)},
+		{Label: "Desired Replicas", Value: component.NewText(desired)}}
 
 	switch {
 	case status.Replicas == 0 && specReplicas != 0:

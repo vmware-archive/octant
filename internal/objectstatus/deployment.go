@@ -35,7 +35,7 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store, _
 
 	status := deployment.Status
 	properties := []component.Property{{Label: "Deployment Strategy", Value: component.NewText(string(deployment.Spec.Strategy.Type))},
-		{Label: "Selectors", Value: getSelector(deployment)}}
+		{Label: "Selectors", Value: GetSelectors(deployment.Spec.Selector)}}
 
 	switch {
 	case status.Replicas == status.UnavailableReplicas:
@@ -60,25 +60,4 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store, _
 			Properties: properties,
 		}, nil
 	}
-}
-
-func getSelector(deployment *appsv1.Deployment) component.Component {
-	if selector := deployment.Spec.Selector; selector != nil {
-		var selectors []component.Selector
-
-		for _, lsr := range selector.MatchExpressions {
-			o, _ := component.MatchOperator(string(lsr.Operator))
-
-			es := component.NewExpressionSelector(lsr.Key, o, lsr.Values)
-			selectors = append(selectors, es)
-		}
-
-		for k, v := range selector.MatchLabels {
-			ls := component.NewLabelSelector(k, v)
-			selectors = append(selectors, ls)
-		}
-
-		return component.NewSelectors(selectors)
-	}
-	return component.NewText("None")
 }

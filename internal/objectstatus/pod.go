@@ -58,7 +58,7 @@ func pod(ctx context.Context, object runtime.Object, o store.Store, link link.In
 
 		if nodeName := pod.Spec.NodeName; nodeName != "" {
 			nodeLink, _ := link.ForGVK("", "v1", "Node", pod.Spec.NodeName, pod.Spec.NodeName)
-			status.Properties = append(status.Properties, component.Property{Label: "Node", Value: nodeLink})
+			status.AddProperty("Node", nodeLink)
 		}
 
 		ownerReference := metav1.GetControllerOf(pod)
@@ -71,7 +71,7 @@ func pod(ctx context.Context, object runtime.Object, o store.Store, link link.In
 				ownerReference.Name,
 			)
 			if err == nil {
-				status.Properties = append(status.Properties, component.Property{Label: "Controlled By", Value: controlledBy})
+				status.AddProperty("Controlled By", controlledBy)
 			}
 		}
 	}

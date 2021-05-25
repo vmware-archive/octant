@@ -9,12 +9,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/vmware-tanzu/octant/internal/link"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -138,9 +138,27 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 		}
 	}
 
-	if labels := accessor.GetLabels(); len(labels) > 0 {
-		oStatus.InsertProperty("Labels", component.NewLabels(labels))
+	if link != nil {
+		events, err := store.EventsForObject(ctx, object, o)
+		if err == nil && len(events.Items) > 0 {
+			var lastEvent = events.Items[0]
+			for i := 1; i < len(events.Items); i++ {
+				a, err := strconv.Atoi(events.Items[i].ResourceVersion)
+				b, err := strconv.Atoi(lastEvent.ResourceVersion)
+				if err == nil && a > b {
+					lastEvent = events.Items[i]
+				}
+			}
+
+			if &lastEvent != nil {
+				messageLink, err := link.ForObject(&lastEvent, lastEvent.Message)
+				if err == nil {
+					oStatus.InsertProperty("Last Event", messageLink)
+				}
+			}
+		}
 	}
+
 	oStatus.InsertProperty("Created", component.NewTimestamp(accessor.GetCreationTimestamp().Time))
 	oStatus.InsertProperty("Namespace", component.NewText(accessor.GetNamespace()))
 

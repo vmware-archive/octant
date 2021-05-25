@@ -384,7 +384,7 @@ func Test_eventsForObject(t *testing.T) {
 	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, false, nil)
 
 	ctx := context.Background()
-	got, err := eventsForObject(ctx, object, o)
+	got, err := store.EventsForObject(ctx, object, o)
 	require.NoError(t, err)
 
 	expected := &corev1.EventList{
