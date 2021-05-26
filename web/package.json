@@ -155,9 +155,12 @@
     "wait-on": "^5.2.0"
   },
   "resolutions": {
-    "marked": "2.0.5",
-    "merge": "^2.1.1",
+    "browserslist": "^4.16.5",
+    "dns-packet": "^5.2.2",
     "hosted-git-info": "^3.0.8",
+    "marked": "^2.0.5",
+    "merge": "^2.1.1",
+    "xmlhttprequest-ssl": "^1.6.1",
     "yargs-parser": "^18.1.2"
   }
 }
