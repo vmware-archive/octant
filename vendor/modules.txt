@@ -243,9 +243,8 @@ go.opencensus.io/trace/tracestate
 # go.uber.org/atomic v1.7.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.6.0
-## explicit
 go.uber.org/multierr
-# go.uber.org/zap v1.16.0
+# go.uber.org/zap v1.17.0
 ## explicit
 go.uber.org/zap
 go.uber.org/zap/buffer
@@ -430,10 +429,8 @@ gopkg.in/inf.v0
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 gopkg.in/yaml.v3
-# honnef.co/go/tools v0.0.1-2020.1.6
-## explicit
 # k8s.io/api v0.19.3
 ## explicit
 k8s.io/api/admissionregistration/v1
