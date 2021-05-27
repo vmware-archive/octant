@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2.1.5
         with:
-          node-version: '14'
+          node-version: '16'
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2.1.5
         with:
-          node-version: '14'
+          node-version: '16'
       - uses: actions/checkout@v2
       - name: run_karma
         run: |
@@ -79,7 +79,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2.1.5
         with:
-          node-version: '14'
+          node-version: '16'
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}

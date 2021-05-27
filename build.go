@@ -156,7 +156,6 @@ func main() {
 			Short: "server build to extraResources, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				webDeps("--prefer-offline", "--no-audit")
-				webBuild()
 				webBuildElectron()
 				buildElectron()
 			},
@@ -361,6 +360,14 @@ func webBuild() {
 }
 
 func webBuildElectron() {
+	cmd := newCmd("npm", nil, "run", "electron:build")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Dir = "./web"
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("web-build-electron: build : %s", err)
+	}
 	cleanCmd := newCmd("npm", nil, "run", "clean")
 	cleanCmd.Stdout = os.Stdout
 	cleanCmd.Stderr = os.Stderr
