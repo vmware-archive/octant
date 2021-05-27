@@ -508,7 +508,14 @@ func pluginDir() string {
 }
 
 func verifyRegistry() {
-	cmd := newCmd("grep", nil, "-R", "build-artifactory.eng.vmware.com", "web")
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "windows" {
+		cmd = newCmd("findstr", nil, "/S", "/C:\"build-artifactory.eng.vmware.com\"", "web/*")
+	} else {
+		cmd = newCmd("grep", nil, "-R", "build-artifactory.eng.vmware.com", "web")
+	}
+
 	out, err := cmd.Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
 		if exitError.ExitCode() > 1 {
