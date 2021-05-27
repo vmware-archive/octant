@@ -91,7 +91,8 @@ func Test_Summary_Marshal(t *testing.T) {
 				Base: newBase(TypeSummary, TitleFromString("my summary")),
 				Config: SummaryConfig{
 					Alert: &Alert{
-						Type:    AlertTypeInfo,
+						Status:  AlertStatusInfo,
+						Type:    AlertTypeDefault,
 						Message: "info",
 					},
 					Sections: []SummarySection{

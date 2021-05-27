@@ -5,6 +5,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import findLast from 'lodash/findLast';
 import { Subscription } from 'rxjs';
+import { Alert } from 'src/app/modules/shared/models/content';
 import {
   NotifierService,
   NotifierSignalType,
@@ -22,6 +23,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
   warning: string;
   info: string;
   success: string;
+  alertConfig: Alert;
 
   constructor(private notifierService: NotifierService) {}
 
@@ -56,6 +58,8 @@ export class NotifierComponent implements OnInit, OnDestroy {
         this.success = lastSuccessSignal
           ? (lastSuccessSignal.data as string)
           : '';
+
+        this.setAlert();
       }
     );
   }
@@ -64,5 +68,36 @@ export class NotifierComponent implements OnInit, OnDestroy {
     if (this.signalSubscription) {
       this.signalSubscription.unsubscribe();
     }
+  }
+
+  hasAlert(): boolean {
+    return !!(this.info || this.success || this.error || this.warning);
+  }
+
+  setAlert(): void {
+    let status: string, message: string;
+    let closable: boolean;
+
+    if (this.warning) {
+      status = 'warning';
+      message = this.warning;
+    } else if (this.error) {
+      status = 'error';
+      message = this.error;
+    } else if (this.success) {
+      status = 'success';
+      message = this.success;
+    } else {
+      status = 'info';
+      message = this.info;
+      closable = true;
+    }
+
+    this.alertConfig = {
+      status: status,
+      type: 'banner',
+      message: message,
+      closable: !!closable,
+    };
   }
 }

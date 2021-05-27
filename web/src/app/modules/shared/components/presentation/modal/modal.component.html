@@ -5,6 +5,7 @@
     </h3>
   </cds-modal-header>
   <cds-modal-content>
+    <app-alert [alert]="alert"></app-alert>
     <app-view-container [view]="body"></app-view-container>
     <app-form *ngIf="form?.fields" #modalAppForm [form]="form"></app-form>
   </cds-modal-content>

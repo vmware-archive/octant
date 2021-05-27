@@ -4,6 +4,8 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
+
+import '@cds/core/alert/register.js';
 import { Alert } from '../../../models/content';
 
 const alertLookup = {
@@ -11,13 +13,6 @@ const alertLookup = {
   warning: 'warning',
   info: 'info',
   success: 'success',
-};
-
-const alertShapes = {
-  danger: 'exclamation-circle',
-  warning: 'exclamation-triangle',
-  info: 'info-circle',
-  success: 'check-circle',
 };
 
 @Component({
@@ -28,20 +23,27 @@ const alertShapes = {
 })
 export class AlertComponent implements OnInit {
   @Input() alert: Alert;
-  shape = '';
-  alertClass = '';
   message = '';
-  alertType = '';
+  status = '';
+  type = '';
+  closable = false;
+  buttonGroup = null;
+  showAlert = false;
 
   constructor() {}
 
   ngOnInit(): void {
     if (this.alert) {
-      const alertClass = alertLookup[this.alert.type] || alertLookup.error;
-      this.shape = alertShapes[alertClass];
-      this.alertClass = `alert-${alertClass}`;
+      this.type = this.alert.type;
       this.message = this.alert.message;
-      this.alertType = this.alert.type;
+      this.status = alertLookup[this.alert.status] || alertLookup.error;
+      this.closable = this.alert.closable;
+      this.buttonGroup = this.alert.buttonGroup;
+      this.showAlert = true;
     }
+  }
+
+  close(): void {
+    this.showAlert = false;
   }
 }

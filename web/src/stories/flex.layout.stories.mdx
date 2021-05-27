@@ -32,7 +32,9 @@ flexLayout.AddSections([]component.FlexLayoutSection{
       }...),
     },
   },
-}...)`
+}...)
+flexLayout.SetAlert(component.NewAlert(component.AlertStatusInfo, component.AlertTypeDefault, "Info alert", false, nil))
+`
 }};
 
 export const sampleText = {
@@ -107,10 +109,17 @@ export const sectionQuarter = {
   view: summaryQuarter,
 };
 
+export const alertConfig = {
+  status: 'info',
+  type: 'default',
+  message: 'Info Alert'
+};
+
 export const flexView = {
   config: {
     sections: [[sectionFull, sectionHalf, sectionQuarter, sectionQuarter]],
     buttonGroup: null,
+    alert: alertConfig
   },
   metadata: {
     type: 'flexlayout',
@@ -128,6 +137,8 @@ export const FlexlayoutStoryTemplate = args => ({
 
 <p>A Flex Layout component is used to provide a vertical layout for its child components.
 The layout can be divided into three possible widths: full, half, and quarter.</p>
+
+<p>A Flex Layout can optionally show an alert on the top of the component.</p>
 
 <h2>Example</h2>
 

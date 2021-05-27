@@ -55,12 +55,14 @@ type FlexLayoutSection []FlexLayoutItem
 type FlexLayoutConfig struct {
 	Sections    []FlexLayoutSection `json:"sections,omitempty"`
 	ButtonGroup *ButtonGroup        `json:"buttonGroup,omitempty"`
+	Alert       *Alert              `json:"alert,omitempty"`
 }
 
 func (f *FlexLayoutConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Sections    []FlexLayoutSection `json:"sections,omitempty"`
 		ButtonGroup *TypedObject        `json:"buttonGroup,omitempty"`
+		Alert       *Alert              `json:"alert,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -81,6 +83,7 @@ func (f *FlexLayoutConfig) UnmarshalJSON(data []byte) error {
 	}
 
 	f.Sections = x.Sections
+	f.Alert = x.Alert
 
 	return nil
 }
@@ -108,6 +111,11 @@ var _ Component = (*FlexLayout)(nil)
 // AddSections adds one or more sections to the flex layout.
 func (fl *FlexLayout) AddSections(sections ...FlexLayoutSection) {
 	fl.Config.Sections = append(fl.Config.Sections, sections...)
+}
+
+// SetAlert sets an alert for the .
+func (fl *FlexLayout) SetAlert(alert Alert) {
+	fl.Config.Alert = &alert
 }
 
 type flexLayoutMarshal FlexLayout

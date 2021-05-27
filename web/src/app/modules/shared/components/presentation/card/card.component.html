@@ -38,13 +38,7 @@
 
 <ng-template #content>
   <ng-container *ngIf="v?.config.alert">
-    <div class="alert alert-{{ v?.config.alert.type }} alert-sm">
-      <div class="alert-item static">
-        <span class="alert-text">
-          {{ v?.config.alert.message }}
-        </span>
-      </div>
-    </div>
+    <app-alert [alert]="v?.config.alert"></app-alert>
   </ng-container>
   <h4 class="card-title">
     <app-view-title [views]="title"></app-view-title>

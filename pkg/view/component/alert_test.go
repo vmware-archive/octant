@@ -7,10 +7,14 @@ import (
 )
 
 func TestAlert(t *testing.T) {
-	got := NewAlert(AlertTypeSuccess, "message")
+	buttonGroup := NewButtonGroup()
+	got := NewAlert(AlertStatusSuccess, AlertTypeDefault, "message", true, buttonGroup)
 	expected := Alert{
-		Type:    AlertTypeSuccess,
-		Message: "message",
+		Status:      AlertStatusSuccess,
+		Type:        AlertTypeDefault,
+		Message:     "message",
+		Closable:    true,
+		ButtonGroup: buttonGroup,
 	}
 
 	assert.Equal(t, got, expected)

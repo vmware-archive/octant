@@ -1,5 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { Action, CardView, TitleView, View } from '../../../models/content';
+import {
+  Action,
+  CardView,
+  TitleView,
+  View,
+  Alert,
+} from '../../../models/content';
 import { ActionService } from '../../../services/action/action.service';
 import { FormComponent } from '../form/form.component';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -18,6 +24,8 @@ export class CardComponent extends AbstractViewComponent<CardView> {
 
   currentAction: Action;
 
+  alert: Alert;
+
   constructor(private actionService: ActionService) {
     super();
   }
@@ -25,6 +33,7 @@ export class CardComponent extends AbstractViewComponent<CardView> {
   update() {
     this.title = this.v.metadata.title as TitleView[];
     this.body = this.v.config.body;
+    this.alert = this.v.config.alert;
   }
 
   onActionSubmit() {

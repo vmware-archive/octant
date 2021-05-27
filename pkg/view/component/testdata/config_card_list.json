@@ -41,8 +41,11 @@
           }
         ],
         "alert": {
-          "type": "warning",
-          "message": "warning"
+          "status": "warning",
+          "type": "banner",
+          "message": "warning",
+          "closable": false,
+          "buttonGroup": null
         }
       }
     }

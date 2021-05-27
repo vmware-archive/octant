@@ -4,6 +4,7 @@ import '@cds/core/modal/register';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
   ActionForm,
+  Alert,
   ButtonView,
   ModalView,
   TitleView,
@@ -37,6 +38,7 @@ export class ModalComponent
   size: string;
   action: string;
   buttons: ButtonView[];
+  alert: Alert;
 
   private modalSubscription: Subscription;
 
@@ -68,6 +70,7 @@ export class ModalComponent
     this.modalService.setState(this.opened);
     this.action = this.form?.action;
     this.buttons = this.v.config.buttons;
+    this.alert = this.v.config.alert;
   }
 
   onFormSubmit() {

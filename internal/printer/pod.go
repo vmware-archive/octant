@@ -152,7 +152,7 @@ func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
 	sections.AddText("QoS", string(pod.Status.QOSClass))
 
 	if pod.DeletionTimestamp != nil {
-		summary.SetAlert(component.NewAlert(component.AlertTypeError, "Pod is being deleted"))
+		summary.SetAlert(component.NewAlert(component.AlertStatusError, component.AlertTypeDefault, "Pod is being deleted", false, nil))
 
 		sections = append(sections, component.SummarySection{
 			Header:  "Status: Terminating",
