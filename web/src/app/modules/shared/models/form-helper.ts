@@ -1,9 +1,12 @@
 import {
   FormArray,
+  FormBuilder,
   FormControl,
+  FormGroup,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { ActionField, ActionForm } from './content';
 
 export interface Choice {
   label: string;
@@ -26,7 +29,7 @@ const validationNeedParams = {
 
 // Class responsible to create a Form Group and add Validations Functions to form control
 export class FormHelper {
-  createFromGroup(form, formBuilder) {
+  createFromGroup(form: ActionForm, formBuilder: FormBuilder): FormGroup {
     if (!form) {
       return;
     }
@@ -52,7 +55,7 @@ export class FormHelper {
     return formBuilder.group(controls);
   }
 
-  transformValue(field): any {
+  transformValue(field: ActionField): any {
     if (field.type === 'number') {
       if (field.value === '') {
         return null;
@@ -60,6 +63,7 @@ export class FormHelper {
       const value = +field.value;
       return Number.isNaN(value) ? 0 : value;
     }
+    return field.value;
   }
 
   // Receive a hash with the validation name and the expected
