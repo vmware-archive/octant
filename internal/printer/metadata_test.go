@@ -19,68 +19,99 @@ import (
 )
 
 func Test_Metadata(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
+	ts := testutil.CreateTimestamp()
 
-	tpo := newTestPrinterOptions(controller)
-
-	fl := flexlayout.New()
-
-	deployment := testutil.CreateDeployment("deployment")
-	metadata, err := NewMetadata(deployment, tpo.link)
-	require.NoError(t, err)
-
-	fieldEntry := metav1.ManagedFieldsEntry{
-		Manager:    "octant",
-		Operation:  metav1.ManagedFieldsOperationUpdate,
-		Time:       testutil.CreateTimestamp(),
-		FieldsType: "FieldsV1",
-		FieldsV1: &metav1.FieldsV1{
-			Raw: []byte(`{"hello": "world"}`),
-		},
-	}
-	deployment.ManagedFields = []metav1.ManagedFieldsEntry{
-		fieldEntry,
-	}
-
-	require.NoError(t, metadata.AddToFlexLayout(fl))
-
-	got := fl.ToComponent("Summary")
-
-	fieldJSONData, err := convertFieldsToFormattedString(fieldEntry.FieldsV1)
-	require.NoError(t, err)
-
-	expected := component.NewFlexLayout("Summary")
-	expected.AddSections([]component.FlexLayoutSection{
+	cases := []struct {
+		name              string
+		fieldEntry        metav1.ManagedFieldsEntry
+		expectedOperation *component.Text
+		expectedTime      *component.Timestamp
+	}{
 		{
-			{
-				Width: component.WidthFull,
-				View: component.NewSummary("Metadata", component.SummarySections{
-					{
-						Header:  "Age",
-						Content: component.NewTimestamp(deployment.CreationTimestamp.Time),
-					},
-				}...),
+			name: "in general",
+			fieldEntry: metav1.ManagedFieldsEntry{
+				Manager:    "octant",
+				Operation:  metav1.ManagedFieldsOperationUpdate,
+				Time:       ts,
+				FieldsType: "FieldsV1",
+				FieldsV1: &metav1.FieldsV1{
+					Raw: []byte(`{"hello": "world"}`),
+				},
 			},
-			{
-				Width: component.WidthFull,
-				View: component.NewSummary(fieldEntry.Manager, []component.SummarySection{
-					{
-						Header:  "Operation",
-						Content: component.NewText(string(fieldEntry.Operation)),
-					},
-					{
-						Header:  "Updated",
-						Content: component.NewTimestamp(fieldEntry.Time.Rfc3339Copy().Time),
-					},
-					{
-						Header:  "Fields",
-						Content: component.NewJSONEditor(fieldJSONData),
-					},
-				}...),
-			},
+			expectedOperation: component.NewText(string(metav1.ManagedFieldsOperationUpdate)),
+			expectedTime:      component.NewTimestamp(ts.Rfc3339Copy().Time),
 		},
-	}...)
+		{
+			name: "omitted fields",
+			fieldEntry: metav1.ManagedFieldsEntry{
+				Manager:    "octant",
+				FieldsType: "FieldsV1",
+				FieldsV1: &metav1.FieldsV1{
+					Raw: []byte(`{"hello": "world"}`),
+				},
+			},
+			expectedOperation: component.NewText(""),
+			expectedTime:      nil,
+		},
+	}
 
-	component.AssertEqual(t, expected, got)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			tpo := newTestPrinterOptions(controller)
+
+			fl := flexlayout.New()
+
+			deployment := testutil.CreateDeployment("deployment")
+			metadata, err := NewMetadata(deployment, tpo.link)
+			require.NoError(t, err)
+
+			deployment.ManagedFields = []metav1.ManagedFieldsEntry{
+				tc.fieldEntry,
+			}
+
+			require.NoError(t, metadata.AddToFlexLayout(fl))
+
+			got := fl.ToComponent("Summary")
+
+			fieldJSONData, err := convertFieldsToFormattedString(tc.fieldEntry.FieldsV1)
+			require.NoError(t, err)
+
+			expected := component.NewFlexLayout("Summary")
+			expected.AddSections([]component.FlexLayoutSection{
+				{
+					{
+						Width: component.WidthFull,
+						View: component.NewSummary("Metadata", component.SummarySections{
+							{
+								Header:  "Age",
+								Content: component.NewTimestamp(deployment.CreationTimestamp.Time),
+							},
+						}...),
+					},
+					{
+						Width: component.WidthFull,
+						View: component.NewSummary(tc.fieldEntry.Manager, []component.SummarySection{
+							{
+								Header:  "Operation",
+								Content: tc.expectedOperation,
+							},
+							{
+								Header:  "Updated",
+								Content: tc.expectedTime,
+							},
+							{
+								Header:  "Fields",
+								Content: component.NewJSONEditor(fieldJSONData),
+							},
+						}...),
+					},
+				},
+			}...)
+
+			component.AssertEqual(t, expected, got)
+		})
+	}
 }
