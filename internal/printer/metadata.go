@@ -145,6 +145,11 @@ func (m *Metadata) managedFields() ([]component.Summary, error) {
 			return nil, err
 		}
 
+		var timestamp *component.Timestamp
+		if field.Time != nil {
+			timestamp = component.NewTimestamp(field.Time.Rfc3339Copy().UTC())
+		}
+
 		summary := component.NewSummary(field.Manager, []component.SummarySection{
 			{
 				Header:  "Operation",
@@ -152,7 +157,7 @@ func (m *Metadata) managedFields() ([]component.Summary, error) {
 			},
 			{
 				Header:  "Updated",
-				Content: component.NewTimestamp(field.Time.Rfc3339Copy().UTC()),
+				Content: timestamp,
 			},
 			{
 				Header:  "Fields",
