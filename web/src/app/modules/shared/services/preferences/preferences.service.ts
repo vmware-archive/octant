@@ -18,7 +18,8 @@ import { PreferencesEntry } from './preferences.entry';
 })
 export class PreferencesService implements OnDestroy {
   private electronStore: any;
-  private kubeConfigPath: string;
+  private kubeConfigPathText: string;
+  private kubeConfigFullPath: string;
 
   public preferences: Map<string, PreferencesEntry<any>> = new Map();
   public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
@@ -156,7 +157,14 @@ export class PreferencesService implements OnDestroy {
   }
 
   public setKubeConfigPath(path: string) {
-    this.kubeConfigPath = path;
+    this.kubeConfigFullPath = path;
+    this.kubeConfigPathText = path;
+    if (path.length > 35) {
+      this.kubeConfigPathText = `${path.substring(0, 17)}...${path.substring(
+        path.length - 17,
+        path.length
+      )}`;
+    }
   }
 
   updateTheme() {
@@ -336,8 +344,8 @@ export class PreferencesService implements OnDestroy {
               value: '',
               textConfig: {
                 config: {
-                  value: this.kubeConfigPath || 'unknown',
-                  clipboardValue: this.kubeConfigPath || 'unknown',
+                  value: this.kubeConfigPathText || 'unknown',
+                  clipboardValue: this.kubeConfigFullPath || 'unknown',
                 },
               },
             },
