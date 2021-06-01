@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,6 +39,8 @@ func Test_deploymentAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Deployment is OK")},
+				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
+					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},
 			},
 		},
 		{
@@ -49,6 +53,8 @@ func Test_deploymentAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
+				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
+					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},
 			},
 		},
 		{
@@ -61,6 +67,8 @@ func Test_deploymentAppsV1(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
+				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
+					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},
 			},
 		},
 		{
@@ -82,6 +90,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 			defer controller.Finish()
 
 			o := storeFake.NewMockStore(controller)
@@ -89,7 +98,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := deploymentAppsV1(ctx, object, o)
+			status, err := deploymentAppsV1(ctx, object, o, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

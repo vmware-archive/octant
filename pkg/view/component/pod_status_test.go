@@ -56,7 +56,7 @@ func Test_PodStatus_Marshal(t *testing.T) {
 func Test_PodStatus_AddSummary(t *testing.T) {
 	podStatus := NewPodStatus()
 
-	podStatus.AddSummary("name", []Component{NewText("details")}, NodeStatusOK)
+	podStatus.AddSummary("name", []Component{NewText("details")}, nil, NodeStatusOK)
 
 	expected := NewPodStatus()
 	expected.Config.Pods["name"] = PodSummary{
@@ -93,7 +93,7 @@ func Test_PodStatus_Status(t *testing.T) {
 			podStatus := NewPodStatus()
 
 			for i, status := range tc.statuses {
-				podStatus.AddSummary(fmt.Sprintf("%d", i), []Component{NewText("details")}, status)
+				podStatus.AddSummary(fmt.Sprintf("%d", i), []Component{NewText("details")}, nil, status)
 			}
 
 			assert.Equal(t, tc.expected, podStatus.Status())

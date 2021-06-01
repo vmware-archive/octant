@@ -37,6 +37,7 @@ func main() {
 	// Tell Octant to call this plugin when printing configuration or tabs for Pods
 	capabilities := &plugin.Capabilities{
 		SupportsPrinterConfig: []schema.GroupVersionKind{podGVK},
+		SupportsObjectStatus:  []schema.GroupVersionKind{podGVK},
 		SupportsTab:           []schema.GroupVersionKind{podGVK},
 		ActionNames:           []string{pluginActionName},
 		IsModule:              true,
@@ -45,6 +46,7 @@ func main() {
 	// Set up what should happen when Octant calls this plugin.
 	options := []service.PluginOption{
 		service.WithPrinter(handlePrint),
+		service.WithObjectStatus(handleStatus),
 		service.WithTabPrinter(handleTab),
 		service.WithNavigation(handleNavigation, initRoutes),
 		service.WithActionHandler(handleAction),
@@ -89,6 +91,39 @@ func handleTab(request *service.PrintRequest) (plugin.TabResponse, error) {
 	tab := component.NewTabWithContents(*layout.ToComponent("Extra Pod Details"))
 
 	return plugin.TabResponse{Tab: tab}, nil
+}
+
+func handleStatus(request *service.PrintRequest) (plugin.ObjectStatusResponse, error) {
+	if request.Object == nil {
+		return plugin.ObjectStatusResponse{}, errors.Errorf("object is nil")
+	}
+	// load an object from the cluster and use that object to create a response.
+
+	// Octant has a helper function to generate a key from an object. The key
+	// is used to find the object in the cluster.
+	key, err := store.KeyFromObject(request.Object)
+	if err != nil {
+		return plugin.ObjectStatusResponse{}, err
+	}
+	u, err := request.DashboardClient.Get(request.Context(), key)
+	if err != nil {
+		return plugin.ObjectStatusResponse{}, err
+	}
+
+	// The plugin can check if the object it requested exists.
+	if u == nil {
+		return plugin.ObjectStatusResponse{}, errors.New("object doesn't exist")
+	}
+
+	// Will add object UID to the Resource Viewer properties table
+	return plugin.ObjectStatusResponse{
+		ObjectStatus: component.PodSummary{
+			Properties: []component.Property{{
+				Label: "ID (from plugin)",
+				Value: component.NewText(string(u.GetUID())),
+			}},
+		},
+	}, nil
 }
 
 // handlePrint is called when Octant wants to print an object.

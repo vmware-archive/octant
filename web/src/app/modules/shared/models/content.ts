@@ -282,12 +282,18 @@ export interface Edge {
   edge: string;
 }
 
+export interface Property {
+  label: string;
+  value: View;
+}
+
 export interface Node {
   name: string;
   apiVersion: string;
   kind: string;
   status: string;
   details: View[];
+  properties: Property[];
   path: LinkView;
 }
 

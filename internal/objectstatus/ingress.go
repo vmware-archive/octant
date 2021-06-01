@@ -9,6 +9,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+
 	"github.com/gobwas/glob"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -24,7 +27,7 @@ const (
 	ingressAlbActionAnnotation = "alb.ingress.kubernetes.io/actions."
 )
 
-func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
+func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("ingress is nil")
 	}
@@ -163,6 +166,12 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 		}
 	}
 
+	var backendText = "Not configured"
+	if backend := ingress.Spec.DefaultBackend; backend != nil {
+		backendText = backend.Service.Name
+	}
+
+	status.Properties = []component.Property{{Label: "Default Backend", Value: component.NewText(backendText)}}
 	return status, nil
 }
 

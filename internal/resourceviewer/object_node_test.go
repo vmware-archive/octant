@@ -30,7 +30,7 @@ func Test_objectNode(t *testing.T) {
 	pluginPrinter := pluginFake.NewMockManagerInterface(controller)
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), gomock.Any()).
+		Status(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(&objectstatus.ObjectStatus{}, nil)
 
 	on := objectNode{

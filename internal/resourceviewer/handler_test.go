@@ -81,7 +81,7 @@ func TestHandler(t *testing.T) {
 
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), gomock.Any()).
+		Status(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(&objectstatus.ObjectStatus{}, nil).
 		AnyTimes()
 
@@ -170,11 +170,11 @@ func TestHandler(t *testing.T) {
 	}
 
 	podStatus1 := component.NewPodStatus()
-	podStatus1.AddSummary(pod1.Name, nil, component.NodeStatusOK)
-	podStatus1.AddSummary(pod2.Name, nil, component.NodeStatusOK)
+	podStatus1.AddSummary(pod1.Name, nil, nil, component.NodeStatusOK)
+	podStatus1.AddSummary(pod2.Name, nil, nil, component.NodeStatusOK)
 
 	podStatus2 := component.NewPodStatus()
-	podStatus2.AddSummary(pod4.Name, nil, component.NodeStatusOK)
+	podStatus2.AddSummary(pod4.Name, nil, nil, component.NodeStatusOK)
 
 	expectedNodes := component.Nodes{
 		string(cr.UID): {

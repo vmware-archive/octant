@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
@@ -15,12 +17,13 @@ import (
 
 func Test_podGroupNode(t *testing.T) {
 	controller := gomock.NewController(t)
+	linkInterface := linkFake.NewMockInterface(controller)
 	defer controller.Finish()
 
 	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), pod).
+		Status(gomock.Any(), pod, gomock.Any()).
 		Return(&objectstatus.ObjectStatus{}, nil)
 
 	pgn := podGroupNode{objectStatus: objectStatus}
@@ -30,11 +33,11 @@ func Test_podGroupNode(t *testing.T) {
 
 	ctx := context.Background()
 
-	got, err := pgn.Create(ctx, name, objects.Items)
+	got, err := pgn.Create(ctx, name, objects.Items, linkInterface)
 	require.NoError(t, err)
 
 	podStatus := component.NewPodStatus()
-	podStatus.AddSummary(pod.GetName(), nil, component.NodeStatusOK)
+	podStatus.AddSummary(pod.GetName(), nil, nil, component.NodeStatusOK)
 
 	expected := &component.Node{
 		Name:       "foo pods",

@@ -9,6 +9,7 @@ import {
   OverlayScrollbarsComponent,
   OverlayscrollbarsModule,
 } from 'overlayscrollbars-ngx';
+import { View } from '../../../models/content';
 
 describe('ObjectStatusComponent', () => {
   let component: ObjectStatusComponent;
@@ -31,5 +32,35 @@ describe('ObjectStatusComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should show properties table', () => {
+    component.node = {
+      apiVersion: 'v1',
+      details: [],
+      kind: 'Pod',
+      name: 'test-pod',
+      path: undefined,
+      properties: [
+        {
+          label: 'test',
+          value: {
+            metadata: { type: 'text' },
+            config: { value: 'property text' },
+          } as View,
+        },
+      ],
+      status: 'pod status',
+    };
+    fixture.detectChanges();
+
+    const root: HTMLElement = fixture.nativeElement;
+    const el: SVGPathElement = root.querySelector('.properties');
+
+    expect(component).toBeTruthy();
+    expect(el).not.toBeNull();
+    expect(el.innerHTML).toContain('Pod');
+    expect(el.innerHTML).toContain('v1');
+    expect(el.innerHTML).toContain('property text');
   });
 });

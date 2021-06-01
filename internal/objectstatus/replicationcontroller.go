@@ -8,6 +8,8 @@ package objectstatus
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +19,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func replicationController(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
+func replicationController(_ context.Context, object runtime.Object, _ store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replication controller is nil")
 	}

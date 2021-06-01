@@ -55,7 +55,9 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.render();
+    if (changes.zoom || changes.elements || changes.style || changes.layout) {
+      this.render();
+    }
   }
 
   ngOnDestroy(): void {

@@ -8,6 +8,8 @@ package objectstatus
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +19,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func service(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
+func service(ctx context.Context, object runtime.Object, o store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("service is nil")
 	}
@@ -63,9 +65,12 @@ func service(ctx context.Context, object runtime.Object, o store.Store) (ObjectS
 			}, nil
 		}
 	}
+	properties := []component.Property{{Label: "Type", Value: component.NewText(string(service.Spec.Type))},
+		{Label: "Session Affinity", Value: component.NewText(string(service.Spec.SessionAffinity))}}
 
 	return ObjectStatus{
 		nodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("Service is OK")},
+		Properties: properties,
 	}, nil
 }

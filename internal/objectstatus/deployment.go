@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,7 +22,7 @@ import (
 
 // deploymentAppsV1 creates status for an v1/apps deployment. This is
 // not the final implementation. It is included to generate output.
-func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
+func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("deployment is nil")
 	}
@@ -32,17 +34,21 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store) (
 	}
 
 	status := deployment.Status
+	properties := []component.Property{{Label: "Deployment Strategy", Value: component.NewText(string(deployment.Spec.Strategy.Type))},
+		{Label: "Selectors", Value: GetSelectors(deployment.Spec.Selector)}}
 
 	switch {
 	case status.Replicas == status.UnavailableReplicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusError,
 			Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
+			Properties: properties,
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Deployment is OK")},
+			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
@@ -51,6 +57,7 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store) (
 				component.NewText(
 					fmt.Sprintf("Expected %d replicas, but %d are available",
 						status.Replicas, status.AvailableReplicas))},
+			Properties: properties,
 		}, nil
 	}
 }

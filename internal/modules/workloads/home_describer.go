@@ -49,7 +49,7 @@ func loadCards(ctx context.Context, namespace string, options describer.Options)
 		return nil, false, fmt.Errorf("create card collector")
 	}
 
-	cards, fullMetrics, err := collector.Collect(ctx, namespace)
+	cards, fullMetrics, err := collector.Collect(ctx, namespace, options.Link)
 	if err != nil {
 		return nil, false, fmt.Errorf("collect workload cards: %w", err)
 

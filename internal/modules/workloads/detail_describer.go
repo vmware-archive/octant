@@ -41,7 +41,7 @@ func (d *DetailDescriber) loadWorkloads(ctx context.Context, namespace string, o
 		return nil, fmt.Errorf("create workload loader")
 	}
 
-	workloads, err := loader.Load(ctx, namespace)
+	workloads, err := loader.Load(ctx, namespace, options.Link)
 	if err != nil {
 		return nil, fmt.Errorf("load workloads")
 	}

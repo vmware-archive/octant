@@ -20,4 +20,25 @@
       </div>
     </div>
   </div>
+  <div class="properties">
+    <div>
+      <table class="table table-vertical">
+      <tbody>
+      <tr >
+        <th>Version</th>
+        <td>{{node.apiVersion}}</td>
+      </tr>
+      <tr>
+        <th>Kind</th>
+        <td>{{node.kind}}</td>
+      </tr>
+      <tr *ngFor="let prop of node.properties; trackBy: propertiesTrackBy">
+        <th>{{prop.label}}</th>
+        <td><app-view-container [view]="prop.value"></app-view-container></td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
 </div>

@@ -8,6 +8,8 @@ package objectstatus
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -19,7 +21,7 @@ import (
 
 // apiService creates status for an apiregistration.k8s.io/v1 apiservice.
 // This is not the final implementation. It is included to generate output.
-func apiService(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
+func apiService(_ context.Context, object runtime.Object, _ store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("apiservice is nil")
 	}

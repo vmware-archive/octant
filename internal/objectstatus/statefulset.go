@@ -7,6 +7,9 @@ package objectstatus
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/vmware-tanzu/octant/internal/link"
 
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,7 +20,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func statefulSet(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
+func statefulSet(_ context.Context, object runtime.Object, _ store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("stateful set is nil")
 	}
@@ -29,17 +32,24 @@ func statefulSet(_ context.Context, object runtime.Object, _ store.Store) (Objec
 	}
 
 	status := ss.Status
+	total := fmt.Sprintf("%d", status.Replicas)
+	desired := fmt.Sprintf("%d", *ss.Spec.Replicas)
+
+	properties := []component.Property{{Label: "Replicas", Value: component.NewText(fmt.Sprintf("%s Desired / %s Total", desired, total))},
+		{Label: "Pod Management Policy", Value: component.NewText(string(ss.Spec.PodManagementPolicy))}}
 
 	switch {
 	case status.ReadyReplicas != status.Replicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
+			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Stateful Set is OK")},
+			Properties: properties,
 		}, nil
 	}
 }

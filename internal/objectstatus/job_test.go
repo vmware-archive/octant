@@ -9,6 +9,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -36,6 +40,8 @@ func Test_runJobStatus(t *testing.T) {
 					component.NewText("Job has succeeded 1 time"),
 					component.NewText("Job completed in 11s"),
 				},
+				Properties: []component.Property{{Label: "Completions", Value: component.NewText("1")},
+					{Label: "Parallelism", Value: component.NewText("1")}},
 			},
 		},
 		{
@@ -50,6 +56,8 @@ func Test_runJobStatus(t *testing.T) {
 					component.NewText("Job has failed 2 times"),
 					component.NewText("Job is in progress"),
 				},
+				Properties: []component.Property{{Label: "Completions", Value: component.NewText("1")},
+					{Label: "Parallelism", Value: component.NewText("1")}},
 			},
 		},
 		{
@@ -64,6 +72,8 @@ func Test_runJobStatus(t *testing.T) {
 					component.NewText("Job has failed 5 times"),
 					component.NewText("Job has reached the specified backoff limit"),
 				},
+				Properties: []component.Property{{Label: "Completions", Value: component.NewText("1")},
+					{Label: "Parallelism", Value: component.NewText("1")}},
 			},
 		},
 		{
@@ -85,9 +95,11 @@ func Test_runJobStatus(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			object := tc.init(t)
+			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 
 			ctx := context.Background()
-			status, err := runJobStatus(ctx, object, nil)
+			status, err := runJobStatus(ctx, object, nil, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

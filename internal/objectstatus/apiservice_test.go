@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -84,6 +86,7 @@ func Test_apiService(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 			defer controller.Finish()
 
 			o := storeFake.NewMockStore(controller)
@@ -91,7 +94,7 @@ func Test_apiService(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := apiService(ctx, object, o)
+			status, err := apiService(ctx, object, o, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

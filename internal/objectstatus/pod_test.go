@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,6 +40,9 @@ func Test_pod(t *testing.T) {
 				Details: []component.Component{
 					component.NewText(""),
 				},
+				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
+					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
+					{Label: "Controlled By", Value: component.NewLink("", "ReplicaSet", "some-url/replica")}},
 			},
 		},
 		{
@@ -51,6 +56,9 @@ func Test_pod(t *testing.T) {
 				Details: []component.Component{
 					component.NewText(""),
 				},
+				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
+					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
+					{Label: "Controlled By", Value: component.NewLink("", "ReplicaSet", "some-url/replica")}},
 			},
 		},
 		{
@@ -64,6 +72,9 @@ func Test_pod(t *testing.T) {
 				Details: []component.Component{
 					component.NewText(""),
 				},
+				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
+					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
+					{Label: "Controlled By", Value: component.NewLink("", "ReplicaSet", "some-url/replica")}},
 			},
 		},
 		{
@@ -92,6 +103,9 @@ func Test_pod(t *testing.T) {
 					component.NewText(""),
 					component.NewText("Ephemeral container is running"),
 				},
+				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
+					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
+					{Label: "Controlled By", Value: component.NewLink("", "ReplicaSet", "some-url/replica")}},
 			},
 		},
 	}
@@ -99,6 +113,13 @@ func Test_pod(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
+			linkSA := component.NewLink("", "ServiceAccount", "some-url/service-account")
+			linkNode := component.NewLink("", "Node", "some-url/node")
+			linkReplica := component.NewLink("", "ReplicaSet", "some-url/replica")
+			linkInterface.EXPECT().ForGVK(gomock.Any(), gomock.Any(), "ServiceAccount", gomock.Any(), gomock.Any()).Return(linkSA, nil).AnyTimes()
+			linkInterface.EXPECT().ForGVK(gomock.Any(), gomock.Any(), "Node", gomock.Any(), gomock.Any()).Return(linkNode, nil).AnyTimes()
+			linkInterface.EXPECT().ForGVK(gomock.Any(), gomock.Any(), "ReplicaSet", gomock.Any(), gomock.Any()).Return(linkReplica, nil).AnyTimes()
 			defer controller.Finish()
 
 			o := storefake.NewMockStore(controller)
@@ -106,7 +127,7 @@ func Test_pod(t *testing.T) {
 			object := tc.init(t)
 
 			ctx := context.Background()
-			status, err := pod(ctx, object, o)
+			status, err := pod(ctx, object, o, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return

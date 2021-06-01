@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -50,6 +52,8 @@ func Test_service(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Service is OK")},
+				Properties: []component.Property{{Label: "Type", Value: component.NewText("ClusterIP")},
+					{Label: "Session Affinity", Value: component.NewText("None")}},
 			},
 		},
 		{
@@ -61,6 +65,8 @@ func Test_service(t *testing.T) {
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Service is OK")},
+				Properties: []component.Property{{Label: "Type", Value: component.NewText("ExternalName")},
+					{Label: "Session Affinity", Value: component.NewText("")}},
 			},
 		},
 		{
@@ -106,6 +112,7 @@ func Test_service(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
+			linkInterface := linkFake.NewMockInterface(controller)
 			defer controller.Finish()
 
 			o := storefake.NewMockStore(controller)
@@ -113,7 +120,7 @@ func Test_service(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := service(ctx, object, o)
+			status, err := service(ctx, object, o, linkInterface)
 			if tc.isErr {
 				require.Error(t, err)
 				return
