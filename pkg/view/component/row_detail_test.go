@@ -52,7 +52,7 @@ func TestTableTow_ExpandableDetail_Marshal(t *testing.T) {
 			name: "in general",
 			input: &ExpandableRowDetail{
 				Base: newBase(TypeExpandableRowDetail, nil),
-				Config: ExpandableDetailConfig{
+				Config: ExpandableRowDetailConfig{
 					Body: []Component{
 						NewText("test"),
 					},
@@ -64,7 +64,7 @@ func TestTableTow_ExpandableDetail_Marshal(t *testing.T) {
 			name: "in general",
 			input: &ExpandableRowDetail{
 				Base: newBase(TypeExpandableRowDetail, nil),
-				Config: ExpandableDetailConfig{
+				Config: ExpandableRowDetailConfig{
 					Body: []Component{
 						NewText("test"),
 						NewText("test2"),
