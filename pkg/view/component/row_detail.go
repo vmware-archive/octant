@@ -23,7 +23,7 @@ type ExpandableRowDetail struct {
 	Config ExpandableRowDetailConfig `json:"config"`
 }
 
-// ExpandableDetailConfig is a configuration for an expandable row detail.
+// ExpandableRowDetailConfig is a configuration for an expandable row detail.
 type ExpandableRowDetailConfig struct {
 	Replace bool        `json:"replace"`
 	Body    []Component `json:"body"`
