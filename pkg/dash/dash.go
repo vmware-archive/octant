@@ -17,8 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/client-go/dynamic/dynamicinformer"
-
 	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
@@ -29,7 +27,6 @@ import (
 	"go.opencensus.io/trace"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/describer"
@@ -46,6 +43,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/objectstore"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/octant"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
@@ -53,176 +51,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 	_ "github.com/vmware-tanzu/octant/web"
 )
-
-type Options struct {
-	EnableOpenCensus       bool
-	EnableMemStats         bool
-	DisableClusterOverview bool
-	KubeConfig             string
-	Namespace              string
-	Namespaces             []string
-	FrontendURL            string
-	BrowserPath            string
-	Context                string
-	ClientQPS              float32
-	ClientBurst            int
-	UserAgent              string
-	BuildInfo              config.BuildInfo
-	Listener               net.Listener
-	clusterClient          cluster.ClientInterface
-	factory                dynamicinformer.DynamicSharedInformerFactory
-	streamingClientFactory api.StreamingClientFactory
-}
-
-type RunnerOption struct {
-	kubeConfigOption kubeconfig.KubeConfigOption
-	nonClusterOption func(*Options)
-}
-
-func WithDynamicSharedInformerFactory(factory dynamicinformer.DynamicSharedInformerFactory) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.factory = factory
-		},
-	}
-}
-
-func WithOpenCensus() RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.EnableOpenCensus = true
-		},
-	}
-}
-
-func WithMemStats() RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.EnableMemStats = true
-		},
-	}
-}
-
-func WithoutClusterOverview() RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.DisableClusterOverview = true
-		},
-	}
-}
-
-func WithKubeConfig(kubeConfig string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.WithKubeConfigList(kubeConfig),
-		nonClusterOption: func(o *Options) {
-			o.KubeConfig = kubeConfig
-		},
-	}
-}
-
-func WithNamespace(namespace string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithInitialNamespace(namespace)),
-		nonClusterOption: func(o *Options) {
-			o.Namespace = namespace
-		},
-	}
-}
-
-func WithNamespaces(namespaces []string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithProvidedNamespaces(namespaces)),
-		nonClusterOption: func(o *Options) {
-			o.Namespaces = namespaces
-		},
-	}
-}
-
-func WithFrontendURL(frontendURL string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.FrontendURL = frontendURL
-		},
-	}
-}
-
-func WithBrowserPath(browserPath string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.BrowserPath = browserPath
-		},
-	}
-}
-
-func WithContext(context string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.WithContextName(context),
-		nonClusterOption: func(o *Options) {
-			o.Context = context
-		},
-	}
-}
-
-func WithClientQPS(qps float32) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientQPS(qps)),
-		nonClusterOption: func(o *Options) {},
-	}
-}
-
-func WithClientBurst(burst int) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientBurst(burst)),
-		nonClusterOption: func(o *Options) {},
-	}
-}
-
-func WithClientUserAgent(userAgent string) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientUserAgent(userAgent)),
-		nonClusterOption: func(o *Options) {},
-	}
-}
-
-func WithBuildInfo(buildInfo config.BuildInfo) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.BuildInfo = buildInfo
-		},
-	}
-}
-
-func WithListener(listener net.Listener) RunnerOption {
-	return RunnerOption{
-		kubeConfigOption: kubeconfig.Noop(),
-		nonClusterOption: func(o *Options) {
-			o.Listener = listener
-		},
-	}
-}
-
-func WithClusterClient(client cluster.ClientInterface) RunnerOption {
-	return RunnerOption{
-		nonClusterOption: func(o *Options) {
-			o.clusterClient = client
-		},
-	}
-}
-
-func WithStreamingClientFactory(factory api.StreamingClientFactory) RunnerOption {
-	return RunnerOption{
-		nonClusterOption: func(o *Options) {
-			o.streamingClientFactory = factory
-		},
-	}
-}
 
 type Runner struct {
 	ctx                        context.Context
@@ -408,8 +236,14 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 
 	logger.Debugf("initial namespace for dashboard is %s", options.Namespace)
 
-	factoryOption := objectstore.WithDynamicSharedInformerFactory(options.factory)
-	appObjectStore, err := initObjectStore(ctx, clusterClient, factoryOption)
+	var appObjectStore store.Store
+	if options.objectStore != nil {
+		appObjectStore = options.objectStore
+	} else {
+		factoryOption := objectstore.WithDynamicSharedInformerFactory(options.factory)
+		appObjectStore, err = initObjectStore(ctx, clusterClient, factoryOption)
+	}
+
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing store: %w", err)
 	}

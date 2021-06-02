@@ -24,8 +24,8 @@ import (
 	"k8s.io/client-go/util/retry"
 	sigyaml "sigs.k8s.io/yaml"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 

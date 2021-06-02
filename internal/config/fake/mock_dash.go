@@ -10,12 +10,12 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 	config "github.com/vmware-tanzu/octant/internal/config"
 	errors "github.com/vmware-tanzu/octant/internal/errors"
 	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
 	module "github.com/vmware-tanzu/octant/internal/module"
 	portforward "github.com/vmware-tanzu/octant/internal/portforward"
+	cluster "github.com/vmware-tanzu/octant/pkg/cluster"
 	log "github.com/vmware-tanzu/octant/pkg/log"
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
 	store "github.com/vmware-tanzu/octant/pkg/store"

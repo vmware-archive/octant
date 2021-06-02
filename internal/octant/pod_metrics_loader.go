@@ -17,9 +17,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 //go:generate mockgen -destination=./fake/mock_pod_metrics_loader.go -package=fake github.com/vmware-tanzu/octant/internal/octant PodMetricsLoader

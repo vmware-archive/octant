@@ -16,7 +16,6 @@ import (
 
 	. "github.com/vmware-tanzu/octant/internal/config"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
@@ -25,6 +24,7 @@ import (
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	portForwardFake "github.com/vmware-tanzu/octant/internal/portforward/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
