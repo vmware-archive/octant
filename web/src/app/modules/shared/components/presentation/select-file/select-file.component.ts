@@ -43,7 +43,6 @@ export class SelectFileComponent
     this.layout = view.config.layout;
     this.multiple = view.config.multiple;
     this.status = view.config.status;
-    this.status = view.config.status;
     this.statusMessage = view.config.statusMessage;
     this.action = view.config.action;
   }

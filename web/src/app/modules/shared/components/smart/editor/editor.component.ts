@@ -42,7 +42,7 @@ export class EditorComponent
   private editorValue: string;
   private pristineValue: string;
   uri: string;
-  private metadata: { [p: string]: string };
+  metadata: { [p: string]: string };
 
   isModified = false;
 
@@ -132,7 +132,7 @@ export class EditorComponent
   }
 
   reset() {
-    this.selectFileComponent.reset();
+    this.selectFileComponent?.reset();
     this.value = this.pristineValue;
   }
 
