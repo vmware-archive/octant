@@ -20,17 +20,17 @@ func (t TableRow) AddExpandableDetail(details *ExpandableRowDetail) {
 type ExpandableRowDetail struct {
 	Base
 
-	Config ExpandableDetailConfig `json:"config"`
+	Config ExpandableRowDetailConfig `json:"config"`
 }
 
-// ExpandableDetailConfig is a configuration for an expandable row detail.
-type ExpandableDetailConfig struct {
+// ExpandableRowDetailConfig is a configuration for an expandable row detail.
+type ExpandableRowDetailConfig struct {
 	Replace bool        `json:"replace"`
 	Body    []Component `json:"body"`
 }
 
 // UnmarshalJSON unmarshals an expandable row detail config from JSON.
-func (e *ExpandableDetailConfig) UnmarshalJSON(data []byte) error {
+func (e *ExpandableRowDetailConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Body    []TypedObject `json:"body"`
 		Replace bool          `json:"replace"`
@@ -63,7 +63,7 @@ var _ Component = &ExpandableRowDetail{}
 func NewExpandableRowDetail(body ...Component) *ExpandableRowDetail {
 	e := ExpandableRowDetail{
 		Base: newBase(TypeExpandableRowDetail, nil),
-		Config: ExpandableDetailConfig{
+		Config: ExpandableRowDetailConfig{
 			Body:    body,
 			Replace: false,
 		},
