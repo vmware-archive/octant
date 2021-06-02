@@ -15,6 +15,9 @@ const (
 	// EventTypeBuildInfo is a buildInfo event
 	EventTypeBuildInfo EventType = "event.octant.dev/buildInfo"
 
+	// EventTypeKubeConfigPath carries location of kube config with it
+	EventTypeKubeConfigPath EventType = "event.octant.dev/kubeConfigPath"
+
 	// EventTypeContent is a content event.
 	EventTypeContent EventType = "event.octant.dev/content"
 
@@ -94,6 +97,22 @@ func CreateEvent(eventType EventType, fields map[string]interface{}) Event {
 	return Event{
 		Type: eventType,
 		Data: fields,
+	}
+}
+
+func FindEvent(events []Event, evType EventType) (Event, error) {
+	var result Event
+
+	for _, evt := range events {
+		if evt.Type == evType {
+			result = evt
+		}
+	}
+
+	if (result == Event{}) {
+		return result, fmt.Errorf("Could not find event of type: %s", evType)
+	} else {
+		return result, nil
 	}
 }
 

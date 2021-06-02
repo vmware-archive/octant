@@ -1,4 +1,8 @@
-export type PreferenceElement = RadioElement | TextElement | LabelDropDown;
+export type PreferenceElement =
+  | RadioElement
+  | InputElement
+  | LabelDropDown
+  | TextElement;
 
 export enum Operation {
   Equal = 'Equal',
@@ -52,11 +56,21 @@ export interface LabelDropDown extends Element {
   };
 }
 
-export interface TextElement extends Element {
-  type: 'text';
+export interface InputElement extends Element {
+  type: 'input';
   config: {
     label: string;
     placeholder: string;
+  };
+}
+
+export interface TextElement extends Element {
+  type: 'text';
+  textConfig: {
+    config: {
+      value: string;
+      clipboardValue: string;
+    };
   };
 }
 

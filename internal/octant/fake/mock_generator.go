@@ -37,19 +37,19 @@ func (m *MockGenerator) EXPECT() *MockGeneratorMockRecorder {
 	return m.recorder
 }
 
-// Event mocks base method
-func (m *MockGenerator) Event(arg0 context.Context) (event.Event, error) {
+// Events mocks base method
+func (m *MockGenerator) Events(arg0 context.Context) ([]event.Event, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", arg0)
-	ret0, _ := ret[0].(event.Event)
+	ret := m.ctrl.Call(m, "Events", arg0)
+	ret0, _ := ret[0].([]event.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Event indicates an expected call of Event
-func (mr *MockGeneratorMockRecorder) Event(arg0 interface{}) *gomock.Call {
+// Events indicates an expected call of Events
+func (mr *MockGeneratorMockRecorder) Events(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockGenerator)(nil).Event), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockGenerator)(nil).Events), arg0)
 }
 
 // Name mocks base method

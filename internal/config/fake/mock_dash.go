@@ -144,6 +144,20 @@ func (mr *MockDashMockRecorder) ErrorStore() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ErrorStore", reflect.TypeOf((*MockDash)(nil).ErrorStore))
 }
 
+// KubeConfigPath mocks base method
+func (m *MockDash) KubeConfigPath() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KubeConfigPath")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// KubeConfigPath indicates an expected call of KubeConfigPath
+func (mr *MockDashMockRecorder) KubeConfigPath() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubeConfigPath", reflect.TypeOf((*MockDash)(nil).KubeConfigPath))
+}
+
 // Logger mocks base method
 func (m *MockDash) Logger() log.Logger {
 	m.ctrl.T.Helper()

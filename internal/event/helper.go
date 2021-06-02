@@ -21,6 +21,10 @@ type buildInfoResponse struct {
 	Time    string `json:"time"`
 }
 
+type kubeConfigPathResponse struct {
+	Path string `json:"path"`
+}
+
 type HelperGeneratorOption func(generator *HelperGenerator)
 
 type HelperGenerator struct {
@@ -41,7 +45,7 @@ func NewHelperGenerator(dashConfig config.Dash, options ...HelperGeneratorOption
 	return hg
 }
 
-func (h *HelperGenerator) Event(ctx context.Context) (event.Event, error) {
+func (h *HelperGenerator) Events(ctx context.Context) ([]event.Event, error) {
 	version, commit, time := h.DashConfig.BuildInfo()
 
 	resp := buildInfoResponse{
@@ -50,12 +54,17 @@ func (h *HelperGenerator) Event(ctx context.Context) (event.Event, error) {
 		Time:    time,
 	}
 
-	e := event.Event{
+	buildInfoEvent := event.Event{
 		Type: event.EventTypeBuildInfo,
 		Data: resp,
 	}
 
-	return e, nil
+	kubeConfigPathEvent := event.Event{
+		Type: event.EventTypeKubeConfigPath,
+		Data: kubeConfigPathResponse{h.DashConfig.KubeConfigPath()},
+	}
+
+	return []event.Event{buildInfoEvent, kubeConfigPathEvent}, nil
 }
 
 func (HelperGenerator) ScheduleDelay() time.Duration {

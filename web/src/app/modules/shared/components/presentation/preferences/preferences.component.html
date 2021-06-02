@@ -37,7 +37,7 @@
                         <label>{{ r.label }}</label>
                       </clr-radio-wrapper>
                     </ng-container>
-                    <ng-container *ngSwitchCase="'text'">
+                    <ng-container *ngSwitchCase="'input'">
                       <div class="clr-form-control">
                         <label
                           [for]="'section.' + element.name"
@@ -69,6 +69,11 @@
                           >{{ r.label }}</option>
                         </select>
                       </clr-select-container>
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'text'">
+                      <span cds-text="body">
+                        <app-view-text [view]="element.textConfig"></app-view-text>
+                      </span>
                     </ng-container>
                     <div *ngSwitchDefault>
                       <p>not sure what to do with {{ element.type }}</p>

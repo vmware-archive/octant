@@ -144,6 +144,8 @@ type Dash interface {
 	ModuleManager() module.ManagerInterface
 
 	BuildInfo() (string, string, string)
+
+	KubeConfigPath() string
 }
 
 // UseFSContext is used to indicate a context switch to the file system Kubeconfig context
@@ -161,6 +163,7 @@ type Live struct {
 	portForwarder        portforward.PortForwarder
 	restConfigOptions    cluster.RESTConfigOptions
 	buildInfo            BuildInfo
+	kubeConfigPath       string
 	contextChosenInUI    bool
 }
 
@@ -178,6 +181,7 @@ func NewLiveConfig(
 	portForwarder portforward.PortForwarder,
 	restConfigOptions cluster.RESTConfigOptions,
 	buildInfo BuildInfo,
+	kubeConfigPath string,
 	contextChosenInUI bool,
 ) *Live {
 	l := &Live{
@@ -191,6 +195,7 @@ func NewLiveConfig(
 		portForwarder:        portForwarder,
 		restConfigOptions:    restConfigOptions,
 		buildInfo:            buildInfo,
+		kubeConfigPath:       kubeConfigPath,
 		contextChosenInUI:    contextChosenInUI,
 	}
 
@@ -333,4 +338,8 @@ func (l *Live) ModuleManager() module.ManagerInterface {
 // BuildInfo returns build ldflag strings for version, commit hash, and build time
 func (l *Live) BuildInfo() (string, string, string) {
 	return l.buildInfo.Version, l.buildInfo.Commit, l.buildInfo.Time
+}
+
+func (l *Live) KubeConfigPath() string {
+	return l.kubeConfigPath
 }

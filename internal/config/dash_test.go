@@ -104,6 +104,7 @@ func TestLiveConfig(t *testing.T) {
 		portForwarder,
 		restConfigOptions,
 		buildInfo,
+		"",
 		false,
 	)
 
@@ -152,6 +153,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToTrue(t *testing.T) {
 		portForwarder,
 		restConfigOptions,
 		buildInfo,
+		"",
 		true, // contextChosenInUI
 	)
 
@@ -209,6 +211,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToFalse(t *testing.T) {
 		portForwarder,
 		restConfigOptions,
 		buildInfo,
+		"",
 		false, // contextChosenInUI
 	)
 

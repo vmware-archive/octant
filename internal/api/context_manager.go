@@ -25,7 +25,7 @@ import (
 type ContextManagerOption func(manager *ContextManager)
 
 // ContextGenerateFunc is a function which generates a context event.
-type ContextGenerateFunc func(ctx context.Context, state octant.State) (oevent.Event, error)
+type ContextGenerateFunc func(ctx context.Context, state octant.State) ([]oevent.Event, error)
 
 // WithContextGenerator sets the context generator.
 func WithContextGenerator(fn ContextGenerateFunc) ContextManagerOption {
@@ -99,21 +99,23 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 
 	logger := c.dashConfig.Logger()
 	return func(ctx context.Context) bool {
-		ev, err := c.contextGenerateFunc(ctx, state)
+		evs, err := c.contextGenerateFunc(ctx, state)
 		if err != nil {
 			logger.WithErr(err).Errorf("generate contexts")
 		}
 
 		if ctx.Err() == nil {
-			cur, err := json.Marshal(ev)
-			if err != nil {
-				logger.WithErr(err).Errorf("unable to marshal context")
-				return false
-			}
+			for _, ev := range evs {
+				cur, err := json.Marshal(ev)
+				if err != nil {
+					logger.WithErr(err).Errorf("unable to marshal context")
+					return false
+				}
 
-			if bytes.Compare(previous, cur) != 0 {
-				previous = cur
-				s.Send(ev)
+				if bytes.Compare(previous, cur) != 0 {
+					previous = cur
+					s.Send(ev)
+				}
 			}
 		}
 
@@ -121,12 +123,12 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 	}
 }
 
-func (c *ContextManager) generateContexts(ctx context.Context, state octant.State) (oevent.Event, error) {
+func (c *ContextManager) generateContexts(ctx context.Context, state octant.State) ([]oevent.Event, error) {
 	generator, err := c.initGenerator(state)
 	if err != nil {
-		return oevent.Event{}, err
+		return []oevent.Event{}, err
 	}
-	return generator.Event(ctx)
+	return generator.Events(ctx)
 }
 
 func (c *ContextManager) initGenerator(state octant.State) (*event.ContextsGenerator, error) {

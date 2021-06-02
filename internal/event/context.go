@@ -48,7 +48,7 @@ func NewContextsGenerator(kubeContextStore KubeContextStore, options ...ContextG
 	return kcg
 }
 
-func (g *ContextsGenerator) Event(ctx context.Context) (event.Event, error) {
+func (g *ContextsGenerator) Events(ctx context.Context) ([]event.Event, error) {
 	resp := kubeContextsResponse{
 		CurrentContext: g.KubeContextStore.CurrentContext(),
 		Contexts:       g.KubeContextStore.Contexts(),
@@ -63,7 +63,7 @@ func (g *ContextsGenerator) Event(ctx context.Context) (event.Event, error) {
 		Data: resp,
 	}
 
-	return e, nil
+	return []event.Event{e}, nil
 }
 
 func (ContextsGenerator) ScheduleDelay() time.Duration {
