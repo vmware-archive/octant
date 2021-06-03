@@ -1,0 +1,22 @@
+.horizontal-layout {
+  display: flex;
+  align-items: center; // Center label
+  width: 100%; // This is necessary to make sure the width works as expected for in cds-inputs
+
+  h6 {
+    margin-block-start: 0;
+  }
+
+  cds-input {
+    &:not(:first-child){
+      margin-left: 1rem;
+    }
+    overflow: hidden; // Prevent overflow parent
+    padding-top: 0.1rem; // Prevent letter top of letters to hide
+    padding-bottom: 0.1rem; // Prevent letter top of letters to hide
+  }
+}
+
+cds-input {
+  margin-bottom: 1rem;
+}

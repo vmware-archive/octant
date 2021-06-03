@@ -1,0 +1,11 @@
+{
+  "type": "checkbox",
+  "label":"label",
+  "name":"name",
+  "configuration": {
+    "choices":[
+      {"checked":true, "label":"dog", "value":"dog"},
+      {"checked":false, "label":"cat", "value":"cat"}
+    ]
+  }
+}

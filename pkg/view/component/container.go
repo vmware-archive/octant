@@ -49,6 +49,6 @@ type containersMarshal Containers
 // MarshalJSON implements json.Marshaler
 func (t *Containers) MarshalJSON() ([]byte, error) {
 	m := containersMarshal(*t)
-	m.Metadata.Type = "containers"
+	m.Metadata.Type = TypeContainers
 	return json.Marshal(&m)
 }

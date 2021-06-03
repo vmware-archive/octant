@@ -36,6 +36,8 @@ const (
 	TypeExpressionSelector = "expressionSelector"
 	// TypeFlexLayout is a flex layout component.
 	TypeFlexLayout = "flexlayout"
+	// TypeFormField is a form field component.
+	TypeFormField = "formField"
 	// TypeGraphviz is a graphviz component.
 	TypeGraphviz = "graphviz"
 	// TypeGridActions is a grid actions component.

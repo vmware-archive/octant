@@ -13,7 +13,8 @@ import (
 
 func Test_stepper_Marshal(t *testing.T) {
 	fft := NewFormFieldText("test", "test", "test")
-	fft.AddValidator("placeholder", "error message", map[FormValidator]interface{}{"required": ""})
+	fft.AddValidator("error message", map[FormValidator]interface{}{"required": ""})
+	fft.SetPlaceHolder("placeholder")
 	form := Form{}
 	form.Fields = append(form.Fields, fft)
 
