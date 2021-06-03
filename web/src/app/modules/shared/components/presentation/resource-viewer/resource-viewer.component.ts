@@ -5,9 +5,12 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   isDevMode,
   OnDestroy,
   OnInit,
+  Renderer2,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -20,6 +23,7 @@ import { ELEMENTS_STYLE, ELEMENTS_STYLE_DARK } from './octant.style';
 import { Router } from '@angular/router';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { Subscription } from 'rxjs';
+import { ResizeEvent } from 'angular-resizable-element';
 
 const statusColorCodes = {
   ok: '#60b515',
@@ -28,6 +32,11 @@ const statusColorCodes = {
 };
 
 const edgeColorCode = '#003d79';
+
+const defaultZoom = {
+  min: 0.075,
+  max: 4.0,
+};
 
 @Component({
   selector: 'app-view-resource-viewer',
@@ -40,6 +49,17 @@ export class ResourceViewerComponent
   implements OnInit, OnDestroy {
   selectedNodeId: string;
   private subscriptionTheme: Subscription;
+  resizeEdges = { left: true, right: true };
+  startPosition: number;
+
+  @ViewChild('resourceViewer')
+  resourceViewer: ElementRef;
+
+  @ViewChild('viewContainer')
+  viewContainer: ElementRef;
+
+  @ViewChild('statusContainer')
+  statusContainer: ElementRef;
 
   layout = {
     name: 'dagre',
@@ -51,15 +71,13 @@ export class ResourceViewerComponent
     animate: false,
   };
 
-  zoom = {
-    min: 0.075,
-    max: 4.0,
-  };
+  zoom = defaultZoom;
 
   style: Stylesheet[] = ELEMENTS_STYLE;
   graphData: ElementsDefinition;
 
   constructor(
+    private renderer: Renderer2,
     private router: Router,
     private themeService: ThemeService,
     private cdr: ChangeDetectorRef
@@ -172,5 +190,44 @@ export class ResourceViewerComponent
 
   getLabel(label: string, length: number): string {
     return label.length > length ? label.substring(0, length) + '...' : label;
+  }
+
+  resizeCursors() {
+    return {
+      topLeft: 'nw-resize',
+      topRight: 'ne-resize',
+      bottomLeft: 'sw-resize',
+      bottomRight: 'se-resize',
+      leftOrRight: 'ew-resize',
+      topOrBottom: 'ns-resize',
+    };
+  }
+
+  resizeEnd() {
+    this.zoom = Object.assign({}, defaultZoom); // update without layout recalc
+  }
+
+  resizeStart() {
+    this.startPosition = this.viewContainer.nativeElement.offsetWidth;
+  }
+
+  updateSliderPosition(event: ResizeEvent) {
+    const parentWidth = this.resourceViewer.nativeElement.offsetWidth - 4;
+    const sliderOffset = event.edges.left as number;
+    const leftSize = Math.max(
+      30,
+      Math.min(80, (100 * (this.startPosition + sliderOffset)) / parentWidth)
+    );
+
+    this.renderer.setStyle(
+      this.viewContainer.nativeElement,
+      'width',
+      `${leftSize}%`
+    );
+    this.renderer.setStyle(
+      this.statusContainer.nativeElement,
+      'width',
+      `${100 - leftSize}%`
+    );
   }
 }

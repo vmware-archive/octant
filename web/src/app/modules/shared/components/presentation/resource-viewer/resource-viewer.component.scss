@@ -3,23 +3,41 @@
  */
 
 body {
+  --gutter-background-color: #eee;
+  --gutter-background-hover-color: #0079b8;
   --statusContainer-bg-color: #eee;
 }
 body.dark {
+  --gutter-background-color: #25333d;
+  --gutter-background-hover-color: #495a67;
   --statusContainer-bg-color: #0f181c;
 }
 .resourceViewer {
+  display: flex;
+  flex-direction: row;
+
   .view-container {
     height: 100vh;
-    width: 100%;
-    float: left;
+    width: 75%;
     overflow: auto;
     overflow-y: hidden;
   }
 
+  .gutter {
+    height: 100vh;
+    width: 4px;
+    flex: 1 1 4px;
+    background: var(--gutter-background-color);
+  }
+
+  .gutter:hover {
+    cursor: ew-resize;
+    background: var(--gutter-background-hover-color);
+  }
+
   .status-container {
     height: 100vh;
-    width: 100%;
+    width: 25%;
     padding: 1rem;
     background-color: var(--statusContainer-bg-color);
   }

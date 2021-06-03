@@ -1,23 +1,19 @@
-<div class="resourceViewer">
-  <div class="clr-row">
-    <div class="clr-col-9">
-      <div class="view-container">
-        <app-cytoscape
-          [elements]="graphData"
-          [layout]="layout"
-          [zoom]="zoom"
-          [style]="style"
-          [selectedNodeId]="selectedNodeId"
-          (select)="nodeChange($event)"
-          (doubleClick)="openNode($event)"
-        >
-        </app-cytoscape>
-      </div>
-    </div>
-    <div class="clr-col-3">
-      <div class="status-container">
-        <app-view-object-status [node]="selectedNode()"></app-view-object-status>
-      </div>
-    </div>
+<div #resourceViewer class="resourceViewer" mwlResizable [resizeCursors]="resizeCursors()"
+     (resizing)="updateSliderPosition($event)" (resizeStart)="resizeStart()" (resizeEnd)="resizeEnd()">
+  <div #viewContainer class="view-container">
+    <app-cytoscape
+      [elements]="graphData"
+      [layout]="layout"
+      [zoom]="zoom"
+      [style]="style"
+      [selectedNodeId]="selectedNodeId"
+      (select)="nodeChange($event)"
+      (doubleClick)="openNode($event)"
+    >
+    </app-cytoscape>
+  </div>
+  <div class="gutter" mwlResizeHandle [resizeEdges]="resizeEdges"></div>
+  <div #statusContainer class="status-container">
+    <app-view-object-status [node]="selectedNode()"></app-view-object-status>
   </div>
 </div>
