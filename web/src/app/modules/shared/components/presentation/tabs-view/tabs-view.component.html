@@ -1,0 +1,14 @@
+<clr-tabs *ngIf="tabs.length > 0" clrLayout="{{ orientation }}">
+    <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
+      <button clrTabLink class="tab-button" (click)="clickTab(tab.name)">
+        {{ tab.name }}
+      </button>
+      <ng-template [clrIfActive]="activeTab === tab.name">
+        <clr-tab-content>
+          <div [ngClass]="{'tabs-container': orientation === 'horizontal'}">
+          <app-view-container [view]="tab.contents"></app-view-container>
+          </div>
+        </clr-tab-content>
+      </ng-template>
+    </clr-tab>
+</clr-tabs>

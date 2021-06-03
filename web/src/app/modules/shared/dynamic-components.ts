@@ -46,6 +46,7 @@ import { TextComponent } from './components/presentation/text/text.component';
 import { TimelineComponent } from './components/presentation/timeline/timeline.component';
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { YamlComponent } from './components/presentation/yaml/yaml.component';
+import { TabsViewComponent } from './components/presentation/tabs-view/tabs-view.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -94,6 +95,7 @@ const DynamicComponentMapping: ComponentMapping = {
   timestamp: TimestampComponent,
   yaml: YamlComponent,
   signpost: SignpostComponent,
+  tabsView: TabsViewComponent,
 };
 
 export const DYNAMIC_COMPONENTS_MAPPING = new InjectionToken<ComponentMapping>(

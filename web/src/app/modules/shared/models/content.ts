@@ -652,3 +652,10 @@ export interface SelectFileView extends View {
     action?: string;
   };
 }
+
+export interface TabsView extends View {
+  config: {
+    tabs: View[];
+    orientation?: string;
+  };
+}

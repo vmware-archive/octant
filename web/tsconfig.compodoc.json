@@ -91,6 +91,8 @@
     "src//app/modules/shared/components/presentation/datagrid/datagrid.component.ts",
     "src//app/modules/shared/components/presentation/tabs/tabs.component.spec.ts",
     "src//app/modules/shared/components/presentation/tabs/tabs.component.ts",
+    "src//app/modules/shared/components/presentation/tabs-view/tabs-view.component.spec.ts",
+    "src//app/modules/shared/components/presentation/tabs-view/tabs-view.component.ts",
     "src//app/modules/shared/components/presentation/label-selector/label-selector.component.ts",
     "src//app/modules/shared/components/presentation/label-selector/label-selector.component.spec.ts",
     "src//app/modules/shared/components/presentation/preferences/preferences.component.ts",

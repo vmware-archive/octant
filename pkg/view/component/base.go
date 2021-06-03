@@ -10,7 +10,7 @@ const (
 	TypeAccordion = "accordion"
 	// TypeAnnotations is an annotations component.
 	TypeAnnotations = "annotations"
-	// ButtonGroup is a button group component.
+	// TypeButtonGroup is a button group component.
 	TypeButtonGroup = "buttonGroup"
 	// TypeCard is a card component.
 	TypeCard = "card"
@@ -96,6 +96,8 @@ const (
 	TypeSignpost = "signpost"
 	// TypeButton is a Button component.
 	TypeButton = "button"
+	// TypeTabsView is a Tab component.
+	TypeTabsView = "tabsView"
 )
 
 // Base is an abstract base for components..

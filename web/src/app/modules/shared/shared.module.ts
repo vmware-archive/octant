@@ -16,6 +16,7 @@ import { LabelsComponent } from './components/presentation/labels/labels.compone
 import { LinkComponent } from './components/presentation/link/link.component';
 import { ListComponent } from './components/presentation/list/list.component';
 import { TabsComponent } from './components/presentation/tabs/tabs.component';
+import { TabsViewComponent } from './components/presentation/tabs-view/tabs-view.component';
 import { ContainersComponent } from './components/presentation/containers/containers.component';
 import { DatagridComponent } from './components/presentation/datagrid/datagrid.component';
 import { DonutChartComponent } from './components/presentation/donut-chart/donut-chart.component';
@@ -156,6 +157,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     SummaryComponent,
     TableComponent,
     TabsComponent,
+    TabsViewComponent,
     TerminalComponent,
     TextComponent,
     TimelineComponent,
@@ -228,6 +230,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     SummaryComponent,
     TableComponent,
     TabsComponent,
+    TabsViewComponent,
     TerminalComponent,
     TextComponent,
     TimelineComponent,
@@ -314,6 +317,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     SummaryComponent,
     TableComponent,
     TabsComponent,
+    TabsViewComponent,
     TerminalComponent,
     TextComponent,
     TimelineComponent,

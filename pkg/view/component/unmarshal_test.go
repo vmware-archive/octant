@@ -504,6 +504,29 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "tabsView",
+			configFile: "config_tabs.json",
+			objectType: "tabsView",
+			expected: &TabsView{
+				Config: TabsViewConfig{
+					Tabs: []SingleTab{{
+						Name: "Tab 1",
+						Contents: FlexLayout{
+							Base: newBase(TypeFlexLayout, nil),
+							Config: FlexLayoutConfig{
+								Sections: []FlexLayoutSection{{{
+									Width: WidthFull,
+									View:  NewButton("test", action.Payload{"foo": "bar"}),
+								}}},
+								ButtonGroup: nil,
+							},
+						},
+					}},
+				},
+				Base: newBase(TypeTabsView, nil),
+			},
+		},
+		{
 			name:       "summary",
 			configFile: "config_summary.json",
 			objectType: "summary",

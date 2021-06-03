@@ -1,0 +1,34 @@
+{
+  "tabs":
+  [
+    {
+      "name":"Tab 1",
+      "contents":{
+        "config":{
+          "sections":
+          [
+            [
+              {
+                "width": 24,
+                "view":{
+                  "config":{
+                    "name":"test",
+                    "payload":{
+                      "foo":"bar"
+                    }
+                  },
+                  "metadata":{
+                    "type":"button"
+                  }
+                }
+              }
+            ]
+          ]
+        },
+        "metadata":{
+          "type":"flexlayout"
+        }
+      }
+    }
+  ]
+}
