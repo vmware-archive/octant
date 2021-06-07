@@ -13,6 +13,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/spf13/viper"
+
 	"github.com/gorilla/mux"
 
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -104,17 +106,21 @@ func rebindHandler(ctx context.Context, acceptedHosts []string) mux.MiddlewareFu
 				return
 			}
 
+			var httpErrors []string
 			if !shouldAllowHost(host, acceptedHosts) {
 				logger := log.From(ctx)
 				logger.Debugf("Requester %s not in accepted hosts: %s\nTo allow this host add it to the OCTANT_ACCEPTED_HOSTS environment variable.", host, acceptedHosts)
-				http.Error(w, "forbidden", http.StatusForbidden)
-				return
+				httpErrors = append(httpErrors, "forbidden host")
 			}
 
-			if !checkSameOrigin(r) {
+			if disableCheckOrigin := viper.GetBool("disable-origin-check"); !disableCheckOrigin && !checkSameOrigin(r) {
 				logger := log.From(ctx)
 				logger.Debugf("check same origin failed")
-				http.Error(w, "forbidden bad origin", http.StatusForbidden)
+				httpErrors = append(httpErrors, "forbidden bag origin")
+			}
+
+			if len(httpErrors) > 0 {
+				http.Error(w, strings.Join(httpErrors, ":"), http.StatusForbidden)
 				return
 			}
 
