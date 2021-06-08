@@ -69,7 +69,7 @@ func (mr *MockClientInterfaceMockRecorder) ResourceExists(arg0 interface{}) *gom
 }
 
 // Resource mocks base method
-func (m *MockClientInterface) Resource(arg0 schema.GroupKind) (schema.GroupVersionResource, bool, error) {
+func (m *MockClientInterface) Resource(arg0 schema.GroupVersionKind) (schema.GroupVersionResource, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Resource", arg0)
 	ret0, _ := ret[0].(schema.GroupVersionResource)
