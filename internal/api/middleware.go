@@ -116,11 +116,11 @@ func rebindHandler(ctx context.Context, acceptedHosts []string) mux.MiddlewareFu
 			if disableCheckOrigin := viper.GetBool("disable-origin-check"); !disableCheckOrigin && !checkSameOrigin(r) {
 				logger := log.From(ctx)
 				logger.Debugf("check same origin failed")
-				httpErrors = append(httpErrors, "forbidden bag origin")
+				httpErrors = append(httpErrors, "forbidden bad origin")
 			}
 
 			if len(httpErrors) > 0 {
-				http.Error(w, strings.Join(httpErrors, ":"), http.StatusForbidden)
+				http.Error(w, strings.Join(httpErrors, ": "), http.StatusForbidden)
 				return
 			}
 

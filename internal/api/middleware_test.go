@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,6 +27,7 @@ func Test_rebindHandler(t *testing.T) {
 		listenerAddr               string
 		disableCrossOriginKey      string
 		disableCrossOriginChecking bool
+		errorMessage               string
 	}{
 		{
 			name:         "in general",
@@ -35,11 +37,13 @@ func Test_rebindHandler(t *testing.T) {
 			name:         "rebind",
 			host:         "hacker.com",
 			expectedCode: http.StatusForbidden,
+			errorMessage: "forbidden host\n",
 		},
 		{
 			name:         "invalid host",
 			host:         ":::::::::",
 			expectedCode: http.StatusBadRequest,
+			errorMessage: "bad request\n",
 		},
 		{
 			name:         "custom host",
@@ -57,6 +61,14 @@ func Test_rebindHandler(t *testing.T) {
 			disableCrossOriginChecking: true,
 			listenerKey:                "listener-addr",
 			listenerAddr:               "example.com:80",
+			errorMessage:               "response",
+		},
+		{
+			name:         "fails CORS and invalid host",
+			host:         "example.com",
+			origin:       "hacker.com",
+			expectedCode: http.StatusForbidden,
+			errorMessage: "forbidden host: forbidden bad origin\n",
 		},
 	}
 
@@ -93,6 +105,12 @@ func Test_rebindHandler(t *testing.T) {
 
 			res, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
+
+			if tc.errorMessage != "" {
+				message, err := ioutil.ReadAll(res.Body)
+				require.NoError(t, err)
+				require.Equal(t, tc.errorMessage, string(message))
+			}
 
 			require.Equal(t, tc.expectedCode, res.StatusCode)
 		})
