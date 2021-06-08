@@ -89,7 +89,7 @@ func ResourceViewerTab(ctx context.Context, object runtime.Object, options Optio
 	u := &unstructured.Unstructured{Object: m}
 
 	var selection = string(u.GetUID())
-	if u.GetKind() == "Pod" {
+	if u.GetKind() == "Pod" && len(u.GetOwnerReferences()) > 0 {
 		selection = fmt.Sprintf("%s pods", u.GetOwnerReferences()[0].Name)
 	}
 	resourceViewerComponent, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, selection, u)
