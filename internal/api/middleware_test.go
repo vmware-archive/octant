@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,11 +19,15 @@ import (
 
 func Test_rebindHandler(t *testing.T) {
 	cases := []struct {
-		name         string
-		host         string
-		expectedCode int
-		listenerKey  string
-		listenerAddr string
+		name                       string
+		host                       string
+		origin                     string
+		expectedCode               int
+		listenerKey                string
+		listenerAddr               string
+		disableCrossOriginKey      string
+		disableCrossOriginChecking bool
+		errorMessage               string
 	}{
 		{
 			name:         "in general",
@@ -32,11 +37,13 @@ func Test_rebindHandler(t *testing.T) {
 			name:         "rebind",
 			host:         "hacker.com",
 			expectedCode: http.StatusForbidden,
+			errorMessage: "forbidden host\n",
 		},
 		{
 			name:         "invalid host",
 			host:         ":::::::::",
 			expectedCode: http.StatusBadRequest,
+			errorMessage: "bad request\n",
 		},
 		{
 			name:         "custom host",
@@ -45,6 +52,24 @@ func Test_rebindHandler(t *testing.T) {
 			listenerKey:  "listener-addr",
 			listenerAddr: "0.0.0.0:0000",
 		},
+		{
+			name:                       "disable CORS",
+			host:                       "example.com",
+			origin:                     "hacker.com",
+			expectedCode:               http.StatusOK,
+			disableCrossOriginKey:      "disable-origin-check",
+			disableCrossOriginChecking: true,
+			listenerKey:                "listener-addr",
+			listenerAddr:               "example.com:80",
+			errorMessage:               "response",
+		},
+		{
+			name:         "fails CORS and invalid host",
+			host:         "example.com",
+			origin:       "hacker.com",
+			expectedCode: http.StatusForbidden,
+			errorMessage: "forbidden host: forbidden bad origin\n",
+		},
 	}
 
 	for _, tc := range cases {
@@ -52,6 +77,11 @@ func Test_rebindHandler(t *testing.T) {
 			if tc.listenerKey != "" {
 				viper.Set(tc.listenerKey, tc.listenerAddr)
 				defer viper.Set(tc.listenerKey, "")
+			}
+
+			if tc.disableCrossOriginKey != "" {
+				viper.Set(tc.disableCrossOriginKey, tc.disableCrossOriginChecking)
+				defer viper.Set(tc.disableCrossOriginKey, false)
 			}
 			fake := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, "response")
@@ -65,12 +95,22 @@ func Test_rebindHandler(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
 			require.NoError(t, err)
 
+			if tc.origin != "" {
+				req.Header["Origin"] = []string{tc.origin}
+			}
+
 			if tc.host != "" {
 				req.Host = tc.host
 			}
 
 			res, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
+
+			if tc.errorMessage != "" {
+				message, err := ioutil.ReadAll(res.Body)
+				require.NoError(t, err)
+				require.Equal(t, tc.errorMessage, string(message))
+			}
 
 			require.Equal(t, tc.expectedCode, res.StatusCode)
 		})
