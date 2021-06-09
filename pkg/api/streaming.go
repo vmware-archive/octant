@@ -8,8 +8,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -57,6 +55,6 @@ type StreamingClient interface {
 }
 
 type StreamingClientFactory interface {
-	NewConnection(uuid.UUID, http.ResponseWriter, *http.Request, ClientManager, config.Dash) (StreamingClient, context.CancelFunc, error)
-	NewTemporaryConnection(uuid.UUID, http.ResponseWriter, *http.Request, ClientManager) (StreamingClient, context.CancelFunc, error)
+	NewConnection(http.ResponseWriter, *http.Request, ClientManager, config.Dash) (StreamingClient, context.CancelFunc, error)
+	NewTemporaryConnection(http.ResponseWriter, *http.Request, ClientManager) (StreamingClient, context.CancelFunc, error)
 }

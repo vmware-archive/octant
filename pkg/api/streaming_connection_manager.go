@@ -8,8 +8,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/pkg/event"
 )
@@ -87,12 +85,8 @@ func (m *StreamingConnectionManager) Run(ctx context.Context) {
 
 // ClientFromRequest creates a websocket client from a http request.
 func (m *StreamingConnectionManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
-	clientID, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
 
-	client, cancel, err := m.clientFactory.NewConnection(clientID, w, r, m, dashConfig)
+	client, cancel, err := m.clientFactory.NewConnection(w, r, m, dashConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +102,7 @@ func (m *StreamingConnectionManager) ClientFromRequest(dashConfig config.Dash, w
 }
 
 func (m *StreamingConnectionManager) TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
-	clientID, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-
-	client, cancel, err := m.clientFactory.NewTemporaryConnection(clientID, w, r, m)
+	client, cancel, err := m.clientFactory.NewTemporaryConnection(w, r, m)
 	if err != nil {
 		return nil, err
 	}

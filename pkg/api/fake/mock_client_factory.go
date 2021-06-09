@@ -10,7 +10,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 
 	config "github.com/vmware-tanzu/octant/internal/config"
 	api "github.com/vmware-tanzu/octant/pkg/api"
@@ -40,9 +39,9 @@ func (m *MockStreamingClientFactory) EXPECT() *MockStreamingClientFactoryMockRec
 }
 
 // NewConnection mocks base method
-func (m *MockStreamingClientFactory) NewConnection(arg0 uuid.UUID, arg1 http.ResponseWriter, arg2 *http.Request, arg3 api.ClientManager, arg4 config.Dash) (api.StreamingClient, context.CancelFunc, error) {
+func (m *MockStreamingClientFactory) NewConnection(arg0 http.ResponseWriter, arg1 *http.Request, arg2 api.ClientManager, arg3 config.Dash) (api.StreamingClient, context.CancelFunc, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewConnection", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "NewConnection", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(api.StreamingClient)
 	ret1, _ := ret[1].(context.CancelFunc)
 	ret2, _ := ret[2].(error)
@@ -50,15 +49,15 @@ func (m *MockStreamingClientFactory) NewConnection(arg0 uuid.UUID, arg1 http.Res
 }
 
 // NewConnection indicates an expected call of NewConnection
-func (mr *MockStreamingClientFactoryMockRecorder) NewConnection(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockStreamingClientFactoryMockRecorder) NewConnection(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnection", reflect.TypeOf((*MockStreamingClientFactory)(nil).NewConnection), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnection", reflect.TypeOf((*MockStreamingClientFactory)(nil).NewConnection), arg0, arg1, arg2, arg3)
 }
 
 // NewTemporaryConnection mocks base method
-func (m *MockStreamingClientFactory) NewTemporaryConnection(arg0 uuid.UUID, arg1 http.ResponseWriter, arg2 *http.Request, arg3 api.ClientManager) (api.StreamingClient, context.CancelFunc, error) {
+func (m *MockStreamingClientFactory) NewTemporaryConnection(arg0 http.ResponseWriter, arg1 *http.Request, arg2 api.ClientManager) (api.StreamingClient, context.CancelFunc, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewTemporaryConnection", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "NewTemporaryConnection", arg0, arg1, arg2)
 	ret0, _ := ret[0].(api.StreamingClient)
 	ret1, _ := ret[1].(context.CancelFunc)
 	ret2, _ := ret[2].(error)
@@ -66,7 +65,7 @@ func (m *MockStreamingClientFactory) NewTemporaryConnection(arg0 uuid.UUID, arg1
 }
 
 // NewTemporaryConnection indicates an expected call of NewTemporaryConnection
-func (mr *MockStreamingClientFactoryMockRecorder) NewTemporaryConnection(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockStreamingClientFactoryMockRecorder) NewTemporaryConnection(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTemporaryConnection", reflect.TypeOf((*MockStreamingClientFactory)(nil).NewTemporaryConnection), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTemporaryConnection", reflect.TypeOf((*MockStreamingClientFactory)(nil).NewTemporaryConnection), arg0, arg1, arg2)
 }
