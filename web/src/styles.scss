@@ -40,3 +40,9 @@ app-view-card cds-alert-group {
 cds-modal-content app-alert {
   width: 100%;
 }
+
+// TODO: Migrate text to use cds color.
+cds-modal-content app-view-text {
+  color: var(--cds-global-typography-color-500);
+}
+
