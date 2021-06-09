@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -67,7 +68,7 @@ func (h *HelperStateManager) Handlers() []octant.ClientRequestHandler {
 }
 
 // Start starts the manager
-func (h *HelperStateManager) Start(ctx context.Context, state octant.State, client OctantClient) {
+func (h *HelperStateManager) Start(ctx context.Context, state octant.State, client api.OctantClient) {
 	h.poller.Run(ctx, nil, h.runUpdate(state, client), event.DefaultScheduleDelay)
 }
 

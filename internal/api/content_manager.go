@@ -18,6 +18,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
@@ -107,7 +108,7 @@ func NewContentManager(moduleManager module.ManagerInterface, dashConfig config.
 var _ StateManager = (*ContentManager)(nil)
 
 // Start starts the manager.
-func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (cm *ContentManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 	cm.ctx = ctx
 	logger := internalLog.From(ctx)
 	logger.Debugf("starting content manager")
@@ -132,7 +133,7 @@ func (cm *ContentManager) Start(ctx context.Context, state octant.State, s Octan
 	cm.poller.Run(ctx, cm.updateContentCh, cm.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
-func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
+func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) PollerFunc {
 	previousChecksum := ""
 
 	return func(ctx context.Context) bool {

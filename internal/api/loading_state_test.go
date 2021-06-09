@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/api/fake"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
 )
 
 func Test_watchConfig(t *testing.T) {

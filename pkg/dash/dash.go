@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
 
-	"github.com/vmware-tanzu/octant/internal/api"
+	internalAPI "github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
@@ -46,6 +46,8 @@ import (
 	"github.com/vmware-tanzu/octant/internal/objectstore"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/api/websockets"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/octant"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
@@ -257,7 +259,7 @@ func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*R
 	if options.streamingClientFactory != nil {
 		streamingConnectionManager = api.NewStreamingConnectionManager(ctx, r.actionManager, options.streamingClientFactory)
 	} else {
-		streamingConnectionManager = api.NewStreamingConnectionManager(ctx, r.actionManager, api.NewWebsocketConnectionFactory())
+		streamingConnectionManager = api.NewStreamingConnectionManager(ctx, r.actionManager, websockets.NewWebsocketConnectionFactory())
 	}
 	r.streamingConnectionManager = streamingConnectionManager
 	go streamingConnectionManager.Run(ctx)
@@ -265,7 +267,7 @@ func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*R
 	var err error
 
 	var pluginService *pluginAPI.GRPCService
-	var apiService api.Service
+	var apiService internalAPI.Service
 	var apiErr error
 
 	r.fs = afero.NewOsFs()
@@ -293,7 +295,7 @@ func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*R
 	return &r, nil
 }
 
-func (r *Runner) apiFromKubeConfig(kubeConfig string, opts ...RunnerOption) (api.Service, *pluginAPI.GRPCService, error) {
+func (r *Runner) apiFromKubeConfig(kubeConfig string, opts ...RunnerOption) (internalAPI.Service, *pluginAPI.GRPCService, error) {
 	logger := internalLog.From(r.ctx)
 	validKubeConfig, err := ValidateKubeConfig(logger, kubeConfig, r.fs)
 	if err == nil {
@@ -301,7 +303,7 @@ func (r *Runner) apiFromKubeConfig(kubeConfig string, opts ...RunnerOption) (api
 		return r.initAPI(r.ctx, logger, opts...)
 	} else {
 		logger.Infof("no valid kube config found, initializing loading API")
-		return api.NewLoadingAPI(r.ctx, api.PathPrefix, r.actionManager, r.streamingConnectionManager, logger), nil, nil
+		return internalAPI.NewLoadingAPI(r.ctx, internalAPI.PathPrefix, r.actionManager, r.streamingConnectionManager, logger), nil, nil
 	}
 }
 
@@ -361,7 +363,7 @@ func (r *Runner) Start(startupCh, shutdownCh chan bool, opts ...RunnerOption) er
 	return nil
 }
 
-func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*api.API, *pluginAPI.GRPCService, error) {
+func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*internalAPI.API, *pluginAPI.GRPCService, error) {
 	kubeConfigOptions := []kubeconfig.KubeConfigOption{}
 	options := Options{}
 	for _, opt := range opts {
@@ -515,7 +517,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
-	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.streamingConnectionManager, dashConfig)
+	apiService := internalAPI.New(ctx, internalAPI.PathPrefix, r.actionManager, r.streamingConnectionManager, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
 
 	r.apiCreated = true
@@ -629,7 +631,7 @@ type dash struct {
 	browserPath     string
 	namespace       string
 	defaultHandler  func() (http.Handler, error)
-	apiHandler      api.Service
+	apiHandler      internalAPI.Service
 	willOpenBrowser bool
 	logger          log.Logger
 	handlerFactory  *octant.HandlerFactory
@@ -637,7 +639,7 @@ type dash struct {
 	pluginService   pluginAPI.Service
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler api.Service, pluginHandler pluginAPI.Service, logger log.Logger) (*dash, error) {
+func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler internalAPI.Service, pluginHandler pluginAPI.Service, logger log.Logger) (*dash, error) {
 	hf := octant.NewHandlerFactory(
 		octant.BackendHandler(apiHandler.Handler),
 		octant.FrontendURL(viper.GetString("proxy-frontend")))
@@ -657,7 +659,7 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 	}, nil
 }
 
-func (d *dash) SetAPIService(ctx context.Context, apiService api.Service) error {
+func (d *dash) SetAPIService(ctx context.Context, apiService internalAPI.Service) error {
 	d.apiHandler = apiService
 	hf := octant.NewHandlerFactory(
 		octant.BackendHandler(d.apiHandler.Handler),

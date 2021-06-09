@@ -13,6 +13,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
@@ -80,7 +81,7 @@ func (n NavigationManager) Handlers() []octant.ClientRequestHandler {
 }
 
 // Start starts the manager. It periodically generates navigation updates.
-func (n *NavigationManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (n *NavigationManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 	ch := make(chan struct{}, 1)
 	defer func() {
 		close(ch)
@@ -89,7 +90,7 @@ func (n *NavigationManager) Start(ctx context.Context, state octant.State, s Oct
 	n.poller.Run(ctx, ch, n.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
-func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+func (n *NavigationManager) runUpdate(state octant.State, client api.OctantClient) PollerFunc {
 	var previous []byte
 
 	return func(ctx context.Context) bool {

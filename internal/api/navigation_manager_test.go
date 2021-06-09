@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/module"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 )
 

@@ -6,13 +6,14 @@ import (
 	"testing"
 
 	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/pkg/api"
 )
 
 type fakeWebsocketClientManager struct {
-	StreamingConnectionManager
+	api.StreamingConnectionManager
 }
 
-func (c *fakeWebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
+func (c *fakeWebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (api.StreamingClient, error) {
 	return nil, fmt.Errorf("test: error")
 }
 

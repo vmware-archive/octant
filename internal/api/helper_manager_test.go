@@ -14,10 +14,10 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
 )
 
 func TestHelperManager_GenerateContent(t *testing.T) {

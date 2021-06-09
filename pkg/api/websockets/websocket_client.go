@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package api
+package websockets
 
 import (
 	"context"
@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/errors"
+	"github.com/vmware-tanzu/octant/pkg/log"
 
 	"github.com/vmware-tanzu/octant/pkg/event"
 
@@ -24,7 +26,6 @@ import (
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
-	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 const (
@@ -42,11 +43,6 @@ const (
 	maxMessageSize = 2 * 1024 * 1024 // 2MiB
 )
 
-type StreamRequest struct {
-	Type    string         `json:"type"`
-	Payload action.Payload `json:"payload"`
-}
-
 // WebsocketClient manages websocket clients.
 type WebsocketClient struct {
 	conn       *websocket.Conn
@@ -55,7 +51,7 @@ type WebsocketClient struct {
 	logger     log.Logger
 	ctx        context.Context
 	cancel     context.CancelFunc
-	manager    *StreamingConnectionManager
+	manager    api.ClientManager
 
 	isOpen   atomic.Value
 	state    octant.State
@@ -64,11 +60,8 @@ type WebsocketClient struct {
 	stopCh   chan struct{}
 }
 
-var _ OctantClient = (*WebsocketClient)(nil)
-var _ StreamingClient = (*WebsocketClient)(nil)
-
 // NewWebsocketClient creates an instance of WebsocketClient.
-func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *StreamingConnectionManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager api.ClientManager, dashConfig config.Dash, actionDispatcher api.ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
 	ctx = internalLog.WithLoggerContext(ctx, logger)
 
@@ -105,7 +98,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Stre
 }
 
 // NewTemporaryWebsocketClient creates an instance of WebsocketClient
-func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *StreamingConnectionManager, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager api.ClientManager, actionDispatcher api.ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	ctx, cancel := context.WithCancel(ctx)
 	logger := internalLog.From(ctx)
 
@@ -185,7 +178,7 @@ func (c *WebsocketClient) readPump() {
 	close(c.stopCh)
 }
 
-func handleStreamingMessage(client StreamingClient, request StreamRequest) error {
+func handleStreamingMessage(client api.StreamingClient, request api.StreamRequest) error {
 	handlers, ok := client.Handlers()[request.Type]
 	if !ok {
 		return handleUnknownRequest(client, request)
@@ -210,7 +203,7 @@ func handleStreamingMessage(client StreamingClient, request StreamRequest) error
 	return nil
 }
 
-func handleUnknownRequest(client OctantClient, request StreamRequest) error {
+func handleUnknownRequest(client api.OctantClient, request api.StreamRequest) error {
 	message := "unknown request"
 	if request.Type != "" {
 		message = fmt.Sprintf("unknown request %s", request.Type)
@@ -286,7 +279,7 @@ func (c *WebsocketClient) Send(ev event.Event) {
 	}
 }
 
-func (c *WebsocketClient) Receive() (StreamRequest, error) {
+func (c *WebsocketClient) Receive() (api.StreamRequest, error) {
 	_, message, err := c.conn.ReadMessage()
 	if err != nil {
 		if websocket.IsUnexpectedCloseError(
@@ -294,13 +287,13 @@ func (c *WebsocketClient) Receive() (StreamRequest, error) {
 		) {
 			c.logger.WithErr(err).Errorf("Unhandled websocket error")
 		}
-		return StreamRequest{}, errors.FatalStreamError(err)
+		return api.StreamRequest{}, errors.FatalStreamError(err)
 	}
 
-	var request StreamRequest
+	var request api.StreamRequest
 	if err := json.Unmarshal(message, &request); err != nil {
 		c.logger.WithErr(err).Errorf("Unmarshaling websocket message")
-		return StreamRequest{}, err
+		return api.StreamRequest{}, err
 	}
 
 	return request, nil

@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
@@ -36,7 +37,7 @@ const (
 )
 
 type podLogsStateManager struct {
-	client OctantClient
+	client api.OctantClient
 	config config.Dash
 	ctx    context.Context
 
@@ -145,7 +146,7 @@ func (s *podLogsStateManager) StreamPodLogsUnsubscribe(_ octant.State, payload a
 	return nil
 }
 
-func (s *podLogsStateManager) Start(ctx context.Context, _ octant.State, client OctantClient) {
+func (s *podLogsStateManager) Start(ctx context.Context, _ octant.State, client api.OctantClient) {
 	s.client = client
 	s.ctx = ctx
 }

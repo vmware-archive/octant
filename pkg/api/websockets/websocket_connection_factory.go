@@ -1,4 +1,4 @@
-package api
+package websockets
 
 import (
 	"context"
@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
+	internalAPI "github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/pkg/api"
 )
 
 type WebsocketConnectionFactory struct {
@@ -26,24 +28,24 @@ func NewWebsocketConnectionFactory() *WebsocketConnectionFactory {
 					return false
 				}
 
-				return shouldAllowHost(host, acceptedHosts())
+				return internalAPI.ShouldAllowHost(host, internalAPI.AcceptedHosts())
 			},
 		},
 	}
 }
 
-var _ StreamingClientFactory = (*WebsocketConnectionFactory)(nil)
+var _ api.StreamingClientFactory = (*WebsocketConnectionFactory)(nil)
 
 func (wcf *WebsocketConnectionFactory) NewConnection(
-	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager, dashConfig config.Dash,
-) (StreamingClient, context.CancelFunc, error) {
+	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m api.ClientManager, dashConfig config.Dash,
+) (api.StreamingClient, context.CancelFunc, error) {
 	conn, err := wcf.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	ctx, cancel := context.WithCancel(m.ctx)
-	client := NewWebsocketClient(ctx, conn, m, dashConfig, m.actionDispatcher, clientID)
+	ctx, cancel := context.WithCancel(m.Context())
+	client := NewWebsocketClient(ctx, conn, m, dashConfig, m.ActionDispatcher(), clientID)
 
 	go client.readPump()
 	go client.writePump()
@@ -52,15 +54,15 @@ func (wcf *WebsocketConnectionFactory) NewConnection(
 }
 
 func (wcf *WebsocketConnectionFactory) NewTemporaryConnection(
-	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager,
-) (StreamingClient, context.CancelFunc, error) {
+	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m api.ClientManager,
+) (api.StreamingClient, context.CancelFunc, error) {
 	conn, err := wcf.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	ctx, cancel := context.WithCancel(m.ctx)
-	client := NewTemporaryWebsocketClient(ctx, conn, m, m.actionDispatcher, clientID)
+	ctx, cancel := context.WithCancel(m.Context())
+	client := NewTemporaryWebsocketClient(ctx, conn, m, m.ActionDispatcher(), clientID)
 
 	go client.readPump()
 	go client.writePump()

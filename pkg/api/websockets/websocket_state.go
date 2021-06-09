@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package api
+package websockets
 
 import (
 	"context"
@@ -14,8 +14,10 @@ import (
 	"strings"
 	"sync"
 
+	internalAPI "github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/google/uuid"
@@ -25,41 +27,24 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen -destination=./fake/mock_state_manager.go -package=fake github.com/vmware-tanzu/octant/internal/api StateManager
-//go:generate mockgen -destination=./fake/mock_octant_client.go -package=fake github.com/vmware-tanzu/octant/internal/api OctantClient
-
 var (
 	reContentPathNamespace = regexp.MustCompile(`^/namespace/(?P<namespace>[^/]+)/?`)
 )
 
-// StateManager manages states for WebsocketState.
-type StateManager interface {
-	Handlers() []octant.ClientRequestHandler
-	Start(ctx context.Context, state octant.State, s OctantClient)
-}
-
-func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManager {
+func defaultStateManagers(clientID string, dashConfig config.Dash) []api.StateManager {
 	logger := dashConfig.Logger().With("client-id", clientID)
 
-	return []StateManager{
-		NewContentManager(dashConfig.ModuleManager(), dashConfig, logger),
-		NewHelperStateManager(dashConfig),
-		NewFilterManager(),
-		NewNavigationManager(dashConfig),
-		NewNamespacesManager(dashConfig),
-		NewContextManager(dashConfig),
-		NewActionRequestManager(dashConfig),
-		NewTerminalStateManager(dashConfig),
-		NewPodLogsStateManager(dashConfig),
+	return []api.StateManager{
+		internalAPI.NewContentManager(dashConfig.ModuleManager(), dashConfig, logger),
+		internalAPI.NewHelperStateManager(dashConfig),
+		internalAPI.NewFilterManager(),
+		internalAPI.NewNavigationManager(dashConfig),
+		internalAPI.NewNamespacesManager(dashConfig),
+		internalAPI.NewContextManager(dashConfig),
+		internalAPI.NewActionRequestManager(dashConfig),
+		internalAPI.NewTerminalStateManager(dashConfig),
+		internalAPI.NewPodLogsStateManager(dashConfig),
 	}
-}
-
-// OctantClient is the interface responsible for sending streaming data to a
-// users session, usually in a browser.
-type OctantClient interface {
-	Send(event.Event)
-	ID() string
-	StopCh() <-chan struct{}
 }
 
 type atomicString struct {
@@ -92,7 +77,7 @@ func (s *atomicString) set(v string) {
 type WebsocketStateOption func(w *WebsocketState)
 
 // WebsocketStateManagers configures WebsocketState's state managers.
-func WebsocketStateManagers(managers []StateManager) WebsocketStateOption {
+func WebsocketStateManagers(managers []api.StateManager) WebsocketStateOption {
 	return func(w *WebsocketState) {
 		w.managers = managers
 	}
@@ -101,7 +86,7 @@ func WebsocketStateManagers(managers []StateManager) WebsocketStateOption {
 // WebsocketState manages state for a websocket client.
 type WebsocketState struct {
 	dashConfig         config.Dash
-	wsClient           OctantClient
+	wsClient           api.OctantClient
 	contentPath        *atomicString
 	namespace          *atomicString
 	filters            []octant.Filter
@@ -109,8 +94,8 @@ type WebsocketState struct {
 	namespaceUpdates   map[string]octant.NamespaceUpdateFunc
 
 	mu               sync.RWMutex
-	managers         []StateManager
-	actionDispatcher ActionDispatcher
+	managers         []api.StateManager
+	actionDispatcher api.ActionDispatcher
 
 	startCtx           context.Context
 	managersCancelFunc context.CancelFunc
@@ -119,7 +104,7 @@ type WebsocketState struct {
 var _ octant.State = (*WebsocketState)(nil)
 
 // NewWebsocketState creates an instance of WebsocketState.
-func NewWebsocketState(dashConfig config.Dash, actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
+func NewWebsocketState(dashConfig config.Dash, actionDispatcher api.ActionDispatcher, wsClient api.OctantClient, options ...WebsocketStateOption) *WebsocketState {
 	defaultNamespace := dashConfig.DefaultNamespace()
 
 	w := &WebsocketState{
@@ -144,7 +129,7 @@ func NewWebsocketState(dashConfig config.Dash, actionDispatcher ActionDispatcher
 	return w
 }
 
-func NewTemporaryWebsocketState(actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
+func NewTemporaryWebsocketState(actionDispatcher api.ActionDispatcher, wsClient api.OctantClient, options ...WebsocketStateOption) *WebsocketState {
 	w := &WebsocketState{
 		wsClient:           wsClient,
 		contentPathUpdates: make(map[string]octant.ContentPathUpdateFunc),
@@ -157,8 +142,8 @@ func NewTemporaryWebsocketState(actionDispatcher ActionDispatcher, wsClient Octa
 	}
 
 	if len(w.managers) < 1 {
-		w.managers = []StateManager{
-			NewLoadingManager(),
+		w.managers = []api.StateManager{
+			internalAPI.NewLoadingManager(),
 		}
 	}
 
