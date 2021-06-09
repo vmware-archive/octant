@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
+	"github.com/vmware-tanzu/octant/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/pkg/event"
 
@@ -168,7 +169,7 @@ func (c *WebsocketClient) readPump() {
 	for {
 		request, err := c.Receive()
 		if err != nil {
-			if IsFatalStreamError(err) {
+			if errors.IsFatalStreamError(err) {
 				c.cancel()
 				break
 			}
@@ -293,7 +294,7 @@ func (c *WebsocketClient) Receive() (StreamRequest, error) {
 		) {
 			c.logger.WithErr(err).Errorf("Unhandled websocket error")
 		}
-		return StreamRequest{}, FatalStreamError(err)
+		return StreamRequest{}, errors.FatalStreamError(err)
 	}
 
 	var request StreamRequest
