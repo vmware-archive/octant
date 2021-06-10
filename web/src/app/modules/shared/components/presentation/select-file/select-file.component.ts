@@ -19,7 +19,7 @@ import { ElectronService } from '../../../services/electron/electron.service';
 type File = {
   name: string;
   type: string;
-  path: string;
+  path?: string;
   lastModified: number;
   size: number;
 };
@@ -70,13 +70,17 @@ export class SelectFileComponent
       }
       for (let i = 0; i < files.length; i++) {
         const file = files.item(i);
-        fileList.push({
+        let fileMetadata = {
           name: file.name,
           type: file.type,
-          path: file.path,
           lastModified: file.lastModified,
           size: file.size,
-        });
+        };
+
+        if (this.electronService.isElectron()) {
+          fileMetadata = { ...fileMetadata, ...{ path: file.path } };
+        }
+        fileList.push(fileMetadata);
       }
 
       if (this.action) {
