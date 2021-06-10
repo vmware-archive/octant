@@ -13,8 +13,16 @@ import {
 } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { SelectFileView } from '../../../models/content';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { ActionService } from '../../../services/action/action.service';
+import { ElectronService } from '../../../services/electron/electron.service';
+
+type File = {
+  name: string;
+  type: string;
+  path: string;
+  lastModified: number;
+  size: number;
+};
 
 @Component({
   selector: 'app-view-select-file',
@@ -33,7 +41,10 @@ export class SelectFileComponent
   @ViewChild('fileInput') fileInput: ElementRef;
   @Output() fileChanged: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor(private actionService: ActionService) {
+  constructor(
+    private actionService: ActionService,
+    private electronService: ElectronService
+  ) {
     super();
   }
 
@@ -47,19 +58,31 @@ export class SelectFileComponent
     this.action = view.config.action;
   }
 
-  inputFileChanged(event) {
-    if (event.target.files && event.target.files[0]) {
+  inputFileChanged(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    const fileList: File[] = [];
+    if (files && files[0]) {
       if (this.fileChanged) {
-        this.fileChanged.emit(event.target.files);
+        this.fileChanged.emit(files);
       }
       if (isDevMode()) {
-        console.log('Selected file(s):', event.target.files);
+        console.log('Selected file(s):', files);
+      }
+      for (let i = 0; i < files.length; i++) {
+        const file = files.item(i);
+        fileList.push({
+          name: file.name,
+          type: file.type,
+          path: file.path,
+          lastModified: file.lastModified,
+          size: file.size,
+        });
       }
 
       if (this.action) {
         this.actionService.perform({
           action: this.action,
-          files: event.target.files,
+          files: fileList,
         });
       }
     }

@@ -156,8 +156,8 @@ func main() {
 			Short: "server build to extraResources, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				webDeps("--prefer-offline", "--no-audit")
-				webBuildElectron()
 				buildElectron()
+				webBuildElectron()
 			},
 		},
 		&cobra.Command{
@@ -276,7 +276,17 @@ func build() {
 	runCmd("go", nil, "build", "-tags", "embedded", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
+// buildElectron builds an Octant binary without web assets
 func buildElectron() {
+	cleanCmd := newCmd("npm", nil, "run", "clean")
+	cleanCmd.Stdout = os.Stdout
+	cleanCmd.Stderr = os.Stderr
+	cleanCmd.Stdin = os.Stdin
+	cleanCmd.Dir = "./web"
+	if err := cleanCmd.Run(); err != nil {
+		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
+	}
+
 	newPath := filepath.Join(".", "build")
 	os.MkdirAll(newPath, 0755)
 
@@ -367,14 +377,6 @@ func webBuildElectron() {
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-build-electron: build : %s", err)
-	}
-	cleanCmd := newCmd("npm", nil, "run", "clean")
-	cleanCmd.Stdout = os.Stdout
-	cleanCmd.Stderr = os.Stderr
-	cleanCmd.Stdin = os.Stdin
-	cleanCmd.Dir = "./web"
-	if err := cleanCmd.Run(); err != nil {
-		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
 	}
 }
 
