@@ -35,8 +35,12 @@ func NewWebsocketConnectionFactory() *WebsocketConnectionFactory {
 var _ StreamingClientFactory = (*WebsocketConnectionFactory)(nil)
 
 func (wcf *WebsocketConnectionFactory) NewConnection(
-	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager, dashConfig config.Dash,
+	w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager, dashConfig config.Dash,
 ) (StreamingClient, context.CancelFunc, error) {
+ 	clientID, err := uuid.NewUUID()
+	if err != nil {
+		return nil, nil, err
+	}
 	conn, err := wcf.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, nil, err
@@ -52,8 +56,12 @@ func (wcf *WebsocketConnectionFactory) NewConnection(
 }
 
 func (wcf *WebsocketConnectionFactory) NewTemporaryConnection(
-	clientID uuid.UUID, w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager,
+	w http.ResponseWriter, r *http.Request, m *StreamingConnectionManager,
 ) (StreamingClient, context.CancelFunc, error) {
+ 	clientID, err := uuid.NewUUID()
+	if err != nil {
+		return nil, nil, err
+	}
 	conn, err := wcf.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, nil, err

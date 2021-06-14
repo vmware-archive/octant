@@ -36,8 +36,8 @@ type clientMeta struct {
 }
 
 type StreamingClientFactory interface {
-	NewConnection(uuid.UUID, http.ResponseWriter, *http.Request, *StreamingConnectionManager, config.Dash) (StreamingClient, context.CancelFunc, error)
-	NewTemporaryConnection(uuid.UUID, http.ResponseWriter, *http.Request, *StreamingConnectionManager) (StreamingClient, context.CancelFunc, error)
+	NewConnection(http.ResponseWriter, *http.Request, *StreamingConnectionManager, config.Dash) (StreamingClient, context.CancelFunc, error)
+	NewTemporaryConnection(http.ResponseWriter, *http.Request, *StreamingConnectionManager) (StreamingClient, context.CancelFunc, error)
 }
 
 // StreamingClient is the interface responsible for sending and receiving
@@ -119,12 +119,7 @@ func (m *StreamingConnectionManager) Run(ctx context.Context) {
 
 // ClientFromRequest creates a websocket client from a http request.
 func (m *StreamingConnectionManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
-	clientID, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-
-	client, cancel, err := m.clientFactory.NewConnection(clientID, w, r, m, dashConfig)
+	client, cancel, err := m.clientFactory.NewConnection(w, r, m, dashConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -140,12 +135,7 @@ func (m *StreamingConnectionManager) ClientFromRequest(dashConfig config.Dash, w
 }
 
 func (m *StreamingConnectionManager) TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
-	clientID, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-
-	client, cancel, err := m.clientFactory.NewTemporaryConnection(clientID, w, r, m)
+	client, cancel, err := m.clientFactory.NewTemporaryConnection(w, r, m)
 	if err != nil {
 		return nil, err
 	}
