@@ -82,6 +82,7 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerror
 		if name, ok := fields["name"]; ok && name != "" {
 			objectStoreKey.Name = name
 		}
+
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
 			var ae *oerrors.AccessError

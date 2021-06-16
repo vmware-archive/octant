@@ -394,7 +394,8 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 
 	logger.Debugf("initial namespace for dashboard is %s", options.Namespace)
 
-	appObjectStore, err := initObjectStore(ctx, clusterClient)
+	factoryOption := objectstore.WithDynamicSharedInformerFactory(options.factory)
+	appObjectStore, err := initObjectStore(ctx, clusterClient, factoryOption)
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing store: %w", err)
 	}
