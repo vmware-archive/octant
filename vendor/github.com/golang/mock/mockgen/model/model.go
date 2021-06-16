@@ -71,6 +71,16 @@ func (intf *Interface) addImports(im map[string]bool) {
 	}
 }
 
+// AddMethod adds a new method, deduplicating by method name.
+func (intf *Interface) AddMethod(m *Method) {
+	for _, me := range intf.Methods {
+		if me.Name == m.Name {
+			return
+		}
+	}
+	intf.Methods = append(intf.Methods, m)
+}
+
 // Method is a single method of an interface.
 type Method struct {
 	Name     string
@@ -311,7 +321,7 @@ func InterfaceFromInterfaceType(it reflect.Type) (*Interface, error) {
 			return nil, err
 		}
 
-		intf.Methods = append(intf.Methods, m)
+		intf.AddMethod(m)
 	}
 
 	return intf, nil
@@ -467,4 +477,20 @@ func impPath(imp string) string {
 		imp = imp[i+len("/vendor/"):]
 	}
 	return imp
+}
+
+// ErrorInterface represent built-in error interface.
+var ErrorInterface = Interface{
+	Name: "error",
+	Methods: []*Method{
+		{
+			Name: "Error",
+			Out: []*Parameter{
+				{
+					Name: "",
+					Type: PredeclaredType("string"),
+				},
+			},
+		},
+	},
 }
