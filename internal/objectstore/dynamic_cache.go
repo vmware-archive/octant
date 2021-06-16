@@ -9,10 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/client-go/dynamic"
-
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -40,44 +39,56 @@ type lister interface {
 }
 
 type DynamicCache struct {
-	ctx           context.Context
-	cancel        context.CancelFunc
-	client        cluster.ClientInterface
-	dynamicClient dynamic.Interface
-	stopChan      chan struct{}
+	ctx    context.Context
+	cancel context.CancelFunc
+	client cluster.ClientInterface
 
-	informerFactories sync.Map // namespace:DynamicSharedInformerFactory
-	knownInformers    sync.Map // SharedIndexInformer:chan struct{}
+	informerFactory dynamicinformer.DynamicSharedInformerFactory
+	knownInformers  sync.Map // gvr:GenericInformer
+	unwatched       sync.Map // gvr:bool
+	gvrCache        sync.Map // gk:gvr
 
 	removeCh chan schema.GroupVersionResource
+	mu       sync.Mutex
 }
 
 var _ store.Store = (*DynamicCache)(nil)
 
 type Option func(*DynamicCache)
 
+func WithDynamicSharedInformerFactory(factory dynamicinformer.DynamicSharedInformerFactory) Option {
+	return func(d *DynamicCache) {
+		d.informerFactory = factory
+	}
+}
+
 func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, opts ...Option) (*DynamicCache, error) {
+	ctx, cancel := context.WithCancel(ctx)
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
+		cancel()
 		return nil, err
 	}
-	ctx, cancel := context.WithCancel(ctx)
 
 	dc := &DynamicCache{
-		ctx:               ctx,
-		cancel:            cancel,
-		client:            client,
-		dynamicClient:     dynamicClient,
-		removeCh:          make(chan schema.GroupVersionResource),
-		informerFactories: sync.Map{},
-		stopChan:          make(chan struct{}),
+		ctx:            ctx,
+		cancel:         cancel,
+		client:         client,
+		knownInformers: sync.Map{},
+		unwatched:      sync.Map{},
+		gvrCache:       sync.Map{},
+		removeCh:       make(chan schema.GroupVersionResource),
 	}
 
 	for _, opt := range opts {
 		opt(dc)
 	}
 
-	go dc.shutdownWorker()
+	if dc.informerFactory == nil {
+		dc.informerFactory = dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, resyncPeriod)
+	}
+
+	go dc.worker()
 
 	return dc, nil
 }
@@ -89,6 +100,10 @@ func (d *DynamicCache) List(ctx context.Context, key store.Key) (list *unstructu
 	resourceLister, err := d.listerForResource(ctx, key)
 	if err != nil {
 		return nil, false, err
+	}
+
+	if resourceLister == nil {
+		return nil, false, fmt.Errorf("resourceLister is nil")
 	}
 
 	if key.Selector != nil && key.LabelSelector != nil {
@@ -158,8 +173,9 @@ func (d *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
 	defer span.End()
 
-	if d.dynamicClient == nil {
-		return fmt.Errorf("dynamic client is nil")
+	dynamicClient, err := d.client.DynamicClient()
+	if err != nil {
+		return err
 	}
 
 	gvr, err := d.gvrFromKey(ctx, key)
@@ -173,20 +189,30 @@ func (d *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	}
 
 	if key.Namespace == "" {
-		return d.dynamicClient.Resource(gvr).Delete(ctx, key.Name, deleteOptions)
+		return dynamicClient.Resource(gvr).Delete(ctx, key.Name, deleteOptions)
 	}
 
-	return d.dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(ctx, key.Name, deleteOptions)
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(ctx, key.Name, deleteOptions)
 }
 
 func (d *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:UpdateClusterClient")
 	defer span.End()
 
-	d.stopAllInformers()
-	d.client = client
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
-	d.knownInformers, d.informerFactories = sync.Map{}, sync.Map{}
+	d.stopAllInformers()
+
+	d.client = client
+	dynamicClient, err := client.DynamicClient()
+	if err != nil {
+		return err
+	}
+
+	d.informerFactory = dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, resyncPeriod)
+	d.knownInformers = sync.Map{}
+	d.unwatched = sync.Map{}
 
 	return nil
 }
@@ -214,14 +240,16 @@ func (d *DynamicCache) Update(ctx context.Context, key store.Key, updater func(*
 			return err
 		}
 
-		if d.dynamicClient == nil {
-			return fmt.Errorf("dynamic client is nil")
+		dynamicClient, err := d.client.DynamicClient()
+		if err != nil {
+			return err
 		}
 
 		if err := updater(object); err != nil {
 			return fmt.Errorf("unable to update object: %w", err)
 		}
-		client := d.dynamicClient.Resource(gvr).Namespace(object.GetNamespace())
+
+		client := dynamicClient.Resource(gvr).Namespace(object.GetNamespace())
 
 		_, err = client.Update(ctx, object, metav1.UpdateOptions{})
 		return err
@@ -253,16 +281,17 @@ func (d *DynamicCache) Create(ctx context.Context, object *unstructured.Unstruct
 
 	createOptions := metav1.CreateOptions{}
 
-	if d.dynamicClient == nil {
-		return fmt.Errorf("dynamic client is nil")
-	}
-
-	if key.Namespace == "" {
-		_, err := d.dynamicClient.Resource(gvr).Create(ctx, object, createOptions)
+	dynamicClient, err := d.client.DynamicClient()
+	if err != nil {
 		return err
 	}
 
-	_, err = d.dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(ctx, object, createOptions)
+	if key.Namespace == "" {
+		_, err := dynamicClient.Resource(gvr).Create(ctx, object, createOptions)
+		return err
+	}
+
+	_, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(ctx, object, createOptions)
 	return err
 }
 
@@ -271,33 +300,14 @@ func (d *DynamicCache) WaitForCacheSync(ctx context.Context) bool {
 	defer span.End()
 
 	var ret bool
-
-	d.informerFactories.Range(func(k, v interface{}) bool {
-		v.(dynamicinformer.DynamicSharedInformerFactory).WaitForCacheSync(d.stopChan)
-		return true
+	d.knownInformers.Range(func(k, v interface{}) bool {
+		ii := v.(interuptibleInformer)
+		ret = cache.WaitForCacheSync(ii.stopCh, ii.informer.Informer().HasSynced)
+		return ret
 	})
 	return ret
 }
 
-func (d *DynamicCache) informerFactoryForNamespace(namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
-	if d.dynamicClient == nil {
-		return nil, fmt.Errorf("dynamic client is nil")
-	}
-
-	var informerFactory dynamicinformer.DynamicSharedInformerFactory
-	inf, ok := d.informerFactories.Load(namespace)
-	if !ok {
-		f := dynamicinformer.NewFilteredDynamicSharedInformerFactory(d.dynamicClient, resyncPeriod, namespace, nil)
-		d.informerFactories.Store(namespace, f)
-		informerFactory = f.(dynamicinformer.DynamicSharedInformerFactory)
-	} else {
-		informerFactory = inf.(dynamicinformer.DynamicSharedInformerFactory)
-	}
-
-	return informerFactory, nil
-}
-
-// Watch creates informers for CRDs
 func (d *DynamicCache) Watch(ctx context.Context, key store.Key, handler cache.ResourceEventHandler) error {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:Watch")
 	defer span.End()
@@ -308,43 +318,37 @@ func (d *DynamicCache) Watch(ctx context.Context, key store.Key, handler cache.R
 
 	gvr, err := d.gvrFromKey(ctx, key)
 	if err != nil {
-		logger.Warnf("cannot find key: %w", err)
-		return nil
-	}
-
-	if gvr.Empty() {
-		return nil
-	}
-
-	stopChan := make(chan struct{})
-	informerFactory, err := d.informerFactoryForNamespace(key.Namespace)
-	if err != nil {
 		return err
 	}
-	informer := informerFactory.ForResource(gvr).Informer()
-	d.knownInformers.LoadOrStore(informer, stopChan)
-	informer.SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr))
-	if handler != nil {
-		informer.AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
+
+	if d.isUnwatched(ctx, gvr) {
+		return fmt.Errorf("watcher was unable to start for %s", gvr)
 	}
-	go informer.Run(stopChan)
+
 	span.AddAttributes(trace.StringAttribute("key", fmt.Sprintf("%s", key)))
 
+	d.forResource(ctx, gvr, handler)
+
+	return err
+}
+
+func (d *DynamicCache) Unwatch(ctx context.Context, groupVersionKinds ...schema.GroupVersionKind) error {
 	return nil
 }
 
-// Unwatch needs to remove informers for CRDs: See https://github.com/kubernetes/kubernetes/pull/97214
-// TODO: Instead of Watch and Unwatch for a GVK, this should be for adding and removing event handlers
-func (d *DynamicCache) Unwatch(_ context.Context, groupVersionKinds ...schema.GroupVersionKind) error {
-	return nil
-}
-
-func (d *DynamicCache) shutdownWorker() {
+func (d *DynamicCache) worker() {
 	for {
 		select {
 		case <-d.ctx.Done():
 			d.stopAllInformers()
 			return
+		case gvr := <-d.removeCh:
+			d.unwatched.Store(gvr, true)
+			v, ok := d.knownInformers.LoadAndDelete(gvr)
+			if ok {
+				ii := v.(interuptibleInformer)
+				ii.Stop()
+			}
 		case <-time.After(time.Millisecond * 500):
 			continue
 		}
@@ -352,17 +356,53 @@ func (d *DynamicCache) shutdownWorker() {
 }
 
 func (d *DynamicCache) stopAllInformers() {
-	if d.stopChan != nil {
-		close(d.stopChan)
-		d.stopChan = nil
-	}
-
 	d.knownInformers.Range(func(k, v interface{}) bool {
-		stopCh := v.(chan struct{})
-		close(stopCh)
+		ii := v.(interuptibleInformer)
+		ii.Stop()
 		return true
 	})
-	d.knownInformers = sync.Map{}
+}
+
+func (d *DynamicCache) isUnwatched(ctx context.Context, gvr schema.GroupVersionResource) bool {
+	_, ok := d.unwatched.Load(gvr)
+	return ok
+}
+
+func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionResource, handler cache.ResourceEventHandler) interuptibleInformer {
+	_, span := trace.StartSpan(ctx, "dynamicCache:forResource")
+	defer span.End()
+
+	logger := log.From(ctx)
+	logger = logger.With("dynamicCache", "forResource")
+
+	v, ok := d.knownInformers.Load(gvr)
+	if !ok {
+		i := d.informerFactory.ForResource(gvr)
+		stopCh := make(chan struct{})
+		i.Informer().SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr, stopCh))
+		if handler != nil {
+			i.Informer().AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
+		}
+
+		go func() {
+			logger.Debugf("starting informer for %s", gvr)
+			i.Informer().Run(stopCh)
+			logger.Debugf("stopping informer for %s", gvr)
+		}()
+
+		ii := interuptibleInformer{
+			stopCh,
+			i,
+			gvr,
+		}
+		d.knownInformers.Store(gvr, ii)
+		return ii
+	}
+	ii := v.(interuptibleInformer)
+	if handler != nil {
+		ii.informer.Informer().AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
+	}
+	return ii
 }
 
 func (d *DynamicCache) listerForResource(ctx context.Context, key store.Key) (lister, error) {
@@ -379,32 +419,23 @@ func (d *DynamicCache) listerForResource(ctx context.Context, key store.Key) (li
 		trace.StringAttribute("gvr", fmt.Sprintf("%s", gvr)),
 	)
 
-	informerFactory, err := d.informerFactoryForNamespace(key.Namespace)
-	if err != nil {
-		return nil, fmt.Errorf("create informer for namespace %s: %v", key.Namespace, err)
+	if d.isUnwatched(ctx, gvr) {
+		return nil, fmt.Errorf("unable to get Lister for %s, watcher was unable to start", gvr)
 	}
 
-	genericInformer := informerFactory.ForResource(gvr)
-	stopChan := make(chan struct{})
-
-	inf := genericInformer.Informer()
-	inf.SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr))
-	_, loaded := d.knownInformers.LoadOrStore(inf, stopChan)
-	if !loaded {
-		go inf.Run(stopChan)
-	}
+	ii := d.forResource(ctx, gvr, nil)
 
 	var l lister
 	if key.Namespace == "" {
-		l = genericInformer.Lister()
+		l = ii.informer.Lister()
 	} else {
-		l = genericInformer.Lister().ByNamespace(key.Namespace)
+		l = ii.informer.Lister().ByNamespace(key.Namespace)
 	}
 
 	return l, nil
 }
 
-func (d *DynamicCache) watchErrorHandler(ctx context.Context, gvr schema.GroupVersionResource) func(*cache.Reflector, error) {
+func (d *DynamicCache) watchErrorHandler(ctx context.Context, gvr schema.GroupVersionResource, stopCh chan struct{}) func(*cache.Reflector, error) {
 	return func(r *cache.Reflector, err error) {
 		_, span := trace.StartSpan(ctx, "dynamicCache:watchErrorHandler")
 		defer span.End()
@@ -422,10 +453,33 @@ func (d *DynamicCache) gvrFromKey(ctx context.Context, key store.Key) (schema.Gr
 	_, span := trace.StartSpan(ctx, "dynamicCache:gvrFromKey")
 	defer span.End()
 
+	// short circuit for CRD type
+	if key.APIVersion == "apiextensions.k8s.io/v1" && key.Kind == "CustomResourceDefinition" {
+		return schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}, nil
+	}
+
 	gk := key.GroupVersionKind().GroupKind()
-	gvr, _, err := d.client.Resource(key.GroupVersionKind())
-	if err != nil {
-		return schema.GroupVersionResource{}, err
+	var gvr schema.GroupVersionResource
+
+	v, ok := d.gvrCache.Load(gk)
+	if !ok {
+		gvr, _, err := d.client.Resource(gk)
+		if err != nil {
+			return schema.GroupVersionResource{}, err
+		}
+
+		if gvr.Resource == "" {
+			_, gvr = meta.UnsafeGuessKindToResource(key.GroupVersionKind())
+		}
+
+		// do not store an empty GVR
+		if gvr.Version == "" && gvr.Resource == "" {
+			return schema.GroupVersionResource{}, fmt.Errorf("unable to locate GVR for GVK: %s", key.GroupVersionKind())
+		}
+
+		d.gvrCache.Store(gk, gvr)
+	} else {
+		gvr, _ = v.(schema.GroupVersionResource)
 	}
 
 	span.AddAttributes(
@@ -434,6 +488,7 @@ func (d *DynamicCache) gvrFromKey(ctx context.Context, key store.Key) (schema.Gr
 		trace.StringAttribute("gvr", fmt.Sprintf("%s %s %s", gvr.Group, gvr.Version, gvr.Resource)),
 		trace.StringAttribute("gk", fmt.Sprintf("%s", gk)),
 	)
+
 	return gvr, nil
 }
 
@@ -473,7 +528,7 @@ func CreateOrUpdateFromHandler(
 		if err != nil {
 			return err
 		}
-		gvr, namespaced, err := clusterClient.Resource(key.GroupVersionKind())
+		gvr, namespaced, err := clusterClient.Resource(key.GroupVersionKind().GroupKind())
 		if err != nil {
 			return fmt.Errorf("unable to discover resource: %w", err)
 		}
@@ -553,6 +608,6 @@ func CreateOrUpdateFromHandler(
 // Resources are created in the order they are present in the YAML.
 // An error creating a resource halts resource creation.
 // A list of created resources is returned. You may have created resources AND a non-nil error.
-func (d *DynamicCache) CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error) {
-	return CreateOrUpdateFromHandler(ctx, namespace, input, d.Get, d.Create, d.client)
+func (dc *DynamicCache) CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error) {
+	return CreateOrUpdateFromHandler(ctx, namespace, input, dc.Get, dc.Create, dc.client)
 }

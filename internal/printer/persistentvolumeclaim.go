@@ -90,20 +90,20 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 	}
 
 	if err := ph.Config(options); err != nil {
-		return nil, errors.Wrap(err, "print persistentVolumeClaim configuration")
+		return nil, errors.Wrap(err, "print persistentvolumeclaim configuration")
 	}
 
 	if err := ph.Status(ctx, options); err != nil {
-		return nil, errors.Wrap(err, "print persistentVolumeClaim status")
+		return nil, errors.Wrap(err, "print persistentvolumeclaim status")
 	}
 
 	if err := ph.MountedPodList(ctx, options); err != nil {
-		return nil, errors.Wrap(err, "print persistentVolumeClaim mounted pod list")
+		return nil, errors.Wrap(err, "print persistentvolumeclaim mounted pod list")
 	}
 	return o.ToComponent(ctx, options)
 }
 
-// PersistentVolumeClaimConfiguration generates a persistentVolumeClaim configuration
+// PersistentVolumeClaimConfiguration generates a persistenvolumeclaim configuration
 type PersistentVolumeClaimConfiguration struct {
 	persistentVolumeClaim *corev1.PersistentVolumeClaim
 }
@@ -115,15 +115,15 @@ func NewPersistentVolumeClaimConfiguration(pvc *corev1.PersistentVolumeClaim) *P
 	}
 }
 
-// Create creates a persistentVolumeClaim configuration summary
+// Create creates a persistentvolumeclaim configuration summary
 func (p *PersistentVolumeClaimConfiguration) Create(options Options) (*component.Summary, error) {
 	if p == nil || p.persistentVolumeClaim == nil {
-		return nil, errors.New("persistentVolumeClaim is nil")
+		return nil, errors.New("persistentvolumeclaim is nil")
 	}
 
 	persistentVolumeClaim := p.persistentVolumeClaim
 
-	sections := component.SummarySections{}
+	var sections component.SummarySections
 
 	if volumeMode := persistentVolumeClaim.Spec.VolumeMode; volumeMode != nil {
 		sections.AddText("Volume Mode", string(*volumeMode))
@@ -260,8 +260,7 @@ func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeC
 
 	pv, err := objectStore.Get(ctx, key)
 	if err != nil {
-		// No error because the component should still be displayed
-		return nil, nil
+		return nil, errors.Wrapf(err, "get volume for key %+v", key)
 	}
 
 	if pv != nil {
@@ -304,7 +303,7 @@ func newPersistentVolumeClaimHandler(pvc *corev1.PersistentVolumeClaim, object *
 	ph := &persistentVolumeClaimHandler{
 		persistentVolumeClaim: pvc,
 		configFunc:            defaultPersistentVolumeClaimConfig,
-		statusFunc:            defaultPersistentVolumeClaimStatus,
+		statusFunc:            defaultPersistentVolumClaimStatus,
 		mountedPodListFunc:    defaultPersistentVolumeMountedPodList,
 		object:                object,
 	}
@@ -333,7 +332,7 @@ func (p *persistentVolumeClaimHandler) Status(ctx context.Context, options Optio
 	return nil
 }
 
-func defaultPersistentVolumeClaimStatus(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
+func defaultPersistentVolumClaimStatus(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
 	return createPersistentVolumeClaimStatusView(ctx, pvc, options)
 }
 
