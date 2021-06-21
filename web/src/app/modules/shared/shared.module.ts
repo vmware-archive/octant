@@ -259,7 +259,6 @@ import { JoinPipe } from './pipes/join/join.pipe';
     ReactiveFormsModule,
     ResizableModule,
     RouterModule,
-    CdsModule,
   ],
   providers: [highlightProvider(), dynamicComponents()],
   exports: [
