@@ -44,7 +44,7 @@ type HelperStateManager struct {
 	poller             Poller
 }
 
-var _ = (*HelperStateManager)(nil)
+var _ StateManager = (*HelperStateManager)(nil)
 
 // NewHelperStateManager creates an instance of HelperStateManager
 func NewHelperStateManager(dashConfig config.Dash, options ...HelperStateManagerOption) *HelperStateManager {
