@@ -15,6 +15,15 @@ import { ElectronService } from '../../../../shared/services/electron/electron.s
 import { Subscription } from 'rxjs';
 import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
 import { HelperService } from '../../../../shared/services/helper/helper.service';
+import {
+  ContentRoute,
+  HistoryService,
+} from '../../../../shared/services/history/history.service';
+import {
+  DropdownItem,
+  DropdownView,
+  View,
+} from 'src/app/modules/shared/models/content';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +37,7 @@ export class ContainerComponent implements OnInit, OnDestroy {
   preferencesOpened = false;
   preferences: Preferences;
   kubeConfigPath: string;
+  historyDropdownConfig: DropdownView;
 
   private subscriptionPreferencesOpened: Subscription;
   private localKubeConfigPath: Subscription;
@@ -45,7 +55,8 @@ export class ContainerComponent implements OnInit, OnDestroy {
     private preferencesService: PreferencesService,
     private electronService: ElectronService,
     private iconService: IconService,
-    private helperService: HelperService
+    private helperService: HelperService,
+    private historyService: HistoryService
   ) {
     iconService.load({
       iconName: 'octant-logo',
@@ -70,6 +81,10 @@ export class ContainerComponent implements OnInit, OnDestroy {
         this.preferencesService.setKubeConfigPath(path);
         this.preferences = this.preferencesService.getPreferences();
       });
+
+    this.historyService.history.subscribe(history => {
+      this.updateHistoryDropdownConfig(history);
+    });
   }
 
   ngOnDestroy(): void {
@@ -95,5 +110,52 @@ export class ContainerComponent implements OnInit, OnDestroy {
 
   preferencesOpenChanged(opened: boolean) {
     this.preferencesService.preferencesOpened.next(opened);
+  }
+
+  private updateHistoryDropdownConfig(history: ContentRoute[]) {
+    let items: DropdownItem[];
+
+    if (history.length > 0) {
+      items = history.map(routeInfo => {
+        return {
+          name: routeInfo.title,
+          type: 'link',
+          label: routeInfo.title,
+          url: routeInfo.path,
+        };
+      });
+    } else {
+      items = [
+        {
+          name: 'default',
+          type: 'text',
+          label: 'No History',
+        },
+      ];
+    }
+
+    this.historyDropdownConfig = this.dropdownConfigForItems(items);
+  }
+
+  private dropdownConfigForItems(items: DropdownItem[]): DropdownView {
+    return {
+      metadata: {
+        type: 'dropdown',
+        title: [
+          {
+            metadata: { type: 'text' },
+            config: { value: 'history' },
+          } as View,
+        ],
+      },
+      config: {
+        position: 'bottom-left',
+        type: 'icon',
+        action: null,
+        useSelection: true,
+        showToggleIcon: false,
+        items: items,
+      },
+    };
   }
 }

@@ -57,6 +57,7 @@ type DropdownConfig struct {
 	Action           string               `json:"action,omitempty"`
 	Selection        string               `json:"selection,omitempty"`
 	UseSelection     bool                 `json:"useSelection"`
+	ShowToggleIcon   bool                 `json:"showToggleIcon"`
 	Items            []DropdownItemConfig `json:"items"`
 }
 
@@ -114,6 +115,11 @@ func (t *Dropdown) SetDropdownUseSelection(sel bool) {
 	t.Config.UseSelection = sel
 }
 
+// SetDropdownShowToggleIcon defines if dropdown toggle caret icon is shown.
+func (t *Dropdown) SetDropdownShowToggleIcon(sti bool) {
+	t.Config.ShowToggleIcon = sti
+}
+
 // SupportsTitle designates this is a TextComponent.
 func (t *Dropdown) SupportsTitle() {}
 
@@ -138,6 +144,7 @@ func (t *DropdownConfig) UnmarshalJSON(data []byte) error {
 		Action           string               `json:"action,omitempty"`
 		Selection        string               `json:"selection,omitempty"`
 		UseSelection     bool                 `json:"useSelection,omitempty"`
+		ShowToggleIcon   bool                 `json:"showToggleIcon,omitempty"`
 		Items            []DropdownItemConfig `json:"items"`
 	}{}
 
@@ -150,6 +157,7 @@ func (t *DropdownConfig) UnmarshalJSON(data []byte) error {
 	t.Action = x.Action
 	t.Selection = x.Selection
 	t.UseSelection = x.UseSelection
+	t.ShowToggleIcon = x.ShowToggleIcon
 	t.Items = x.Items
 	return nil
 }

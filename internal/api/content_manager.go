@@ -168,7 +168,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 
 		if ctx.Err() == nil {
 			if content.Path == state.GetContentPath() {
-				s.Send(CreateContentEvent(content.Response, state.GetNamespace(), contentPath, state.GetQueryParams()))
+				s.Send(CreateContentEvent(content.Response, getNamespace(state, contentPath, cm), contentPath, state.GetQueryParams()))
 			}
 
 		}
@@ -345,4 +345,13 @@ func moduloIndex(key string, options [][]string) []string {
 	h.Write([]byte(key))
 	i := int(h.Sum32()) % len(options)
 	return options[i]
+}
+
+func getNamespace(state octant.State, contentPath string, cm *ContentManager) string {
+	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
+	if ok && m.Name() == "cluster-overview" {
+		return ""
+	}
+
+	return state.GetNamespace()
 }
