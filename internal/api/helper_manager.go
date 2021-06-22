@@ -44,7 +44,7 @@ type HelperStateManager struct {
 	poller             Poller
 }
 
-var _StateManager = (*HelperStateManager)(nil)
+var _ = (*HelperStateManager)(nil)
 
 // NewHelperStateManager creates an instance of HelperStateManager
 func NewHelperStateManager(dashConfig config.Dash, options ...HelperStateManagerOption) *HelperStateManager {
@@ -72,7 +72,7 @@ func (h *HelperStateManager) Start(ctx context.Context, state octant.State, clie
 	h.poller.Run(ctx, nil, h.runUpdate(state, client), event.DefaultScheduleDelay)
 }
 
-func (h *HelperStateManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+func (h *HelperStateManager) runUpdate(state octant.State, client api.OctantClient) PollerFunc {
 	var buildInfoGenerated, kubeConfigPathGenerated bool
 
 	return func(ctx context.Context) bool {
