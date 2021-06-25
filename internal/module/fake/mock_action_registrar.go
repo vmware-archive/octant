@@ -12,30 +12,30 @@ import (
 	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
-// MockActionRegistrar is a mock of ActionRegistrar interface
+// MockActionRegistrar is a mock of ActionRegistrar interface.
 type MockActionRegistrar struct {
 	ctrl     *gomock.Controller
 	recorder *MockActionRegistrarMockRecorder
 }
 
-// MockActionRegistrarMockRecorder is the mock recorder for MockActionRegistrar
+// MockActionRegistrarMockRecorder is the mock recorder for MockActionRegistrar.
 type MockActionRegistrarMockRecorder struct {
 	mock *MockActionRegistrar
 }
 
-// NewMockActionRegistrar creates a new mock instance
+// NewMockActionRegistrar creates a new mock instance.
 func NewMockActionRegistrar(ctrl *gomock.Controller) *MockActionRegistrar {
 	mock := &MockActionRegistrar{ctrl: ctrl}
 	mock.recorder = &MockActionRegistrarMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockActionRegistrar) EXPECT() *MockActionRegistrarMockRecorder {
 	return m.recorder
 }
 
-// Register mocks base method
+// Register mocks base method.
 func (m *MockActionRegistrar) Register(arg0, arg1 string, arg2 action.DispatcherFunc) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0, arg1, arg2)
@@ -43,19 +43,19 @@ func (m *MockActionRegistrar) Register(arg0, arg1 string, arg2 action.Dispatcher
 	return ret0
 }
 
-// Register indicates an expected call of Register
+// Register indicates an expected call of Register.
 func (mr *MockActionRegistrarMockRecorder) Register(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockActionRegistrar)(nil).Register), arg0, arg1, arg2)
 }
 
-// Unregister mocks base method
+// Unregister mocks base method.
 func (m *MockActionRegistrar) Unregister(arg0, arg1 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Unregister", arg0, arg1)
 }
 
-// Unregister indicates an expected call of Unregister
+// Unregister indicates an expected call of Unregister.
 func (mr *MockActionRegistrarMockRecorder) Unregister(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unregister", reflect.TypeOf((*MockActionRegistrar)(nil).Unregister), arg0, arg1)

@@ -14,30 +14,30 @@ import (
 	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
-// MockDashboardClient is a mock of DashboardClient interface
+// MockDashboardClient is a mock of DashboardClient interface.
 type MockDashboardClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockDashboardClientMockRecorder
 }
 
-// MockDashboardClientMockRecorder is the mock recorder for MockDashboardClient
+// MockDashboardClientMockRecorder is the mock recorder for MockDashboardClient.
 type MockDashboardClientMockRecorder struct {
 	mock *MockDashboardClient
 }
 
-// NewMockDashboardClient creates a new mock instance
+// NewMockDashboardClient creates a new mock instance.
 func NewMockDashboardClient(ctrl *gomock.Controller) *MockDashboardClient {
 	mock := &MockDashboardClient{ctrl: ctrl}
 	mock.recorder = &MockDashboardClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDashboardClient) EXPECT() *MockDashboardClientMockRecorder {
 	return m.recorder
 }
 
-// CancelPortForward mocks base method
+// CancelPortForward mocks base method.
 func (m *MockDashboardClient) CancelPortForward(arg0 context.Context, arg1 *proto.CancelPortForwardRequest, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -50,14 +50,14 @@ func (m *MockDashboardClient) CancelPortForward(arg0 context.Context, arg1 *prot
 	return ret0, ret1
 }
 
-// CancelPortForward indicates an expected call of CancelPortForward
+// CancelPortForward indicates an expected call of CancelPortForward.
 func (mr *MockDashboardClientMockRecorder) CancelPortForward(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelPortForward", reflect.TypeOf((*MockDashboardClient)(nil).CancelPortForward), varargs...)
 }
 
-// Create mocks base method
+// Create mocks base method.
 func (m *MockDashboardClient) Create(arg0 context.Context, arg1 *proto.CreateRequest, arg2 ...grpc.CallOption) (*proto.CreateResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -70,14 +70,14 @@ func (m *MockDashboardClient) Create(arg0 context.Context, arg1 *proto.CreateReq
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create
+// Create indicates an expected call of Create.
 func (mr *MockDashboardClientMockRecorder) Create(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDashboardClient)(nil).Create), varargs...)
 }
 
-// CreateLink mocks base method
+// CreateLink mocks base method.
 func (m *MockDashboardClient) CreateLink(arg0 context.Context, arg1 *proto.KeyRequest, arg2 ...grpc.CallOption) (*proto.LinkResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -90,14 +90,14 @@ func (m *MockDashboardClient) CreateLink(arg0 context.Context, arg1 *proto.KeyRe
 	return ret0, ret1
 }
 
-// CreateLink indicates an expected call of CreateLink
+// CreateLink indicates an expected call of CreateLink.
 func (mr *MockDashboardClientMockRecorder) CreateLink(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateLink", reflect.TypeOf((*MockDashboardClient)(nil).CreateLink), varargs...)
 }
 
-// Delete mocks base method
+// Delete mocks base method.
 func (m *MockDashboardClient) Delete(arg0 context.Context, arg1 *proto.KeyRequest, arg2 ...grpc.CallOption) (*proto.DeleteResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -110,14 +110,14 @@ func (m *MockDashboardClient) Delete(arg0 context.Context, arg1 *proto.KeyReques
 	return ret0, ret1
 }
 
-// Delete indicates an expected call of Delete
+// Delete indicates an expected call of Delete.
 func (mr *MockDashboardClientMockRecorder) Delete(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDashboardClient)(nil).Delete), varargs...)
 }
 
-// ForceFrontendUpdate mocks base method
+// ForceFrontendUpdate mocks base method.
 func (m *MockDashboardClient) ForceFrontendUpdate(arg0 context.Context, arg1 *proto.Empty, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -130,14 +130,14 @@ func (m *MockDashboardClient) ForceFrontendUpdate(arg0 context.Context, arg1 *pr
 	return ret0, ret1
 }
 
-// ForceFrontendUpdate indicates an expected call of ForceFrontendUpdate
+// ForceFrontendUpdate indicates an expected call of ForceFrontendUpdate.
 func (mr *MockDashboardClientMockRecorder) ForceFrontendUpdate(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceFrontendUpdate", reflect.TypeOf((*MockDashboardClient)(nil).ForceFrontendUpdate), varargs...)
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockDashboardClient) Get(arg0 context.Context, arg1 *proto.KeyRequest, arg2 ...grpc.CallOption) (*proto.GetResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -150,14 +150,14 @@ func (m *MockDashboardClient) Get(arg0 context.Context, arg1 *proto.KeyRequest, 
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockDashboardClientMockRecorder) Get(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDashboardClient)(nil).Get), varargs...)
 }
 
-// List mocks base method
+// List mocks base method.
 func (m *MockDashboardClient) List(arg0 context.Context, arg1 *proto.KeyRequest, arg2 ...grpc.CallOption) (*proto.ListResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -170,14 +170,14 @@ func (m *MockDashboardClient) List(arg0 context.Context, arg1 *proto.KeyRequest,
 	return ret0, ret1
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockDashboardClientMockRecorder) List(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDashboardClient)(nil).List), varargs...)
 }
 
-// ListNamespaces mocks base method
+// ListNamespaces mocks base method.
 func (m *MockDashboardClient) ListNamespaces(arg0 context.Context, arg1 *proto.Empty, arg2 ...grpc.CallOption) (*proto.NamespacesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -190,14 +190,14 @@ func (m *MockDashboardClient) ListNamespaces(arg0 context.Context, arg1 *proto.E
 	return ret0, ret1
 }
 
-// ListNamespaces indicates an expected call of ListNamespaces
+// ListNamespaces indicates an expected call of ListNamespaces.
 func (mr *MockDashboardClientMockRecorder) ListNamespaces(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNamespaces", reflect.TypeOf((*MockDashboardClient)(nil).ListNamespaces), varargs...)
 }
 
-// PortForward mocks base method
+// PortForward mocks base method.
 func (m *MockDashboardClient) PortForward(arg0 context.Context, arg1 *proto.PortForwardRequest, arg2 ...grpc.CallOption) (*proto.PortForwardResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -210,14 +210,14 @@ func (m *MockDashboardClient) PortForward(arg0 context.Context, arg1 *proto.Port
 	return ret0, ret1
 }
 
-// PortForward indicates an expected call of PortForward
+// PortForward indicates an expected call of PortForward.
 func (mr *MockDashboardClientMockRecorder) PortForward(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForward", reflect.TypeOf((*MockDashboardClient)(nil).PortForward), varargs...)
 }
 
-// SendAlert mocks base method
+// SendAlert mocks base method.
 func (m *MockDashboardClient) SendAlert(arg0 context.Context, arg1 *proto.AlertRequest, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -230,14 +230,14 @@ func (m *MockDashboardClient) SendAlert(arg0 context.Context, arg1 *proto.AlertR
 	return ret0, ret1
 }
 
-// SendAlert indicates an expected call of SendAlert
+// SendAlert indicates an expected call of SendAlert.
 func (mr *MockDashboardClientMockRecorder) SendAlert(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockDashboardClient)(nil).SendAlert), varargs...)
 }
 
-// Update mocks base method
+// Update mocks base method.
 func (m *MockDashboardClient) Update(arg0 context.Context, arg1 *proto.UpdateRequest, arg2 ...grpc.CallOption) (*proto.UpdateResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -250,7 +250,7 @@ func (m *MockDashboardClient) Update(arg0 context.Context, arg1 *proto.UpdateReq
 	return ret0, ret1
 }
 
-// Update indicates an expected call of Update
+// Update indicates an expected call of Update.
 func (mr *MockDashboardClientMockRecorder) Update(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

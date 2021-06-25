@@ -14,30 +14,30 @@ import (
 	objectvisitor "github.com/vmware-tanzu/octant/internal/objectvisitor"
 )
 
-// MockDefaultTypedVisitor is a mock of DefaultTypedVisitor interface
+// MockDefaultTypedVisitor is a mock of DefaultTypedVisitor interface.
 type MockDefaultTypedVisitor struct {
 	ctrl     *gomock.Controller
 	recorder *MockDefaultTypedVisitorMockRecorder
 }
 
-// MockDefaultTypedVisitorMockRecorder is the mock recorder for MockDefaultTypedVisitor
+// MockDefaultTypedVisitorMockRecorder is the mock recorder for MockDefaultTypedVisitor.
 type MockDefaultTypedVisitorMockRecorder struct {
 	mock *MockDefaultTypedVisitor
 }
 
-// NewMockDefaultTypedVisitor creates a new mock instance
+// NewMockDefaultTypedVisitor creates a new mock instance.
 func NewMockDefaultTypedVisitor(ctrl *gomock.Controller) *MockDefaultTypedVisitor {
 	mock := &MockDefaultTypedVisitor{ctrl: ctrl}
 	mock.recorder = &MockDefaultTypedVisitorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDefaultTypedVisitor) EXPECT() *MockDefaultTypedVisitorMockRecorder {
 	return m.recorder
 }
 
-// Visit mocks base method
+// Visit mocks base method.
 func (m *MockDefaultTypedVisitor) Visit(arg0 context.Context, arg1 *unstructured.Unstructured, arg2 objectvisitor.ObjectHandler, arg3 objectvisitor.Visitor, arg4 bool, arg5 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Visit", arg0, arg1, arg2, arg3, arg4, arg5)
@@ -45,7 +45,7 @@ func (m *MockDefaultTypedVisitor) Visit(arg0 context.Context, arg1 *unstructured
 	return ret0
 }
 
-// Visit indicates an expected call of Visit
+// Visit indicates an expected call of Visit.
 func (mr *MockDefaultTypedVisitorMockRecorder) Visit(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Visit", reflect.TypeOf((*MockDefaultTypedVisitor)(nil).Visit), arg0, arg1, arg2, arg3, arg4, arg5)
