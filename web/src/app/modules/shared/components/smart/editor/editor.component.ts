@@ -137,6 +137,6 @@ export class EditorComponent
   }
 
   ngOnDestroy() {
-    this.subscriptionTheme.unsubscribe();
+    this.subscriptionTheme?.unsubscribe();
   }
 }

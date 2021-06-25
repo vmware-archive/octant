@@ -45,7 +45,7 @@ export class FormViewContainerComponent implements OnInit {
     return field.config.configuration.choices as Choice[];
   }
 
-  isInvalid(fieldName: string) {
+  isInvalid(fieldName: string): boolean {
     const field = this.formGroupContainer.get(fieldName);
     return field.invalid && (field.dirty || field.touched);
   }
