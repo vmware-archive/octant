@@ -15,6 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/spf13/afero"
@@ -57,7 +58,7 @@ func (l *LoadingManager) Handlers() []octant.ClientRequestHandler {
 	}
 }
 
-func (l *LoadingManager) Start(ctx context.Context, state octant.State, client OctantClient) {
+func (l *LoadingManager) Start(ctx context.Context, state octant.State, client api.OctantClient) {
 	l.client.Store(client)
 	l.ctx = ctx
 	l.kubeConfigPath = ocontext.KubeConfigChFrom(ctx)
@@ -76,7 +77,7 @@ func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload
 	}
 
 	if loading {
-		client := l.client.Load().(OctantClient)
+		client := l.client.Load().(api.OctantClient)
 		client.Send(event.Event{
 			Type: event.EventTypeLoading,
 		})
@@ -123,7 +124,7 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 		return err
 	}
 
-	client := l.client.Load().(OctantClient)
+	client := l.client.Load().(api.OctantClient)
 	client.Send(event.Event{
 		Type: event.EventTypeRefresh,
 	})
@@ -132,7 +133,7 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 	return nil
 }
 
-func (l *LoadingManager) WatchConfig(path chan string, client OctantClient, fs afero.Fs) {
+func (l *LoadingManager) WatchConfig(path chan string, client api.OctantClient, fs afero.Fs) {
 	kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
 	for {

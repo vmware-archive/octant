@@ -11,6 +11,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
@@ -89,12 +90,12 @@ func (c *ContextManager) SetContext(state octant.State, payload action.Payload) 
 }
 
 // Start starts the manager.
-func (c *ContextManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (c *ContextManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 	c.poller.Run(ctx, nil, c.runUpdate(state, s), event.DefaultScheduleDelay)
 	c.ctx = ctx
 }
 
-func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
+func (c *ContextManager) runUpdate(state octant.State, s api.OctantClient) PollerFunc {
 	var previous []byte
 
 	logger := c.dashConfig.Logger()

@@ -11,7 +11,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware-tanzu/octant/internal/api ActionDispatcher
+//go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware-tanzu/octant/pkg/api ActionDispatcher
 
 // ActionDispatcher dispatches actions.
 type ActionDispatcher interface {

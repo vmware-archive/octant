@@ -82,7 +82,7 @@ func checkSameOrigin(r *http.Request) bool {
 
 // shouldAllowHost returns true if the incoming request.Host shuold be allowed
 // to access the API otherwise false.
-func shouldAllowHost(host string, acceptedHosts []string) bool {
+func ShouldAllowHost(host string, acceptedHosts []string) bool {
 	if dashstrings.Contains("0.0.0.0", acceptedHosts) {
 		return true
 	}
@@ -107,7 +107,7 @@ func rebindHandler(ctx context.Context, acceptedHosts []string) mux.MiddlewareFu
 			}
 
 			var httpErrors []string
-			if !shouldAllowHost(host, acceptedHosts) {
+			if !ShouldAllowHost(host, acceptedHosts) {
 				logger := log.From(ctx)
 				logger.Debugf("Requester %s not in accepted hosts: %s\nTo allow this host add it to the OCTANT_ACCEPTED_HOSTS environment variable.", host, acceptedHosts)
 				httpErrors = append(httpErrors, "forbidden host")

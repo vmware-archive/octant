@@ -7,13 +7,14 @@ package api_test
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -22,6 +23,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -208,4 +210,16 @@ func TestContentManager_SetQueryParams(t *testing.T) {
 			require.NoError(t, manager.SetQueryParams(state, test.payload))
 		})
 	}
+}
+
+func AssertHandlers(t *testing.T, manager api.StateManager, expected []string) {
+	handlers := manager.Handlers()
+	var got []string
+	for _, h := range handlers {
+		got = append(got, h.RequestType)
+	}
+	sort.Strings(got)
+	sort.Strings(expected)
+
+	assert.Equal(t, expected, got)
 }

@@ -20,13 +20,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware-tanzu/octant/internal/api"
-	apiFake "github.com/vmware-tanzu/octant/internal/api/fake"
+	internalAPI "github.com/vmware-tanzu/octant/internal/api"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
+	"github.com/vmware-tanzu/octant/pkg/api"
+	apiFake "github.com/vmware-tanzu/octant/pkg/api/fake"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -95,11 +96,12 @@ func TestAPI_routes(t *testing.T) {
 				AnyTimes()
 
 			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
+			streamingClientFactory := apiFake.NewMockStreamingClientFactory(controller)
 
 			ctx := context.Background()
-			wsClientManager := api.NewWebsocketClientManager(ctx, actionDispatcher)
+			scManager := api.NewStreamingConnectionManager(ctx, actionDispatcher, streamingClientFactory)
 
-			srv := api.New(ctx, "/", actionDispatcher, wsClientManager, dashConfig)
+			srv := internalAPI.New(ctx, "/", actionDispatcher, scManager, dashConfig)
 
 			handler, err := srv.Handler(ctx)
 			require.NoError(t, err)

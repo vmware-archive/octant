@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package api_test
+package websockets_test
 
 import (
 	"context"
-	"sort"
 	"testing"
 	"time"
 
@@ -15,12 +14,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/api/fake"
+	internalAPI "github.com/vmware-tanzu/octant/internal/api"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
+	"github.com/vmware-tanzu/octant/pkg/api/websockets"
 )
 
 func TestWebsocketState_Start(t *testing.T) {
@@ -48,7 +49,7 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 		contentPath string
 		namespace   string
 		setup       func(mocks *websocketStateMocks)
-		verify      func(t *testing.T, s *api.WebsocketState)
+		verify      func(t *testing.T, s *websockets.WebsocketState)
 	}{
 		{
 			name:        "set content path without namespace change",
@@ -60,7 +61,7 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
 			},
-			verify: func(t *testing.T, s *api.WebsocketState) {
+			verify: func(t *testing.T, s *websockets.WebsocketState) {
 				contentPath := "overview/namespace/default"
 				assert.Equal(t, "default", s.GetNamespace())
 				assert.Equal(t, contentPath, s.GetContentPath())
@@ -76,7 +77,7 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
 			},
-			verify: func(t *testing.T, s *api.WebsocketState) {
+			verify: func(t *testing.T, s *websockets.WebsocketState) {
 				contentPath := "overview/foo"
 				assert.Equal(t, "default", s.GetNamespace())
 				assert.Equal(t, contentPath, s.GetContentPath())
@@ -92,7 +93,7 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
 			},
-			verify: func(t *testing.T, s *api.WebsocketState) {
+			verify: func(t *testing.T, s *websockets.WebsocketState) {
 				contentPath := "overview/namespace/kube-system"
 				assert.Equal(t, "kube-system", s.GetNamespace())
 				assert.Equal(t, contentPath, s.GetContentPath())
@@ -300,9 +301,9 @@ func newWebsocketStateMocks(t *testing.T, namespace string) *websocketStateMocks
 	}
 }
 
-func (w *websocketStateMocks) options() []api.WebsocketStateOption {
-	return []api.WebsocketStateOption{
-		api.WebsocketStateManagers([]api.StateManager{w.stateManager}),
+func (w *websocketStateMocks) options() []websockets.WebsocketStateOption {
+	return []websockets.WebsocketStateOption{
+		websockets.WebsocketStateManagers([]internalAPI.StateManager{w.stateManager}),
 	}
 }
 
@@ -310,19 +311,7 @@ func (w *websocketStateMocks) finish() {
 	w.controller.Finish()
 }
 
-func (w *websocketStateMocks) factory() *api.WebsocketState {
-	return api.NewWebsocketState(w.dashConfig, w.actionDispatcher, w.wsClient, w.options()...)
+func (w *websocketStateMocks) factory() *websockets.WebsocketState {
+	return websockets.NewWebsocketState(w.dashConfig, w.actionDispatcher, w.wsClient, w.options()...)
 
-}
-
-func AssertHandlers(t *testing.T, manager api.StateManager, expected []string) {
-	handlers := manager.Handlers()
-	var got []string
-	for _, h := range handlers {
-		got = append(got, h.RequestType)
-	}
-	sort.Strings(got)
-	sort.Strings(expected)
-
-	assert.Equal(t, expected, got)
 }

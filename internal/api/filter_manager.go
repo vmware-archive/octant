@@ -16,6 +16,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/api"
 )
 
 const (
@@ -37,7 +38,7 @@ func NewFilterManager() *FilterManager {
 }
 
 // Start starts the manager. Current is a no-op.
-func (fm *FilterManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (fm *FilterManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 	fm.ctx = ctx
 }
 

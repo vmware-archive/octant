@@ -12,6 +12,7 @@ import (
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/api"
 )
 
 const (
@@ -33,7 +34,7 @@ func NewActionRequestManager(dashConfig config.Dash) *ActionRequestManager {
 	}
 }
 
-func (a ActionRequestManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (a ActionRequestManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 }
 
 // Handlers returns the handlers this manager supports.

@@ -87,7 +87,7 @@ func Test_rebindHandler(t *testing.T) {
 				fmt.Fprint(w, "response")
 			})
 
-			wrapped := rebindHandler(context.TODO(), acceptedHosts())(fake)
+			wrapped := rebindHandler(context.TODO(), AcceptedHosts())(fake)
 
 			ts := httptest.NewServer(wrapped)
 			defer ts.Close()
@@ -140,7 +140,7 @@ func Test_shouldAllowHost(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			require.Equal(t, tc.expected, shouldAllowHost(tc.host, tc.acceptedHosts))
+			require.Equal(t, tc.expected, ShouldAllowHost(tc.host, tc.acceptedHosts))
 		})
 	}
 }

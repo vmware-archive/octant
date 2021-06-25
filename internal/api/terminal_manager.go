@@ -15,6 +15,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
@@ -36,7 +37,7 @@ const (
 )
 
 type terminalStateManager struct {
-	client   OctantClient
+	client   api.OctantClient
 	config   config.Dash
 	ctx      context.Context
 	instance terminal.Instance
@@ -212,7 +213,7 @@ func (s *terminalStateManager) SendTerminalCommand(state octant.State, payload a
 	return s.instance.Write([]byte(key))
 }
 
-func (s *terminalStateManager) Start(ctx context.Context, state octant.State, client OctantClient) {
+func (s *terminalStateManager) Start(ctx context.Context, state octant.State, client api.OctantClient) {
 	s.client = client
 	s.ctx = ctx
 }

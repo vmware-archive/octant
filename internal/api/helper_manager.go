@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -43,7 +44,7 @@ type HelperStateManager struct {
 	poller             Poller
 }
 
-var _StateManager = (*HelperStateManager)(nil)
+var _ StateManager = (*HelperStateManager)(nil)
 
 // NewHelperStateManager creates an instance of HelperStateManager
 func NewHelperStateManager(dashConfig config.Dash, options ...HelperStateManagerOption) *HelperStateManager {
@@ -67,11 +68,11 @@ func (h *HelperStateManager) Handlers() []octant.ClientRequestHandler {
 }
 
 // Start starts the manager
-func (h *HelperStateManager) Start(ctx context.Context, state octant.State, client OctantClient) {
+func (h *HelperStateManager) Start(ctx context.Context, state octant.State, client api.OctantClient) {
 	h.poller.Run(ctx, nil, h.runUpdate(state, client), event.DefaultScheduleDelay)
 }
 
-func (h *HelperStateManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+func (h *HelperStateManager) runUpdate(state octant.State, client api.OctantClient) PollerFunc {
 	var buildInfoGenerated, kubeConfigPathGenerated bool
 
 	return func(ctx context.Context) bool {
