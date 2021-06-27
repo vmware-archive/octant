@@ -91,7 +91,7 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerror
 					found := errorStore.Add(ae)
 					if !found {
 						logger := log.From(ctx)
-						logger.WithErr(ae).Errorf("load object")
+						logger.WithErr(ae).Errorf("LoadObjects")
 					}
 					return &unstructured.UnstructuredList{}, nil
 				}

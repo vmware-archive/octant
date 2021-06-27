@@ -15,7 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
 
+	"github.com/pkg/errors"
+
 	"github.com/vmware-tanzu/octant/internal/cluster"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -141,6 +144,20 @@ func CustomResourceDefinitionVersionList(
 	return list, nil
 }
 
+func printErrorCard(name, version string, err error) (component.Component, error) {
+	errStr := fmt.Sprintf("%s", err)
+	title := fmt.Sprintf("%s/%s", name, version)
+
+	var ae *oerrors.AccessError
+	if errors.As(err, &ae) {
+		errStr = fmt.Sprintf("Access Error, failed to %s: %s", ae.Verb(), ae.Key())
+	}
+
+	c := component.NewCard(component.TitleFromString(title))
+	c.SetBody(component.NewText(errStr))
+	return c, nil
+}
+
 func genViewForCRDVersion(
 	ctx context.Context,
 	crd *unstructured.Unstructured,
@@ -158,7 +175,7 @@ func genViewForCRDVersion(
 
 	customResources, _, err := objectStore.List(ctx, key)
 	if err != nil {
-		return nil, err
+		return printErrorCard(crd.GetName(), crd.GetAPIVersion(), err)
 	}
 
 	lister := NewCustomResourceLister()

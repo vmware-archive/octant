@@ -16,6 +16,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
@@ -159,6 +160,21 @@ func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (compo
 	return fl.ToComponent("Event"), nil
 }
 
+// PrintError prints the events table with the error
+func PrintError(err error) (component.Component, error) {
+	errStr := fmt.Sprintf("%s", err)
+
+	var ae *oerrors.AccessError
+	if errors.As(err, &ae) {
+		errStr = fmt.Sprintf("Access Error, failed to %s: %s", ae.Verb(), ae.Key())
+	}
+
+	c := component.NewCard(component.TitleFromString("Events"))
+	c.SetBody(component.NewText(errStr))
+
+	return c, nil
+}
+
 // PrintEvents collects events for a resource
 func PrintEvents(list *corev1.EventList, opts Options) (component.Component, error) {
 	if list == nil {
@@ -228,7 +244,15 @@ func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, objec
 	objectStore := opts.DashConfig.ObjectStore()
 	eventList, err := store.EventsForObject(ctx, object, objectStore)
 	if err != nil {
-		return errors.Wrap(err, "list events for object")
+		eventError, err := PrintError(err)
+		if err != nil {
+			return fmt.Errorf("create event list error: %w", err)
+		}
+		eventSection := fl.AddSection()
+		if err := eventSection.Add(eventError, component.WidthFull); err != nil {
+			return fmt.Errorf("add event error to layout: %w", err)
+		}
+		return nil
 	}
 
 	if len(eventList.Items) > 0 {
@@ -238,7 +262,7 @@ func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, objec
 		}
 
 		eventsSection := fl.AddSection()
-		if err := eventsSection.Add(eventTable, 24); err != nil {
+		if err := eventsSection.Add(eventTable, component.WidthFull); err != nil {
 			return errors.Wrap(err, "add event table to layout")
 		}
 	}
