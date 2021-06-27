@@ -16,58 +16,44 @@ import (
 	store "github.com/vmware-tanzu/octant/pkg/store"
 )
 
-// MockInstance is a mock of Instance interface
+// MockInstance is a mock of Instance interface.
 type MockInstance struct {
 	ctrl     *gomock.Controller
 	recorder *MockInstanceMockRecorder
 }
 
-// MockInstanceMockRecorder is the mock recorder for MockInstance
+// MockInstanceMockRecorder is the mock recorder for MockInstance.
 type MockInstanceMockRecorder struct {
 	mock *MockInstance
 }
 
-// NewMockInstance creates a new mock instance
+// NewMockInstance creates a new mock instance.
 func NewMockInstance(ctrl *gomock.Controller) *MockInstance {
 	mock := &MockInstance{ctrl: ctrl}
 	mock.recorder = &MockInstanceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockInstance) EXPECT() *MockInstanceMockRecorder {
 	return m.recorder
 }
 
-// Key mocks base method
-func (m *MockInstance) Key() store.Key {
+// Active mocks base method.
+func (m *MockInstance) Active() bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Key")
-	ret0, _ := ret[0].(store.Key)
+	ret := m.ctrl.Call(m, "Active")
+	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// Key indicates an expected call of Key
-func (mr *MockInstanceMockRecorder) Key() *gomock.Call {
+// Active indicates an expected call of Active.
+func (mr *MockInstanceMockRecorder) Active() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Key", reflect.TypeOf((*MockInstance)(nil).Key))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Active", reflect.TypeOf((*MockInstance)(nil).Active))
 }
 
-// Container mocks base method
-func (m *MockInstance) Container() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Container")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Container indicates an expected call of Container
-func (mr *MockInstanceMockRecorder) Container() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Container", reflect.TypeOf((*MockInstance)(nil).Container))
-}
-
-// Command mocks base method
+// Command mocks base method.
 func (m *MockInstance) Command() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Command")
@@ -75,39 +61,97 @@ func (m *MockInstance) Command() string {
 	return ret0
 }
 
-// Command indicates an expected call of Command
+// Command indicates an expected call of Command.
 func (mr *MockInstanceMockRecorder) Command() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Command", reflect.TypeOf((*MockInstance)(nil).Command))
 }
 
-// Scrollback mocks base method
-func (m *MockInstance) Scrollback() []byte {
+// Container mocks base method.
+func (m *MockInstance) Container() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Scrollback")
-	ret0, _ := ret[0].([]byte)
+	ret := m.ctrl.Call(m, "Container")
+	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// Scrollback indicates an expected call of Scrollback
-func (mr *MockInstanceMockRecorder) Scrollback() *gomock.Call {
+// Container indicates an expected call of Container.
+func (mr *MockInstanceMockRecorder) Container() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scrollback", reflect.TypeOf((*MockInstance)(nil).Scrollback))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Container", reflect.TypeOf((*MockInstance)(nil).Container))
 }
 
-// ResetScrollback mocks base method
-func (m *MockInstance) ResetScrollback() {
+// CreatedAt mocks base method.
+func (m *MockInstance) CreatedAt() time.Time {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ResetScrollback")
+	ret := m.ctrl.Call(m, "CreatedAt")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
 }
 
-// ResetScrollback indicates an expected call of ResetScrollback
-func (mr *MockInstanceMockRecorder) ResetScrollback() *gomock.Call {
+// CreatedAt indicates an expected call of CreatedAt.
+func (mr *MockInstanceMockRecorder) CreatedAt() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetScrollback", reflect.TypeOf((*MockInstance)(nil).ResetScrollback))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatedAt", reflect.TypeOf((*MockInstance)(nil).CreatedAt))
 }
 
-// Read mocks base method
+// DiscoveryClient mocks base method.
+func (m *MockInstance) DiscoveryClient() discovery.DiscoveryInterface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DiscoveryClient")
+	ret0, _ := ret[0].(discovery.DiscoveryInterface)
+	return ret0
+}
+
+// DiscoveryClient indicates an expected call of DiscoveryClient.
+func (mr *MockInstanceMockRecorder) DiscoveryClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryClient", reflect.TypeOf((*MockInstance)(nil).DiscoveryClient))
+}
+
+// ExitMessage mocks base method.
+func (m *MockInstance) ExitMessage() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExitMessage")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ExitMessage indicates an expected call of ExitMessage.
+func (mr *MockInstanceMockRecorder) ExitMessage() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExitMessage", reflect.TypeOf((*MockInstance)(nil).ExitMessage))
+}
+
+// Key mocks base method.
+func (m *MockInstance) Key() store.Key {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Key")
+	ret0, _ := ret[0].(store.Key)
+	return ret0
+}
+
+// Key indicates an expected call of Key.
+func (mr *MockInstanceMockRecorder) Key() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Key", reflect.TypeOf((*MockInstance)(nil).Key))
+}
+
+// PTY mocks base method.
+func (m *MockInstance) PTY() terminal.PTY {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PTY")
+	ret0, _ := ret[0].(terminal.PTY)
+	return ret0
+}
+
+// PTY indicates an expected call of PTY.
+func (mr *MockInstanceMockRecorder) PTY() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PTY", reflect.TypeOf((*MockInstance)(nil).PTY))
+}
+
+// Read mocks base method.
 func (m *MockInstance) Read(size int) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", size)
@@ -116,91 +160,75 @@ func (m *MockInstance) Read(size int) ([]byte, error) {
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read
+// Read indicates an expected call of Read.
 func (mr *MockInstanceMockRecorder) Read(size interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockInstance)(nil).Read), size)
 }
 
-// Write mocks base method
-func (m *MockInstance) Write(key []byte) error {
+// ResetScrollback mocks base method.
+func (m *MockInstance) ResetScrollback() {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Write", key)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "ResetScrollback")
 }
 
-// Write indicates an expected call of Write
-func (mr *MockInstanceMockRecorder) Write(key interface{}) *gomock.Call {
+// ResetScrollback indicates an expected call of ResetScrollback.
+func (mr *MockInstanceMockRecorder) ResetScrollback() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockInstance)(nil).Write), key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetScrollback", reflect.TypeOf((*MockInstance)(nil).ResetScrollback))
 }
 
-// Resize mocks base method
+// Resize mocks base method.
 func (m *MockInstance) Resize(cols, rows uint16) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Resize", cols, rows)
 }
 
-// Resize indicates an expected call of Resize
+// Resize indicates an expected call of Resize.
 func (mr *MockInstanceMockRecorder) Resize(cols, rows interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resize", reflect.TypeOf((*MockInstance)(nil).Resize), cols, rows)
 }
 
-// Stop mocks base method
-func (m *MockInstance) Stop() {
+// Scrollback mocks base method.
+func (m *MockInstance) Scrollback() []byte {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Stop")
-}
-
-// Stop indicates an expected call of Stop
-func (mr *MockInstanceMockRecorder) Stop() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockInstance)(nil).Stop))
-}
-
-// Active mocks base method
-func (m *MockInstance) Active() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Active")
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "Scrollback")
+	ret0, _ := ret[0].([]byte)
 	return ret0
 }
 
-// Active indicates an expected call of Active
-func (mr *MockInstanceMockRecorder) Active() *gomock.Call {
+// Scrollback indicates an expected call of Scrollback.
+func (mr *MockInstanceMockRecorder) Scrollback() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Active", reflect.TypeOf((*MockInstance)(nil).Active))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scrollback", reflect.TypeOf((*MockInstance)(nil).Scrollback))
 }
 
-// SetExitMessage mocks base method
+// SetExitMessage mocks base method.
 func (m *MockInstance) SetExitMessage(arg0 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetExitMessage", arg0)
 }
 
-// SetExitMessage indicates an expected call of SetExitMessage
+// SetExitMessage indicates an expected call of SetExitMessage.
 func (mr *MockInstanceMockRecorder) SetExitMessage(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetExitMessage", reflect.TypeOf((*MockInstance)(nil).SetExitMessage), arg0)
 }
 
-// ExitMessage mocks base method
-func (m *MockInstance) ExitMessage() string {
+// Stop mocks base method.
+func (m *MockInstance) Stop() {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExitMessage")
-	ret0, _ := ret[0].(string)
-	return ret0
+	m.ctrl.Call(m, "Stop")
 }
 
-// ExitMessage indicates an expected call of ExitMessage
-func (mr *MockInstanceMockRecorder) ExitMessage() *gomock.Call {
+// Stop indicates an expected call of Stop.
+func (mr *MockInstanceMockRecorder) Stop() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExitMessage", reflect.TypeOf((*MockInstance)(nil).ExitMessage))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockInstance)(nil).Stop))
 }
 
-// StreamError mocks base method
+// StreamError mocks base method.
 func (m *MockInstance) StreamError() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StreamError")
@@ -208,78 +236,64 @@ func (m *MockInstance) StreamError() error {
 	return ret0
 }
 
-// StreamError indicates an expected call of StreamError
+// StreamError indicates an expected call of StreamError.
 func (mr *MockInstanceMockRecorder) StreamError() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamError", reflect.TypeOf((*MockInstance)(nil).StreamError))
 }
 
-// CreatedAt mocks base method
-func (m *MockInstance) CreatedAt() time.Time {
+// Write mocks base method.
+func (m *MockInstance) Write(key []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatedAt")
-	ret0, _ := ret[0].(time.Time)
+	ret := m.ctrl.Call(m, "Write", key)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreatedAt indicates an expected call of CreatedAt
-func (mr *MockInstanceMockRecorder) CreatedAt() *gomock.Call {
+// Write indicates an expected call of Write.
+func (mr *MockInstanceMockRecorder) Write(key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatedAt", reflect.TypeOf((*MockInstance)(nil).CreatedAt))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockInstance)(nil).Write), key)
 }
 
-// PTY mocks base method
-func (m *MockInstance) PTY() terminal.PTY {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PTY")
-	ret0, _ := ret[0].(terminal.PTY)
-	return ret0
-}
-
-// PTY indicates an expected call of PTY
-func (mr *MockInstanceMockRecorder) PTY() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PTY", reflect.TypeOf((*MockInstance)(nil).PTY))
-}
-
-// DiscoveryClient mocks base method
-func (m *MockInstance) DiscoveryClient() discovery.DiscoveryInterface {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoveryClient")
-	ret0, _ := ret[0].(discovery.DiscoveryInterface)
-	return ret0
-}
-
-// DiscoveryClient indicates an expected call of DiscoveryClient
-func (mr *MockInstanceMockRecorder) DiscoveryClient() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryClient", reflect.TypeOf((*MockInstance)(nil).DiscoveryClient))
-}
-
-// MockPTY is a mock of PTY interface
+// MockPTY is a mock of PTY interface.
 type MockPTY struct {
 	ctrl     *gomock.Controller
 	recorder *MockPTYMockRecorder
 }
 
-// MockPTYMockRecorder is the mock recorder for MockPTY
+// MockPTYMockRecorder is the mock recorder for MockPTY.
 type MockPTYMockRecorder struct {
 	mock *MockPTY
 }
 
-// NewMockPTY creates a new mock instance
+// NewMockPTY creates a new mock instance.
 func NewMockPTY(ctrl *gomock.Controller) *MockPTY {
 	mock := &MockPTY{ctrl: ctrl}
 	mock.recorder = &MockPTYMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPTY) EXPECT() *MockPTYMockRecorder {
 	return m.recorder
 }
 
-// Read mocks base method
+// Next mocks base method.
+func (m *MockPTY) Next() *remotecommand.TerminalSize {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Next")
+	ret0, _ := ret[0].(*remotecommand.TerminalSize)
+	return ret0
+}
+
+// Next indicates an expected call of Next.
+func (mr *MockPTYMockRecorder) Next() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockPTY)(nil).Next))
+}
+
+// Read mocks base method.
 func (m *MockPTY) Read(p []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", p)
@@ -288,13 +302,13 @@ func (m *MockPTY) Read(p []byte) (int, error) {
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read
+// Read indicates an expected call of Read.
 func (mr *MockPTYMockRecorder) Read(p interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockPTY)(nil).Read), p)
 }
 
-// Write mocks base method
+// Write mocks base method.
 func (m *MockPTY) Write(p []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", p)
@@ -303,22 +317,8 @@ func (m *MockPTY) Write(p []byte) (int, error) {
 	return ret0, ret1
 }
 
-// Write indicates an expected call of Write
+// Write indicates an expected call of Write.
 func (mr *MockPTYMockRecorder) Write(p interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockPTY)(nil).Write), p)
-}
-
-// Next mocks base method
-func (m *MockPTY) Next() *remotecommand.TerminalSize {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Next")
-	ret0, _ := ret[0].(*remotecommand.TerminalSize)
-	return ret0
-}
-
-// Next indicates an expected call of Next
-func (mr *MockPTYMockRecorder) Next() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockPTY)(nil).Next))
 }

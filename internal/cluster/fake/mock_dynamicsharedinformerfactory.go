@@ -12,42 +12,30 @@ import (
 	informers "k8s.io/client-go/informers"
 )
 
-// MockDynamicSharedInformerFactory is a mock of DynamicSharedInformerFactory interface
+// MockDynamicSharedInformerFactory is a mock of DynamicSharedInformerFactory interface.
 type MockDynamicSharedInformerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockDynamicSharedInformerFactoryMockRecorder
 }
 
-// MockDynamicSharedInformerFactoryMockRecorder is the mock recorder for MockDynamicSharedInformerFactory
+// MockDynamicSharedInformerFactoryMockRecorder is the mock recorder for MockDynamicSharedInformerFactory.
 type MockDynamicSharedInformerFactoryMockRecorder struct {
 	mock *MockDynamicSharedInformerFactory
 }
 
-// NewMockDynamicSharedInformerFactory creates a new mock instance
+// NewMockDynamicSharedInformerFactory creates a new mock instance.
 func NewMockDynamicSharedInformerFactory(ctrl *gomock.Controller) *MockDynamicSharedInformerFactory {
 	mock := &MockDynamicSharedInformerFactory{ctrl: ctrl}
 	mock.recorder = &MockDynamicSharedInformerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDynamicSharedInformerFactory) EXPECT() *MockDynamicSharedInformerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
-func (m *MockDynamicSharedInformerFactory) Start(stopCh <-chan struct{}) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Start", stopCh)
-}
-
-// Start indicates an expected call of Start
-func (mr *MockDynamicSharedInformerFactoryMockRecorder) Start(stopCh interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).Start), stopCh)
-}
-
-// ForResource mocks base method
+// ForResource mocks base method.
 func (m *MockDynamicSharedInformerFactory) ForResource(gvr schema.GroupVersionResource) informers.GenericInformer {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ForResource", gvr)
@@ -55,13 +43,25 @@ func (m *MockDynamicSharedInformerFactory) ForResource(gvr schema.GroupVersionRe
 	return ret0
 }
 
-// ForResource indicates an expected call of ForResource
+// ForResource indicates an expected call of ForResource.
 func (mr *MockDynamicSharedInformerFactoryMockRecorder) ForResource(gvr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForResource", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).ForResource), gvr)
 }
 
-// WaitForCacheSync mocks base method
+// Start mocks base method.
+func (m *MockDynamicSharedInformerFactory) Start(stopCh <-chan struct{}) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Start", stopCh)
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockDynamicSharedInformerFactoryMockRecorder) Start(stopCh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).Start), stopCh)
+}
+
+// WaitForCacheSync mocks base method.
 func (m *MockDynamicSharedInformerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[schema.GroupVersionResource]bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WaitForCacheSync", stopCh)
@@ -69,7 +69,7 @@ func (m *MockDynamicSharedInformerFactory) WaitForCacheSync(stopCh <-chan struct
 	return ret0
 }
 
-// WaitForCacheSync indicates an expected call of WaitForCacheSync
+// WaitForCacheSync indicates an expected call of WaitForCacheSync.
 func (mr *MockDynamicSharedInformerFactoryMockRecorder) WaitForCacheSync(stopCh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForCacheSync", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).WaitForCacheSync), stopCh)

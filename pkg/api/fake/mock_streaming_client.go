@@ -14,30 +14,30 @@ import (
 	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
-// MockStreamingClient is a mock of StreamingClient interface
+// MockStreamingClient is a mock of StreamingClient interface.
 type MockStreamingClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockStreamingClientMockRecorder
 }
 
-// MockStreamingClientMockRecorder is the mock recorder for MockStreamingClient
+// MockStreamingClientMockRecorder is the mock recorder for MockStreamingClient.
 type MockStreamingClientMockRecorder struct {
 	mock *MockStreamingClient
 }
 
-// NewMockStreamingClient creates a new mock instance
+// NewMockStreamingClient creates a new mock instance.
 func NewMockStreamingClient(ctrl *gomock.Controller) *MockStreamingClient {
 	mock := &MockStreamingClient{ctrl: ctrl}
 	mock.recorder = &MockStreamingClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStreamingClient) EXPECT() *MockStreamingClientMockRecorder {
 	return m.recorder
 }
 
-// Handlers mocks base method
+// Handlers mocks base method.
 func (m *MockStreamingClient) Handlers() map[string][]octant.ClientRequestHandler {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handlers")
@@ -45,13 +45,13 @@ func (m *MockStreamingClient) Handlers() map[string][]octant.ClientRequestHandle
 	return ret0
 }
 
-// Handlers indicates an expected call of Handlers
+// Handlers indicates an expected call of Handlers.
 func (mr *MockStreamingClientMockRecorder) Handlers() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handlers", reflect.TypeOf((*MockStreamingClient)(nil).Handlers))
 }
 
-// ID mocks base method
+// ID mocks base method.
 func (m *MockStreamingClient) ID() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ID")
@@ -59,13 +59,13 @@ func (m *MockStreamingClient) ID() string {
 	return ret0
 }
 
-// ID indicates an expected call of ID
+// ID indicates an expected call of ID.
 func (mr *MockStreamingClientMockRecorder) ID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockStreamingClient)(nil).ID))
 }
 
-// Receive mocks base method
+// Receive mocks base method.
 func (m *MockStreamingClient) Receive() (api.StreamRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Receive")
@@ -74,25 +74,25 @@ func (m *MockStreamingClient) Receive() (api.StreamRequest, error) {
 	return ret0, ret1
 }
 
-// Receive indicates an expected call of Receive
+// Receive indicates an expected call of Receive.
 func (mr *MockStreamingClientMockRecorder) Receive() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Receive", reflect.TypeOf((*MockStreamingClient)(nil).Receive))
 }
 
-// Send mocks base method
+// Send mocks base method.
 func (m *MockStreamingClient) Send(arg0 event.Event) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Send", arg0)
 }
 
-// Send indicates an expected call of Send
+// Send indicates an expected call of Send.
 func (mr *MockStreamingClientMockRecorder) Send(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockStreamingClient)(nil).Send), arg0)
 }
 
-// State mocks base method
+// State mocks base method.
 func (m *MockStreamingClient) State() octant.State {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "State")
@@ -100,13 +100,13 @@ func (m *MockStreamingClient) State() octant.State {
 	return ret0
 }
 
-// State indicates an expected call of State
+// State indicates an expected call of State.
 func (mr *MockStreamingClientMockRecorder) State() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "State", reflect.TypeOf((*MockStreamingClient)(nil).State))
 }
 
-// StopCh mocks base method
+// StopCh mocks base method.
 func (m *MockStreamingClient) StopCh() <-chan struct{} {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StopCh")
@@ -114,7 +114,7 @@ func (m *MockStreamingClient) StopCh() <-chan struct{} {
 	return ret0
 }
 
-// StopCh indicates an expected call of StopCh
+// StopCh indicates an expected call of StopCh.
 func (mr *MockStreamingClientMockRecorder) StopCh() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopCh", reflect.TypeOf((*MockStreamingClient)(nil).StopCh))
