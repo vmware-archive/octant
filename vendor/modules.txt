@@ -214,7 +214,7 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/spf13/viper v1.8.0
+# github.com/spf13/viper v1.8.1
 ## explicit
 github.com/spf13/viper
 # github.com/stoewer/go-strcase v1.2.0
