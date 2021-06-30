@@ -70,6 +70,9 @@ const (
 	// EventTypeLoggingFormat is a string with format specifiers to assist in generating
 	// a logging event type.
 	EventTypeLoggingFormat string = "event.octant.dev/logging/namespace/%s/pod/%s"
+
+	// EventTypeNotification sends information saved on error store
+	EventTypeNotification = "event.octant.dev/notification"
 )
 
 // NewTerminalEventType returns an event type for a specific terminal instance.

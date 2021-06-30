@@ -92,6 +92,7 @@ import { IconComponent } from './components/presentation/icon/icon.component';
 import { FormViewContainerComponent } from './components/form-view-container/form-view-container.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
+import { NotificationsComponent } from './components/smart/notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -176,6 +177,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     OctantTooltipComponent,
     BottomPanelComponent,
     JoinPipe,
+    NotificationsComponent,
   ],
   entryComponents: [
     AccordionComponent,
@@ -335,6 +337,7 @@ import { JoinPipe } from './pipes/join/join.pipe';
     StringEscapePipe,
     JoinPipe,
     ButtonComponent,
+    NotificationsComponent,
   ],
 })
 export class SharedModule {}
