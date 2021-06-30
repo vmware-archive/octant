@@ -153,6 +153,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 			if ctx.Err() == context.Canceled {
 				return false
 			}
+			cm.sendAccessErrorMessage(state)
 			cm.logger.
 				WithErr(err).
 				With("content-path", contentPath).
@@ -175,6 +176,12 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 
 		return false
 	}
+}
+
+func (cm *ContentManager) sendAccessErrorMessage(state octant.State) {
+	m := "There is a problem accessing your cluster please check your kube config"
+	a := action.CreateAlert(action.AlertTypeError, m, action.DefaultAlertExpiration)
+	state.SendAlert(a)
 }
 
 func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, error) {
