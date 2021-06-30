@@ -25,6 +25,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NamespaceComponent implements OnInit, OnDestroy {
+  readonly defaultNsLimit = 10;
   namespaces: string[];
   currentNamespace = '';
   trackByIdentity = trackByIdentity;
@@ -32,6 +33,7 @@ export class NamespaceComponent implements OnInit, OnDestroy {
   selectedItem: Selection;
   activeUrl: string;
   showDropdown: boolean;
+  nsLimit = this.defaultNsLimit;
 
   private namespaceSubscription: Subscription;
 
@@ -92,6 +94,13 @@ export class NamespaceComponent implements OnInit, OnDestroy {
       return this.modules[this.selectedItem.module].name !== 'cluster-overview';
     }
     return true;
+  }
+
+  toggleShowMore(): void {
+    this.nsLimit =
+      this.nsLimit === this.namespaces.length
+        ? this.defaultNsLimit
+        : this.namespaces.length;
   }
 
   private routerLinkPath(namespace: string): string {
