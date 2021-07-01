@@ -78,7 +78,6 @@
       <cds-input [style.width.%]="field.config.width">
         <label [for]="field.config.name">{{ field.config.label }}</label>
         <input
-          clrInput
           type="password"
           [formControlName]="field.config.name"
         />
@@ -107,7 +106,7 @@
     <ng-container *ngSwitchCase="'textarea'">
       <cds-textarea [style.width.%]="field.config.width">
         <label [for]="field.config.name">{{ field.config.label }}</label>
-        <textarea clrTextarea [formControlName]="field.config.name"></textarea>
+        <textarea [formControlName]="field.config.name"></textarea>
         <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
       </cds-textarea>
     </ng-container>
