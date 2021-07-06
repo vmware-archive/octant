@@ -13,15 +13,22 @@ import (
 
 const maxErrors = 50
 
+// Observer Initial implementation of observer pattern
+type Observer interface {
+	Update()
+}
+
 type ErrorStore interface {
 	List() []InternalError
 	Get(string) (InternalError, bool)
 	Add(InternalError) (found bool)
 	AddError(error) InternalError
+	Subscribe(observer Observer)
 }
 
 type errorStore struct {
 	recentErrors *lru.Cache
+	subscribers  []Observer
 }
 
 var _ ErrorStore = (*errorStore)(nil)
@@ -57,6 +64,13 @@ func (e *errorStore) AddError(err error) InternalError {
 // Add adds an InternalError directly to the error store.
 func (e *errorStore) Add(intErr InternalError) (found bool) {
 	ok, _ := e.recentErrors.ContainsOrAdd(intErr.ID(), intErr)
+
+	if !ok {
+		for i := 0; i < len(e.subscribers); i++ {
+			e.subscribers[i].Update()
+		}
+	}
+
 	return ok
 }
 
@@ -74,6 +88,10 @@ func (e *errorStore) List() []InternalError {
 		return intErrList[i].Timestamp().After(intErrList[j].Timestamp())
 	})
 	return intErrList
+}
+
+func (e *errorStore) Subscribe(manager Observer) {
+	e.subscribers = append(e.subscribers, manager)
 }
 
 func convertError(err error) InternalError {

@@ -1,5 +1,6 @@
 <div (click)="toggleModal()" cds-layout="horizontal gap:sm">
-  <cds-icon shape="bell" ></cds-icon>
+  <cds-icon *ngIf="newContent" shape="bell" badge="danger" ></cds-icon>
+  <cds-icon *ngIf="!newContent" shape="bell" ></cds-icon>
 </div>
 
 <cds-modal size="xl" [closable]="true" [hidden]="hidden" (closeChange)="toggleModal()">
@@ -7,17 +8,14 @@
     <h3 cds-text="title">Notifications</h3>
   </cds-modal-header>
   <cds-modal-content>
-
     <clr-stack-view>
       <clr-stack-block *ngFor="let notification of notifications; index as i; trackBy: trackByFn" [clrStackViewLevel]="1">
-
-        <clr-stack-label>{{ notification.name }}</clr-stack-label>
-        <clr-stack-block>
-          <clr-stack-label>{{ notification.error }}</clr-stack-label>
+        <clr-stack-label class="title">{{ notification.name }}</clr-stack-label>
+        <clr-stack-content><div class="date">{{ notification.timestamp | date:'medium' }}</div></clr-stack-content>
+        <clr-stack-block class="block">
+          {{ notification.error}}
         </clr-stack-block>
       </clr-stack-block>
-
     </clr-stack-view>
-
   </cds-modal-content>
 </cds-modal>

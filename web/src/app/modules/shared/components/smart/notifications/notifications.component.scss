@@ -4,4 +4,15 @@
   clr-stack-view {
     width: 100%;
   }
+
+  .block {
+    ::ng-deep .stack-view-key{
+      flex: 0; // Reduce of first column so content fill up the space
+    }
+  }
+
+  .date {
+    margin-left: auto; // Move element to the left
+    width: fit-content;
+  }
 }

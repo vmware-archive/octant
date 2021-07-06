@@ -153,6 +153,10 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 			if ctx.Err() == context.Canceled {
 				return false
 			}
+
+			intErr := oerrors.NewWrongCertificateError(err)
+			cm.dashConfig.ErrorStore().Add(intErr)
+
 			cm.sendAccessErrorMessage(state)
 			cm.logger.
 				WithErr(err).
@@ -179,7 +183,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 }
 
 func (cm *ContentManager) sendAccessErrorMessage(state octant.State) {
-	m := "There is a problem accessing your cluster please check your kube config"
+	m := "There is a problem accessing your cluster please check your kube config auth"
 	a := action.CreateAlert(action.AlertTypeError, m, action.DefaultAlertExpiration)
 	state.SendAlert(a)
 }

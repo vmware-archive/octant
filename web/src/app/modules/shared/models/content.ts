@@ -663,3 +663,10 @@ export interface TabsView extends View {
     orientation?: string;
   };
 }
+
+export interface InternalError {
+  name: string;
+  error: string;
+  id: string;
+  timestamp: string;
+}

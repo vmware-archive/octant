@@ -2,11 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ClarityIcons, bellIcon } from '@cds/core/icon';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
-
-interface InternalError {
-  name: string;
-  error: string;
-}
+import { InternalError } from '../../../models/content';
 
 @Component({
   selector: 'app-notifications',
@@ -16,6 +12,7 @@ interface InternalError {
 export class NotificationsComponent implements OnInit {
   hidden = true;
   notifications: InternalError[] = [];
+  newContent = false;
 
   trackByFn = trackByIndex;
 
@@ -26,14 +23,24 @@ export class NotificationsComponent implements OnInit {
   ngOnInit(): void {
     this.websocketService.registerHandler(
       'event.octant.dev/notification',
-      (data: InternalError) => {
-        this.notifications.push(data);
+      (ie: { errors: InternalError[] }) => {
+        this.newContent = true;
+        this.upperCaseFirst(ie);
+        this.notifications = ie.errors;
       }
     );
     this.websocketService.sendMessage('event.octant.dev/notification', {});
   }
 
   toggleModal(): void {
+    this.newContent = false;
     this.hidden = !this.hidden;
+  }
+
+  upperCaseFirst(ie: { errors: InternalError[] }) {
+    ie.errors.map(e => {
+      e.error = e.error[0].toUpperCase() + e.error.substr(1);
+      return e;
+    });
   }
 }
