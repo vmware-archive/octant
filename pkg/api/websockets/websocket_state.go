@@ -44,7 +44,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []api.StateMa
 		internalAPI.NewActionRequestManager(dashConfig),
 		internalAPI.NewTerminalStateManager(dashConfig),
 		internalAPI.NewPodLogsStateManager(dashConfig),
-		internalAPI.NewNotificationsStateManager(dashConfig),
+		internalAPI.NewNotificationsStateManager(dashConfig.ErrorStore()),
 	}
 }
 

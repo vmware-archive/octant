@@ -8,7 +8,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/api"
 )
@@ -18,21 +17,21 @@ const (
 )
 
 type notificationStateManager struct {
-	client api.OctantClient
-	config config.Dash
-	ctx    context.Context
+	client     api.OctantClient
+	errorStore errors.ErrorStore
+	ctx        context.Context
 }
 
 var _ StateManager = (*notificationStateManager)(nil)
 var _ errors.Observer = (*notificationStateManager)(nil)
 
 // NewNotificationsStateManager returns a terminal state manager.
-func NewNotificationsStateManager(dashConfig config.Dash) *notificationStateManager {
+func NewNotificationsStateManager(errorStorage errors.ErrorStore) *notificationStateManager {
 
 	nsm := notificationStateManager{
-		config: dashConfig,
+		errorStore: errorStorage,
 	}
-	dashConfig.ErrorStore().Subscribe(&nsm)
+	errorStorage.Subscribe(&nsm)
 	return &nsm
 }
 
@@ -48,7 +47,7 @@ func (s *notificationStateManager) Handlers() []octant.ClientRequestHandler {
 // Always send the entire list to the user because the back-end is responsible
 // to take care of duplicated event and because ErrorStore was a max size of 50
 func (s *notificationStateManager) getNotifications(_ octant.State, _ action.Payload) error {
-	list := s.Marshal(s.config.ErrorStore().List())
+	list := s.Marshal(s.errorStore.List())
 
 	newEvent := event.Event{
 		Type: event.EventTypeNotification,
@@ -67,9 +66,9 @@ func (s *notificationStateManager) Marshal(ie []errors.InternalError) []map[stri
 
 	for i := 0; i < size; i++ {
 		result = append(result, map[string]interface{}{
-			"error":     s.config.ErrorStore().List()[i].Error(),
-			"name":      s.config.ErrorStore().List()[i].Name(),
-			"timestamp": s.config.ErrorStore().List()[i].Timestamp(),
+			"error":     s.errorStore.List()[i].Error(),
+			"name":      s.errorStore.List()[i].Name(),
+			"timestamp": s.errorStore.List()[i].Timestamp(),
 		})
 	}
 
