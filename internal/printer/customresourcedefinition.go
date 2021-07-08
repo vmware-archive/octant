@@ -116,7 +116,7 @@ func CustomResourceDefinitionVersionList(
 	resourceLists, err := discoveryClient.ServerPreferredResources()
 	if err != nil {
 		//TODO: determine the best way to handle these types of errors for all resources, not just metrics.
-		if discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics") {
+		if discovery.IsGroupDiscoveryFailedError(err) {
 			logger := log.From(ctx)
 			logger.Debugf("preferred resources: %w", err)
 		} else {

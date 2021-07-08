@@ -8,7 +8,6 @@ package queryer
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -212,7 +211,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured
 	}
 
 	resourceLists, err := osq.discoveryClient.ServerPreferredResources()
-	if err != nil && !osq.IsMetricsDiscoveryErr(err) {
+	if err != nil && !discovery.IsGroupDiscoveryFailedError(err) {
 		return nil, fmt.Errorf("objectStoreQueryer children: %w", err)
 	}
 
@@ -314,11 +313,6 @@ var allowed = []schema.GroupVersionKind{
 	gvk.PersistentVolumeClaim,
 	gvk.Secret,
 	gvk.ServiceAccount,
-}
-
-func (osq *ObjectStoreQueryer) IsMetricsDiscoveryErr(err error) bool {
-	//TODO: determine the best way to handle these types of errors for all resources, not just metrics.
-	return discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics")
 }
 
 func (osq *ObjectStoreQueryer) canList(apiResource metav1.APIResource) bool {
@@ -552,7 +546,7 @@ func (osq *ObjectStoreQueryer) handle(
 	object *unstructured.Unstructured,
 	ownerReference metav1.OwnerReference) (bool, *unstructured.Unstructured, error) {
 	resourceList, err := osq.discoveryClient.ServerResourcesForGroupVersion(ownerReference.APIVersion)
-	if err != nil && !osq.IsMetricsDiscoveryErr(err) {
+	if err != nil && !discovery.IsGroupDiscoveryFailedError(err) {
 		return false, nil, fmt.Errorf("objectStoreQueryer handle: %w", err)
 	}
 	if resourceList == nil {
