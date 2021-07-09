@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/golang/mock/gomock"
+
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
 	"github.com/vmware-tanzu/octant/pkg/api/fake"
 
