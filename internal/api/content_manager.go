@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
+
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -40,7 +42,7 @@ type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
 // if the action should be be immediately rerun.
-type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
+type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, oerrors.InternalError)
 
 // Content is a content to be sent to clients.
 type Content struct {
@@ -147,6 +149,8 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 			var ae *oerrors.AccessError
 			if errors.As(err, &ae) {
 				if ae.Name() == oerrors.OctantAccessError {
+					cm.dashConfig.ErrorStore().Add(err)
+					cm.sendAccessErrorMessage(state)
 					return false
 				}
 			}
@@ -154,10 +158,6 @@ func (cm *ContentManager) runUpdate(state octant.State, s api.OctantClient) Poll
 				return false
 			}
 
-			intErr := oerrors.NewWrongCertificateError(err)
-			cm.dashConfig.ErrorStore().Add(intErr)
-
-			cm.sendAccessErrorMessage(state)
 			cm.logger.
 				WithErr(err).
 				With("content-path", contentPath).
@@ -188,7 +188,7 @@ func (cm *ContentManager) sendAccessErrorMessage(state octant.State) {
 	state.SendAlert(a)
 }
 
-func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, error) {
+func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, oerrors.InternalError) {
 	contentPath := state.GetContentPath()
 	logger := cm.logger.With("contentPath", contentPath)
 
@@ -199,7 +199,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
 	if !ok {
-		return emptyContent, false, fmt.Errorf("unable to find module for content path %q", contentPath)
+		return emptyContent, false, oerrors.NewGenericError(fmt.Errorf("unable to find module for content path %q", contentPath))
 	}
 	modulePath := strings.TrimPrefix(contentPath, m.Name())
 	options := module.ContentOptions{
@@ -220,7 +220,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 			logger.Debugf("path not found")
 			contentResponse = notFoundPage(contentPath)
 		} else {
-			return emptyContent, false, fmt.Errorf("generate content: %w", err)
+			return emptyContent, false, oerrors.NewAccessError(store.Key{}, "test", fmt.Errorf("generate content: %w", err))
 		}
 	}
 

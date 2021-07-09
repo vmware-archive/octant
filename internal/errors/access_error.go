@@ -8,6 +8,7 @@ package errors
 import (
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"strings"
 	"time"
 
@@ -15,6 +16,12 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
+
+// The ID is using non-cryptographic hash to make sure ID is uniquely identify,
+// GoLang provides many algorithms https://golang.org/pkg/hash, fnv was chosen,
+// because of the information here
+// https://softwareengineering.stackexchange.com/questions/49550/which-hashing-algorithm-is-best-for-uniqueness-and-speed
+// fvn provides a good compromise between performance and number of collisions
 
 const OctantAccessError = "AccessError"
 
@@ -29,11 +36,13 @@ type AccessError struct {
 var _ InternalError = (*AccessError)(nil)
 
 func NewAccessError(key store.Key, verb string, err error) *AccessError {
+	data := fnv.New64().Sum([]byte(OctantAccessError + ": " + err.Error()))
+
 	return &AccessError{
 		verb:      verb,
 		err:       err,
 		timestamp: time.Now(),
-		id:        key.String(),
+		id:        fmt.Sprintf("%x", data),
 		key:       key,
 	}
 }

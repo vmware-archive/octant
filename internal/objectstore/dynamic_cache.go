@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -420,7 +422,8 @@ func (d *DynamicCache) listerForResource(ctx context.Context, key store.Key) (li
 	)
 
 	if d.isUnwatched(ctx, gvr) {
-		return nil, fmt.Errorf("unable to get Lister for %s, watcher was unable to start", gvr)
+		err = fmt.Errorf("unable to get Lister for %s, watcher was unable to start", gvr)
+		return nil, oerrors.NewAccessError(key, "List", err)
 	}
 
 	ii := d.forResource(ctx, gvr, nil)
