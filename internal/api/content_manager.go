@@ -220,7 +220,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 			logger.Debugf("path not found")
 			contentResponse = notFoundPage(contentPath)
 		} else {
-			return emptyContent, false, oerrors.NewAccessError(store.Key{}, "test", fmt.Errorf("generate content: %w", err))
+			return emptyContent, false, oerrors.NewAccessError(store.Key{}, "", fmt.Errorf("generate content: %w", err))
 		}
 	}
 

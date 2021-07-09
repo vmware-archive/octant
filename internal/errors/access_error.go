@@ -36,7 +36,7 @@ type AccessError struct {
 var _ InternalError = (*AccessError)(nil)
 
 func NewAccessError(key store.Key, verb string, err error) *AccessError {
-	data := fnv.New64().Sum([]byte(OctantAccessError + ": " + err.Error()))
+	data := createAccessErrorID(key, verb, err)
 
 	return &AccessError{
 		verb:      verb,
@@ -102,4 +102,12 @@ func IsBackoffError(err error) bool {
 	}
 
 	return false
+}
+
+func createAccessErrorID(k store.Key, v string, err error) []byte {
+	if err != nil {
+		return fnv.New64().Sum([]byte(OctantAccessError + ": " + err.Error()))
+	} else {
+		return fnv.New64().Sum([]byte(OctantAccessError + ": " + fmt.Sprintf("%s: %s", v, k)))
+	}
 }
