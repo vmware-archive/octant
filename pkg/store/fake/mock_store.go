@@ -13,7 +13,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 
-	cluster "github.com/vmware-tanzu/octant/internal/cluster"
+	cluster "github.com/vmware-tanzu/octant/pkg/cluster"
 	store "github.com/vmware-tanzu/octant/pkg/store"
 )
 

@@ -22,8 +22,8 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 //go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware-tanzu/octant/pkg/store Store

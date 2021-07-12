@@ -12,11 +12,11 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
-	"github.com/vmware-tanzu/octant/internal/config"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/store"

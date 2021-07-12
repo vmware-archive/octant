@@ -13,11 +13,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 )
 

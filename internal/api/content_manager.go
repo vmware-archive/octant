@@ -16,9 +16,9 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"

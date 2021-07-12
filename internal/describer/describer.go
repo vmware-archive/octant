@@ -14,12 +14,13 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware-tanzu/octant/internal/config"
-	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+	internalErrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/pkg/config"
+	oerrors "github.com/vmware-tanzu/octant/pkg/errors"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -52,9 +53,9 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 
 	object, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
-		var ae *oerrors.AccessError
+		var ae *internalErrors.AccessError
 		if errors.As(err, &ae) {
-			if ae.Name() == oerrors.OctantAccessError {
+			if ae.Name() == internalErrors.OctantAccessError {
 				found := errorStore.Add(ae)
 				if !found {
 					logger := log.From(ctx)
@@ -85,9 +86,9 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerror
 
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
-			var ae *oerrors.AccessError
+			var ae *internalErrors.AccessError
 			if errors.As(err, &ae) {
-				if ae.Name() == oerrors.OctantAccessError {
+				if ae.Name() == internalErrors.OctantAccessError {
 					found := errorStore.Add(ae)
 					if !found {
 						logger := log.From(ctx)

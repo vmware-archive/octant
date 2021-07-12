@@ -15,13 +15,14 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
-	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 //go:generate mockgen -destination=./fake/mock_dashboard_client.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin/api/proto DashboardClient
 //go:generate mockgen -destination=./fake/mock_dashboard_connection.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin/api DashboardConnection
+
+const MaxMessageSize int = 1024 * 1024 * 16
 
 type DashboardConnection interface {
 	Close() error
@@ -55,7 +56,7 @@ var _ Service = (*Client)(nil)
 // address of the API.
 func NewClient(address string, options ...ClientOption) (*Client, error) {
 	client := &Client{}
-	viper.SetDefault("client-max-recv-msg-size", config.MaxMessageSize)
+	viper.SetDefault("client-max-recv-msg-size", MaxMessageSize)
 
 	for _, option := range options {
 		option(client)

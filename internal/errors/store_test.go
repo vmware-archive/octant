@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
+	oerrors "github.com/vmware-tanzu/octant/pkg/errors"
 )
 
 func TestNewErrorStore(t *testing.T) {
@@ -67,7 +68,7 @@ func TestErrorStore_ListOrder(t *testing.T) {
 	err = fmt.Errorf("setContext error")
 
 	older := NewActionError(requestType, payload, err)
-	newer := NewGenericError(err)
+	newer := oerrors.NewGenericError(err)
 
 	errStore.Add(newer)
 	errStore.Add(older)

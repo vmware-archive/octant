@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 type fakeWebsocketClientManager struct {

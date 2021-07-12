@@ -16,10 +16,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 // ContextManagerOption is an option for configuring ContextManager.

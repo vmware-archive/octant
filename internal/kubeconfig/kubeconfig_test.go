@@ -16,7 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
+	internalCluster "github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 func Test_NewKubeConfigs(t *testing.T) {
@@ -26,7 +27,7 @@ func Test_NewKubeConfigs(t *testing.T) {
 	_, err := NewKubeConfigContextManager(
 		context.TODO(),
 		WithKubeConfigList(kubeConfig),
-		FromClusterOption(cluster.WithRESTConfigOptions(config)),
+		FromClusterOption(internalCluster.WithRESTConfigOptions(config)),
 	)
 	require.NoError(t, err)
 }
@@ -104,7 +105,7 @@ func Test_NewKubeConfigNoCluster(t *testing.T) {
 	_, err := NewKubeConfigContextManager(
 		context.TODO(),
 		WithKubeConfigList(filepath.Join("testdata", "kubeconfig.yaml")),
-		FromClusterOption(cluster.WithRESTConfigOptions(cluster.RESTConfigOptions{})),
+		FromClusterOption(internalCluster.WithRESTConfigOptions(cluster.RESTConfigOptions{})),
 		noClusterOptions,
 	)
 	require.NoError(t, err)

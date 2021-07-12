@@ -20,9 +20,8 @@ import (
 	"k8s.io/klog"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/log"
-	pconfig "github.com/vmware-tanzu/octant/pkg/config"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/dash"
 )
 
@@ -161,7 +160,7 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 	octantCmd.Flags().StringSlice("namespace-list", []string{}, "a list of namespaces to use on start")
 	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
 	octantCmd.Flags().BoolP("verbose", "v", false, "turn on debug logging")
-	octantCmd.Flags().IntP("client-max-recv-msg-size", "", pconfig.MaxMessageSize, "client max receiver message size")
+	octantCmd.Flags().IntP("client-max-recv-msg-size", "", config.MaxMessageSize, "client max receiver message size")
 
 	octantCmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list [DEV]")
 	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client [DEV]")

@@ -28,8 +28,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/util/json"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
