@@ -134,7 +134,7 @@
     "karma-spec-reporter": "0.0.32",
     "marked": "^2.0.1",
     "npm-force-resolutions": "0.0.10",
-    "prettier": "^2.2.1",
+    "prettier": "~2.2.1",
     "protractor": "~7.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

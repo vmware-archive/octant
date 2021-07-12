@@ -25,6 +25,7 @@ import (
 	sigyaml "sigs.k8s.io/yaml"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -420,7 +421,8 @@ func (d *DynamicCache) listerForResource(ctx context.Context, key store.Key) (li
 	)
 
 	if d.isUnwatched(ctx, gvr) {
-		return nil, fmt.Errorf("unable to get Lister for %s, watcher was unable to start", gvr)
+		err = fmt.Errorf("unable to get Lister for %s, watcher was unable to start", gvr)
+		return nil, oerrors.NewAccessError(key, "List", err)
 	}
 
 	ii := d.forResource(ctx, gvr, nil)
