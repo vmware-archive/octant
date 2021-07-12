@@ -1,6 +1,6 @@
 <div class="app-namespace-selector">
   <ng-template [ngIf]="showDropdown" [ngIfElse]="hideDropdown">
-    <clr-dropdown class="dropdown-top" [clrCloseMenuOnItemClick]="true">
+    <clr-dropdown class="dropdown-top" [clrCloseMenuOnItemClick]="false">
       <button type="button" class="dropdown-button" clrDropdownTrigger>
         <clr-icon shape="namespace"></clr-icon>
         {{ currentNamespace }}
@@ -13,11 +13,11 @@
       >
         <label class="dropdown-header">Namespaces</label>
         <ng-container
-          *ngFor="let namespace of namespaces; trackBy: trackByIdentity"
+          *ngFor="let namespace of namespaces | slice : 0 : nsLimit; trackBy: trackByIdentity"
         >
           <button
             type="button"
-            class="dropdown-button"
+            class="dropdown-button ns-menu-item"
             [ngClass]="namespaceClass(namespace)"
             clrDropdownItem
             (click)="selectNamespace(namespace)"
@@ -26,6 +26,7 @@
             {{ namespace }}
           </button>
         </ng-container>
+        <button class="dropdown-button" *ngIf= "namespaces.length > defaultNsLimit" (click)="toggleShowMore()" clrDropdownItem> {{ nsLimit != namespaces.length ? 'SHOW MORE' : 'SHOW LESS' }}</button>
       </clr-dropdown-menu>
     </clr-dropdown>
   </ng-template>
