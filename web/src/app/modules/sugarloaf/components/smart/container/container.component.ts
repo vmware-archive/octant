@@ -56,12 +56,11 @@ export class ContainerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.subscriptionPreferencesOpened = this.preferencesService.preferencesOpened.subscribe(
-      opened => {
+    this.subscriptionPreferencesOpened =
+      this.preferencesService.preferencesOpened.subscribe(opened => {
         this.preferences = this.preferencesService.getPreferences(); // TODO: merge with server side prefs (currently broken)
         this.preferencesOpened = opened;
-      }
-    );
+      });
 
     this.websocketService.open();
     this.localKubeConfigPath = this.helperService

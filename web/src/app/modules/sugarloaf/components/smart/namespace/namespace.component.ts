@@ -44,19 +44,19 @@ export class NamespaceComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.namespaceSubscription = this.namespaceService.activeNamespace.subscribe(
-      (namespace: string) => {
+    this.namespaceSubscription =
+      this.namespaceService.activeNamespace.subscribe((namespace: string) => {
         this.currentNamespace = namespace;
         this.cdr.detectChanges();
-      }
-    );
+      });
 
-    this.namespaceSubscription = this.namespaceService.availableNamespaces.subscribe(
-      (namespaces: string[]) => {
-        this.namespaces = namespaces;
-        this.cdr.detectChanges();
-      }
-    );
+    this.namespaceSubscription =
+      this.namespaceService.availableNamespaces.subscribe(
+        (namespaces: string[]) => {
+          this.namespaces = namespaces;
+          this.cdr.detectChanges();
+        }
+      );
 
     this.navigationService.modules.subscribe(modules => {
       this.modules = modules;

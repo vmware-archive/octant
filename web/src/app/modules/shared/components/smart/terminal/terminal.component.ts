@@ -30,7 +30,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 })
 export class TerminalComponent
   extends AbstractViewComponent<TerminalView>
-  implements OnDestroy, AfterViewInit {
+  implements OnDestroy, AfterViewInit
+{
   @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
 
   selectedContainer = '';

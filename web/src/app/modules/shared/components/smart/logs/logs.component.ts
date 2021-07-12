@@ -35,7 +35,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 })
 export class LogsComponent
   extends AbstractViewComponent<LogsView>
-  implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
+  implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked
+{
   private logStream: PodLogsStreamer;
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
@@ -228,11 +229,8 @@ export class LogsComponent
       const nextSelection: HTMLElement = this.getHighlightedElement(
         this.currentSelection
       );
-      const {
-        clientHeight,
-        offsetTop,
-        scrollTop,
-      } = this.scrollTarget.nativeElement;
+      const { clientHeight, offsetTop, scrollTop } =
+        this.scrollTarget.nativeElement;
       const top = nextSelection.offsetTop - offsetTop;
 
       if (top > clientHeight + scrollTop || top < scrollTop) {

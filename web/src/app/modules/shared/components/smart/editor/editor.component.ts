@@ -25,7 +25,8 @@ interface Options {
 })
 export class EditorComponent
   extends AbstractViewComponent<EditorView>
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy
+{
   set value(v: string) {
     if (v !== this.editorValue) {
       this.isModified = true;

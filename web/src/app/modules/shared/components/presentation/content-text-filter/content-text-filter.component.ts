@@ -18,7 +18,8 @@ import { RelativePipe } from '../../../pipes/relative/relative.pipe';
   styleUrls: ['./content-text-filter.component.scss'],
 })
 export class ContentTextFilterComponent
-  implements ClrDatagridFilterInterface<TableRow>, OnInit {
+  implements ClrDatagridFilterInterface<TableRow>, OnInit
+{
   @Input() column: string;
   @ViewChild('search') search: ElementRef;
 
@@ -67,9 +68,9 @@ export class ContentTextFilterComponent
           container => container.name
         );
       case 'labels':
-        return Object.entries(
-          row.data[column].config.labels
-        ).map((labels: any[]) => labels.join(':'));
+        return Object.entries(row.data[column].config.labels).map(
+          (labels: any[]) => labels.join(':')
+        );
       case 'selectors':
         return row.data[column].config.selectors.map(
           selector => selector.config.key + ':' + selector.config.value

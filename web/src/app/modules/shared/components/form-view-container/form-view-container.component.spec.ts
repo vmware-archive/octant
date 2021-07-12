@@ -117,9 +117,9 @@ describe('FormViewContainerComponent', () => {
       );
       fixture.detectChanges();
 
-      const selected = (component.formGroup.get(
-        name
-      ) as FormArray).getRawValue();
+      const selected = (
+        component.formGroup.get(name) as FormArray
+      ).getRawValue();
       expect(selected[0]).toEqual('a');
       expect(element.querySelector('cds-select')).not.toBeNull();
     });
@@ -155,9 +155,9 @@ describe('FormViewContainerComponent', () => {
       );
       fixture.detectChanges();
 
-      const selected = (component.formGroup.get(
-        name
-      ) as FormArray).getRawValue();
+      const selected = (
+        component.formGroup.get(name) as FormArray
+      ).getRawValue();
       expect(selected[0]).toEqual(undefined);
       expect(element.querySelector('cds-select')).not.toBeNull();
     });

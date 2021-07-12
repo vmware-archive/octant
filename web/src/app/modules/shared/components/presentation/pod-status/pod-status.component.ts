@@ -35,14 +35,12 @@ export class PodStatusComponent extends AbstractViewComponent<PodStatusView> {
     if (pods) {
       this.podStatuses = Object.keys(pods)
         .sort()
-        .map(
-          (podName: string): PodStatus => {
-            return {
-              name: podName,
-              status: pods[podName].status,
-            };
-          }
-        );
+        .map((podName: string): PodStatus => {
+          return {
+            name: podName,
+            status: pods[podName].status,
+          };
+        });
     }
   }
 }
