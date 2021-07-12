@@ -12,9 +12,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/vmware-tanzu/octant/internal/api/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
+	"github.com/vmware-tanzu/octant/pkg/api/fake"
 )
 
 func Test_TerminalStateManager(t *testing.T) {

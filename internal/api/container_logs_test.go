@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/golang/mock/gomock"
@@ -106,7 +107,7 @@ type octantClient struct {
 	stopCh         chan struct{}
 }
 
-var _ OctantClient = &octantClient{}
+var _ api.OctantClient = &octantClient{}
 
 func newOctantClient() *octantClient {
 	return &octantClient{

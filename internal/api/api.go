@@ -22,6 +22,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/mime"
 	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/pkg/api"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
@@ -36,7 +37,7 @@ const (
 	defaultListenerAddr = "127.0.0.1:7777"
 )
 
-func acceptedHosts() []string {
+func AcceptedHosts() []string {
 	hosts := []string{
 		"localhost",
 		"127.0.0.1",
@@ -117,11 +118,11 @@ func RespondWithError(w http.ResponseWriter, code int, message string, logger lo
 type API struct {
 	ctx              context.Context
 	moduleManager    module.ManagerInterface
-	actionDispatcher ActionDispatcher
+	actionDispatcher api.ActionDispatcher
 	prefix           string
 	dashConfig       config.Dash
 	logger           log.Logger
-	wsClientManager  *WebsocketClientManager
+	scManager        *api.StreamingConnectionManager
 
 	modulePaths   map[string]module.Module
 	modules       []module.Module
@@ -131,7 +132,7 @@ type API struct {
 var _ Service = (*API)(nil)
 
 // New creates an instance of API.
-func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, dashConfig config.Dash) *API {
+func New(ctx context.Context, prefix string, actionDispatcher api.ActionDispatcher, streamingConnectionManager *api.StreamingConnectionManager, dashConfig config.Dash) *API {
 	logger := dashConfig.Logger().With("component", "api")
 	return &API{
 		ctx:              ctx,
@@ -141,7 +142,7 @@ func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, 
 		dashConfig:       dashConfig,
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
-		wsClientManager:  websocketClientManager,
+		scManager:        streamingConnectionManager,
 	}
 }
 
@@ -156,11 +157,11 @@ func (a *API) Handler(ctx context.Context) (http.Handler, error) {
 		return nil, fmt.Errorf("missing dashConfig")
 	}
 	router := mux.NewRouter()
-	router.Use(rebindHandler(ctx, acceptedHosts()))
+	router.Use(rebindHandler(ctx, AcceptedHosts()))
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
-	s.Handle("/stream", websocketService(a.wsClientManager, a.dashConfig))
+	s.Handle("/stream", streamService(a.scManager, a.dashConfig))
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
@@ -174,10 +175,10 @@ func (a *API) Handler(ctx context.Context) (http.Handler, error) {
 type LoadingAPI struct {
 	ctx              context.Context
 	moduleManager    module.ManagerInterface
-	actionDispatcher ActionDispatcher
+	actionDispatcher api.ActionDispatcher
 	prefix           string
 	logger           log.Logger
-	wsClientManager  *WebsocketClientManager
+	scManager        *api.StreamingConnectionManager
 
 	modulePaths   map[string]module.Module
 	modules       []module.Module
@@ -187,7 +188,7 @@ type LoadingAPI struct {
 var _ Service = (*LoadingAPI)(nil)
 
 // NewLoadingAPI creates an instance of LoadingAPI
-func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, logger log.Logger) *LoadingAPI {
+func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher api.ActionDispatcher, websocketClientManager *api.StreamingConnectionManager, logger log.Logger) *LoadingAPI {
 	logger = logger.With("component", "loading api")
 	return &LoadingAPI{
 		ctx:              ctx,
@@ -196,7 +197,7 @@ func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDi
 		modulePaths:      make(map[string]module.Module),
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
-		wsClientManager:  websocketClientManager,
+		scManager:        websocketClientManager,
 	}
 }
 
@@ -208,11 +209,11 @@ func (l *LoadingAPI) ForceUpdate() error {
 // Handler contains a list of handlers
 func (l *LoadingAPI) Handler(ctx context.Context) (http.Handler, error) {
 	router := mux.NewRouter()
-	router.Use(rebindHandler(ctx, acceptedHosts()))
+	router.Use(rebindHandler(ctx, AcceptedHosts()))
 
 	s := router.PathPrefix(l.prefix).Subrouter()
 
-	s.Handle("/stream", loadingWebsocketService(l.wsClientManager))
+	s.Handle("/stream", loadingStreamService(l.scManager))
 
 	return router, nil
 }

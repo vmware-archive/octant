@@ -12,30 +12,30 @@ import (
 	store "github.com/vmware-tanzu/octant/pkg/store"
 )
 
-// MockStorage is a mock of Storage interface
+// MockStorage is a mock of Storage interface.
 type MockStorage struct {
 	ctrl     *gomock.Controller
 	recorder *MockStorageMockRecorder
 }
 
-// MockStorageMockRecorder is the mock recorder for MockStorage
+// MockStorageMockRecorder is the mock recorder for MockStorage.
 type MockStorageMockRecorder struct {
 	mock *MockStorage
 }
 
-// NewMockStorage creates a new mock instance
+// NewMockStorage creates a new mock instance.
 func NewMockStorage(ctrl *gomock.Controller) *MockStorage {
 	mock := &MockStorage{ctrl: ctrl}
 	mock.recorder = &MockStorageMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
-// ObjectStore mocks base method
+// ObjectStore mocks base method.
 func (m *MockStorage) ObjectStore() store.Store {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ObjectStore")
@@ -43,7 +43,7 @@ func (m *MockStorage) ObjectStore() store.Store {
 	return ret0
 }
 
-// ObjectStore indicates an expected call of ObjectStore
+// ObjectStore indicates an expected call of ObjectStore.
 func (mr *MockStorageMockRecorder) ObjectStore() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectStore", reflect.TypeOf((*MockStorage)(nil).ObjectStore))

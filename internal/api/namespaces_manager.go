@@ -17,6 +17,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/api"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 )
 
@@ -75,7 +76,7 @@ func (n NamespacesManager) Handlers() []octant.ClientRequestHandler {
 }
 
 // Start starts the manager. It periodically generates a list of namespaces.
-func (n *NamespacesManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+func (n *NamespacesManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
 	ch := make(chan struct{}, 1)
 	defer func() {
 		close(ch)
@@ -84,7 +85,7 @@ func (n *NamespacesManager) Start(ctx context.Context, state octant.State, s Oct
 	n.poller.Run(ctx, ch, n.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
-func (n *NamespacesManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+func (n *NamespacesManager) runUpdate(state octant.State, client api.OctantClient) PollerFunc {
 	var previous []byte
 
 	return func(ctx context.Context) bool {

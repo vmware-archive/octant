@@ -15,7 +15,7 @@
 </cds-form-group>
 
 <ng-template #formInputs let-field="field">
-  <ng-container [formGroup]="formGroupContainer" [ngSwitch]="field?.config?.type">
+  <ng-container *ngIf="formGroupContainer" [formGroup]="formGroupContainer" [ngSwitch]="field?.config?.type">
 
     <ng-container *ngSwitchCase="'checkbox'">
       <cds-checkbox-group [style.width.%]="field.config.width">
@@ -40,8 +40,10 @@
         <cds-radio *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
           <input
             type="radio"
-            [formControlName]="field.config.name"
+            [formArrayName]="field.config.name"
             [value]="opt.value"
+            [checked]="opt.checked"
+            (change)="onCheck($event, field.config.name)"
           />
           <label>{{ opt.label }}</label>
         </cds-radio>
@@ -76,7 +78,6 @@
       <cds-input [style.width.%]="field.config.width">
         <label [for]="field.config.name">{{ field.config.label }}</label>
         <input
-          clrInput
           type="password"
           [formControlName]="field.config.name"
         />
@@ -105,7 +106,7 @@
     <ng-container *ngSwitchCase="'textarea'">
       <cds-textarea [style.width.%]="field.config.width">
         <label [for]="field.config.name">{{ field.config.label }}</label>
-        <textarea clrTextarea [formControlName]="field.config.name"></textarea>
+        <textarea [formControlName]="field.config.name"></textarea>
         <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
       </cds-textarea>
     </ng-container>

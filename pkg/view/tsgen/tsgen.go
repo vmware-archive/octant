@@ -124,7 +124,7 @@ func (tg *TSGen) Reflect(names []string) (*Model, error) {
 
 	m := &Model{}
 	if err := gob.NewDecoder(&stdout).Decode(m); err != nil {
-		return nil, fmt.Errorf("decode reflet model: %w", err)
+		return nil, fmt.Errorf("decode reflect model: %w", err)
 	}
 
 	return m, nil

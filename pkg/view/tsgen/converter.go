@@ -52,8 +52,16 @@ func (c *Converter) visit(w *gostrings.Builder, t reflect.Type, depth int) ([]st
 		}
 		componentNames = append(componentNames, names...)
 	case reflect.Map:
+		var keyString string = t.Key().String()
+		switch keyString {
+		// typing for validation steps causes errors with reflection, so we just lock string keys.
+		case "component.FormValidator":
+			keyString = "string"
+		}
+
 		// if a map is found, key the key and element to build a typescript object definition.
-		w.WriteString("{[key:" + t.Key().String() + "]:")
+		w.WriteString("{[key:" + keyString + "]:")
+
 		names, err := c.visit(w, t.Elem(), depth+1)
 		if err != nil {
 			return nil, err

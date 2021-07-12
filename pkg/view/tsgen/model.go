@@ -82,10 +82,12 @@ func (c Component) Referenced() []ImportReference {
 
 	var refs []ImportReference
 	for _, r := range list {
-		refs = append(refs, ImportReference{
-			Name:       r,
-			ImportName: strcase.KebabCase(r),
-		})
+		if c.Name != r { // Prevent nested/recursive component imports
+			refs = append(refs, ImportReference{
+				Name:       r,
+				ImportName: strcase.KebabCase(r),
+			})
+		}
 	}
 
 	return refs

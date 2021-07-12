@@ -14,30 +14,30 @@ import (
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// MockPrinter is a mock of Printer interface
+// MockPrinter is a mock of Printer interface.
 type MockPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPrinterMockRecorder
 }
 
-// MockPrinterMockRecorder is the mock recorder for MockPrinter
+// MockPrinterMockRecorder is the mock recorder for MockPrinter.
 type MockPrinterMockRecorder struct {
 	mock *MockPrinter
 }
 
-// NewMockPrinter creates a new mock instance
+// NewMockPrinter creates a new mock instance.
 func NewMockPrinter(ctrl *gomock.Controller) *MockPrinter {
 	mock := &MockPrinter{ctrl: ctrl}
 	mock.recorder = &MockPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPrinter) EXPECT() *MockPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method
+// Print mocks base method.
 func (m *MockPrinter) Print(arg0 context.Context, arg1 runtime.Object) (component.Component, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", arg0, arg1)
@@ -46,7 +46,7 @@ func (m *MockPrinter) Print(arg0 context.Context, arg1 runtime.Object) (componen
 	return ret0, ret1
 }
 
-// Print indicates an expected call of Print
+// Print indicates an expected call of Print.
 func (mr *MockPrinterMockRecorder) Print(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockPrinter)(nil).Print), arg0, arg1)
