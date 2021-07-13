@@ -15,12 +15,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testClient "k8s.io/client-go/kubernetes/fake"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	actionFake "github.com/vmware-tanzu/octant/pkg/action/fake"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/store/fake"
 )

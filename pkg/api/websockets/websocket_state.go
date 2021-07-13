@@ -22,9 +22,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 var (

@@ -9,28 +9,30 @@ import (
 	"github.com/gorilla/websocket"
 
 	internalAPI "github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 type WebsocketConnectionFactory struct {
 	upgrader websocket.Upgrader
 }
 
+var DefaultWebsocketUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		host, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			return false
+		}
+
+		return internalAPI.ShouldAllowHost(host, internalAPI.AcceptedHosts())
+	},
+}
+
 func NewWebsocketConnectionFactory() *WebsocketConnectionFactory {
 	return &WebsocketConnectionFactory{
-		upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				host, _, err := net.SplitHostPort(r.RemoteAddr)
-				if err != nil {
-					return false
-				}
-
-				return internalAPI.ShouldAllowHost(host, internalAPI.AcceptedHosts())
-			},
-		},
+		upgrader: DefaultWebsocketUpgrader,
 	}
 }
 
@@ -52,9 +54,6 @@ func (wcf *WebsocketConnectionFactory) NewConnection(
 	ctx, cancel := context.WithCancel(m.Context())
 	client := NewWebsocketClient(ctx, conn, m, dashConfig, m.ActionDispatcher(), clientID)
 
-	go client.readPump()
-	go client.writePump()
-
 	return client, cancel, nil
 }
 
@@ -73,9 +72,6 @@ func (wcf *WebsocketConnectionFactory) NewTemporaryConnection(
 
 	ctx, cancel := context.WithCancel(m.Context())
 	client := NewTemporaryWebsocketClient(ctx, conn, m, m.ActionDispatcher(), clientID)
-
-	go client.readPump()
-	go client.writePump()
 
 	return client, cancel, nil
 }

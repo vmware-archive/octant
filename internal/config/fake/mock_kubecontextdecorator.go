@@ -10,8 +10,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
+	cluster "github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 // MockKubeContextDecorator is a mock of KubeContextDecorator interface.

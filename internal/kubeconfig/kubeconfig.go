@@ -15,13 +15,14 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
+	internalCluster "github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 type KubeConfigOption struct {
 	kubeConfigOption func(*kubeConfigOptions)
-	clusterOption    cluster.ClusterOption
+	clusterOption    internalCluster.ClusterOption
 }
 
 type kubeConfigOptions struct {
@@ -51,7 +52,7 @@ func WithContextName(contextName string) KubeConfigOption {
 	}
 }
 
-func FromClusterOption(clusterOption cluster.ClusterOption) KubeConfigOption {
+func FromClusterOption(clusterOption internalCluster.ClusterOption) KubeConfigOption {
 	return KubeConfigOption{
 		kubeConfigOption: func(*kubeConfigOptions) {},
 		clusterOption:    clusterOption,
@@ -60,7 +61,7 @@ func FromClusterOption(clusterOption cluster.ClusterOption) KubeConfigOption {
 
 func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) (*KubeConfigContextManager, error) {
 	options := kubeConfigOptions{}
-	clusterOptions := []cluster.ClusterOption{}
+	clusterOptions := []internalCluster.ClusterOption{}
 	for _, opt := range opts {
 		if opt.kubeConfigOption != nil {
 			opt.kubeConfigOption(&options)
@@ -77,7 +78,7 @@ func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) 
 		overrides.CurrentContext = options.ContextName
 	}
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
-	clusterClient, err := cluster.FromClientConfig(ctx, clientConfig, clusterOptions...)
+	clusterClient, err := internalCluster.FromClientConfig(ctx, clientConfig, clusterOptions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create cluster client")
 	}
@@ -118,7 +119,7 @@ type KubeConfigContextManager struct {
 	currentContext     string
 	contexts           []Context
 	clusterClient      atomic.Value // cluster.ClientInterface
-	clusterOptions     []cluster.ClusterOption
+	clusterOptions     []internalCluster.ClusterOption
 }
 
 // Context describes a kube config context.
@@ -150,7 +151,7 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 	)
 
 	var err error
-	clusterClient, err := cluster.FromClientConfig(ctx, clientConfig, k.clusterOptions...)
+	clusterClient, err := internalCluster.FromClientConfig(ctx, clientConfig, k.clusterOptions...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create cluster client")
 	}

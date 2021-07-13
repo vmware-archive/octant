@@ -1,22 +1,20 @@
 package errors
 
-import "github.com/vmware-tanzu/octant/internal/errors"
-
 type StreamError struct {
-	*errors.GenericError
+	*GenericError
 	Fatal bool
 }
 
 func NewStreamError(err error) *StreamError {
 	return &StreamError{
-		errors.NewGenericError(err),
+		NewGenericError(err),
 		false,
 	}
 }
 
 func FatalStreamError(err error) *StreamError {
 	return &StreamError{
-		errors.NewGenericError(err),
+		NewGenericError(err),
 		true,
 	}
 }

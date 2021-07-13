@@ -15,11 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kcache "k8s.io/client-go/tools/cache"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
-	"github.com/vmware-tanzu/octant/internal/config"
-	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+	internalErrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
+	"github.com/vmware-tanzu/octant/pkg/config"
+	oerrors "github.com/vmware-tanzu/octant/pkg/errors"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -121,7 +122,7 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 
 	err := cw.objectStore.Watch(ctx, crdKey, handler)
 	if err != nil {
-		var e *oerrors.AccessError
+		var e *internalErrors.AccessError
 		if errors.As(err, &e) {
 			found := cw.errorStore.Add(e)
 			// Log if we have not seen this access error before.

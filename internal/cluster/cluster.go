@@ -39,7 +39,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
-//go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/vmware-tanzu/octant/internal/cluster ClientInterface
+//go:generate mockgen -source=../../pkg/cluster/client.go -destination=./fake/mock_client_interface.go -package=fake github.com/vmware-tanzu/octant/pkg/cluster ClientInterface
 //go:generate mockgen -source=../../pkg/cluster/namespace.go -destination=./fake/mock_namespace_interface.go -package=fake github.com/vmware-tanzu/octant/pkg/cluster NamespaceInterface
 //go:generate mockgen -source=../../pkg/cluster/info.go -destination=./fake/mock_info_interface.go -package=fake github.com/vmware-tanzu/octant/pkg/cluster InfoInterface
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/informers/generic.go -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
@@ -49,26 +49,6 @@ import (
 //go:generate mockgen -destination=./fake/mock_sharedindexinformer.go -package=fake k8s.io/client-go/tools/cache SharedIndexInformer
 //go:generate mockgen -destination=./fake/mock_authorization.go -package=fake k8s.io/client-go/kubernetes/typed/authorization/v1 AuthorizationV1Interface,SelfSubjectAccessReviewInterface,SelfSubjectAccessReviewsGetter,SelfSubjectRulesReviewInterface,SelfSubjectRulesReviewsGetter
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/dynamic/interface.go -destination=./fake/mock_dynamic_client.go -package=fake -imports=github.com/vmware-tanzu/octant/vendor/k8s.io/client-go/dynamic=k8s.io/client-go/dynamic -mock_names=Interface=MockDynamicInterface k8s.io/client-go/dynamic Interface
-
-// ClientInterface is a client for cluster operations.
-type ClientInterface interface {
-	DefaultNamespace() string
-	ResourceExists(schema.GroupVersionResource) bool
-	Resource(schema.GroupKind) (schema.GroupVersionResource, bool, error)
-	ResetMapper()
-	KubernetesClient() (kubernetes.Interface, error)
-	DynamicClient() (dynamic.Interface, error)
-	DiscoveryClient() (discovery.DiscoveryInterface, error)
-	NamespaceClient() (clusterTypes.NamespaceInterface, error)
-	InfoClient() (clusterTypes.InfoInterface, error)
-	Close()
-	RESTInterface
-}
-
-type RESTInterface interface {
-	RESTClient() (rest.Interface, error)
-	RESTConfig() *rest.Config
-}
 
 // Cluster is a client for cluster operations
 type Cluster struct {
@@ -88,7 +68,7 @@ type Cluster struct {
 	providedNamespaces []string
 }
 
-var _ ClientInterface = (*Cluster)(nil)
+var _ clusterTypes.ClientInterface = (*Cluster)(nil)
 
 func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string, providedNamespaces []string) (*Cluster, error) {
 	logger := internalLog.From(ctx).With("component", "cluster client")
@@ -246,7 +226,7 @@ func (c *Cluster) Version() (string, error) {
 type clusterOptions struct {
 	InitialNamespace   string
 	ProvidedNamespaces []string
-	RESTConfigOptions  RESTConfigOptions
+	RESTConfigOptions  clusterTypes.RESTConfigOptions
 }
 
 type ClusterOption func(*clusterOptions)
@@ -281,7 +261,7 @@ func WithClientUserAgent(userAgent string) ClusterOption {
 	}
 }
 
-func WithRESTConfigOptions(restConfigOptions RESTConfigOptions) ClusterOption {
+func WithRESTConfigOptions(restConfigOptions clusterTypes.RESTConfigOptions) ClusterOption {
 	return func(clusterOptions *clusterOptions) {
 		clusterOptions.RESTConfigOptions = restConfigOptions
 	}
@@ -326,7 +306,7 @@ func FromClientConfig(
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied
 // See core_client.go#setConfigDefaults
-func withConfigDefaults(inConfig *rest.Config, options RESTConfigOptions) *rest.Config {
+func withConfigDefaults(inConfig *rest.Config, options clusterTypes.RESTConfigOptions) *rest.Config {
 	config := rest.CopyConfig(inConfig)
 	config.QPS = options.QPS
 	config.Burst = options.Burst
@@ -343,10 +323,4 @@ func withConfigDefaults(inConfig *rest.Config, options RESTConfigOptions) *rest.
 	}
 
 	return config
-}
-
-type RESTConfigOptions struct {
-	QPS       float32
-	Burst     int
-	UserAgent string
 }

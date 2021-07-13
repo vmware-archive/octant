@@ -9,7 +9,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"

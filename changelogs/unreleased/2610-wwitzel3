@@ -1,0 +1,1 @@
+export config.Dash and related interfaces to allow easier usage of Octant as a library
