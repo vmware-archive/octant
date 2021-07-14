@@ -2,7 +2,7 @@
   "name": "octant",
   "description": "Octant is an extensible platform that provides modules that help developers better understand their Kuberenetes resources.",
   "author": "The Octant Team",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "homepage": "https://octant.dev",
   "repository": {
     "type": "git",
