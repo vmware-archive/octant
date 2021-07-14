@@ -41,6 +41,16 @@ export class FormViewContainerComponent implements OnInit {
     }
   }
 
+  onSelect(event, field: string): void {
+    this.formArray = this.formGroupContainer.get(field) as FormArray;
+    this.formArray.clear();
+
+    const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
+    Array.from(selectedOptions).forEach(options => {
+      this.formArray.push(new FormControl(options.value));
+    });
+  }
+
   fieldChoices(field: ActionField) {
     return field.config.configuration.choices as Choice[];
   }

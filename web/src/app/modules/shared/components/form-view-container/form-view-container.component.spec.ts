@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormViewContainerComponent } from './form-view-container.component';
 import { Component } from '@angular/core';
 import {
+  FormArray,
   FormBuilder,
   FormGroup,
   FormsModule,
@@ -25,6 +26,8 @@ class TestWrapperComponent {
 describe('FormViewContainerComponent', () => {
   let component: TestWrapperComponent;
   let fixture: ComponentFixture<TestWrapperComponent>;
+  let element: HTMLDivElement;
+  let formHelper;
 
   const formBuilder: FormBuilder = new FormBuilder();
 
@@ -41,6 +44,8 @@ describe('FormViewContainerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TestWrapperComponent);
     component = fixture.componentInstance;
+    element = fixture.nativeElement;
+    formHelper = new FormHelper();
   });
 
   it('should create', () => {
@@ -49,8 +54,6 @@ describe('FormViewContainerComponent', () => {
 
   describe('form group', () => {
     it('creates radio', () => {
-      const element: HTMLDivElement = fixture.nativeElement;
-      const formHelper = new FormHelper();
       component.form = {
         fields: [
           {
@@ -81,6 +84,82 @@ describe('FormViewContainerComponent', () => {
       fixture.detectChanges();
       expect(element.querySelector('cds-radio-group')).not.toBeNull();
       expect(element.querySelector('cds-radio')).not.toBeNull();
+    });
+
+    it('should create a select and verify is selected', () => {
+      const name = 'name';
+      component.form = {
+        fields: [
+          {
+            config: {
+              configuration: {
+                choices: [
+                  { label: 'a', value: 'a', checked: true },
+                  { label: 'b', value: 'b', checked: false },
+                  { label: 'c', value: 'c', checked: false },
+                ],
+              },
+              label: 'label',
+              name,
+              type: 'select',
+              value: null,
+              placeholder: '',
+              error: null,
+              validators: null,
+            },
+            metadata: { type: 'formField' },
+          },
+        ],
+      };
+      component.formGroup = formHelper.createFromGroup(
+        component.form,
+        formBuilder
+      );
+      fixture.detectChanges();
+
+      const selected = (component.formGroup.get(
+        name
+      ) as FormArray).getRawValue();
+      expect(selected[0]).toEqual('a');
+      expect(element.querySelector('cds-select')).not.toBeNull();
+    });
+
+    it('should create a select and verify is NOT selected', () => {
+      const name = 'name';
+      component.form = {
+        fields: [
+          {
+            config: {
+              configuration: {
+                choices: [
+                  { label: 'd', value: 'd', checked: false },
+                  { label: 'b', value: 'b', checked: false },
+                  { label: 'c', value: 'c', checked: false },
+                ],
+              },
+              label: 'label',
+              name,
+              type: 'select',
+              value: null,
+              placeholder: '',
+              error: null,
+              validators: null,
+            },
+            metadata: { type: 'formField' },
+          },
+        ],
+      };
+      component.formGroup = formHelper.createFromGroup(
+        component.form,
+        formBuilder
+      );
+      fixture.detectChanges();
+
+      const selected = (component.formGroup.get(
+        name
+      ) as FormArray).getRawValue();
+      expect(selected[0]).toEqual(undefined);
+      expect(element.querySelector('cds-select')).not.toBeNull();
     });
   });
 });
