@@ -21,7 +21,8 @@ import { parse } from 'marked';
 })
 export class TextComponent
   extends AbstractViewComponent<TextView>
-  implements OnInit {
+  implements OnInit
+{
   value: string | SafeHtml;
   clipboardValue: string;
   copied: boolean;

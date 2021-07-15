@@ -10,7 +10,8 @@ import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
   styleUrls: ['./content-filter.component.scss'],
 })
 export class ContentFilterComponent
-  implements ClrDatagridFilterInterface<TableRow>, OnInit {
+  implements ClrDatagridFilterInterface<TableRow>, OnInit
+{
   @Input() filter: TableFilter;
   @Input() column: string;
 

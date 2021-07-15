@@ -22,9 +22,8 @@ export class PreferencesService implements OnDestroy {
   private kubeConfigFullPath: string;
 
   public preferences: Map<string, PreferencesEntry<any>> = new Map();
-  public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    false
-  );
+  public preferencesOpened: BehaviorSubject<boolean> =
+    new BehaviorSubject<boolean>(false);
 
   constructor(private themeService: ThemeService) {
     if (this.isElectron()) {

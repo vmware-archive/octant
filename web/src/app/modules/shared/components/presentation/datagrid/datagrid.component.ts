@@ -45,7 +45,8 @@ import { Subscription } from 'rxjs';
 })
 export class DatagridComponent
   extends AbstractViewComponent<TableView>
-  implements OnDestroy {
+  implements OnDestroy
+{
   timeStampComparator = new TimestampComparator();
   sortOrder: ClrDatagridSortOrder = ClrDatagridSortOrder.UNSORTED;
 

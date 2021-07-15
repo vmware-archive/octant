@@ -122,14 +122,16 @@ describe('InputFilterComponent', () => {
       { key: 'test3', value: 'filter3' },
     ]);
     fixture.detectChanges();
-    inputElement = fixture.debugElement.query(By.css('.text-input'))
-      .nativeElement;
+    inputElement = fixture.debugElement.query(
+      By.css('.text-input')
+    ).nativeElement;
     expect(inputElement.placeholder).toMatch(/Filter by labels \(3 applied\)/i);
 
     labelFilterService.filters.next([{ key: 'test1', value: 'filter1' }]);
     fixture.detectChanges();
-    inputElement = fixture.debugElement.query(By.css('.text-input'))
-      .nativeElement;
+    inputElement = fixture.debugElement.query(
+      By.css('.text-input')
+    ).nativeElement;
     expect(inputElement.placeholder).toMatch(/Filter by labels \(1 applied\)/i);
   });
 
@@ -155,8 +157,9 @@ describe('InputFilterComponent', () => {
 
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      inputNativeElement = fixture.debugElement.query(By.css('.text-input'))
-        .nativeElement;
+      inputNativeElement = fixture.debugElement.query(
+        By.css('.text-input')
+      ).nativeElement;
       expect(inputNativeElement.value).toBe('');
     });
   });

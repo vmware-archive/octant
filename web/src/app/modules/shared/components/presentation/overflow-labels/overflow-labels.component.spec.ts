@@ -68,8 +68,9 @@ describe('OverflowLabelsComponent', () => {
       ['keyOne']: 'valueOne',
     };
     fixture.detectChanges();
-    const firstLabel = fixture.debugElement.query(By.css('.label'))
-      .nativeElement;
+    const firstLabel = fixture.debugElement.query(
+      By.css('.label')
+    ).nativeElement;
 
     firstLabel.click();
     expect(component.filterLabel).toHaveBeenCalledWith('keyOne', 'valueOne');

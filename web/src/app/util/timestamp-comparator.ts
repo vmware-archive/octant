@@ -8,7 +8,8 @@ import {
 } from '../modules/shared/models/content';
 
 export class TimestampComparator
-  implements ClrDatagridComparatorInterface<TableRowWithMetadata> {
+  implements ClrDatagridComparatorInterface<TableRowWithMetadata>
+{
   compare(a: TableRowWithMetadata, b: TableRowWithMetadata) {
     const rowA = a.data.Age as TimestampView;
     const rowB = b.data.Age as TimestampView;

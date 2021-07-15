@@ -16,7 +16,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 })
 export class TimestampComponent
   extends AbstractViewComponent<TimestampView>
-  implements OnDestroy {
+  implements OnDestroy
+{
   timestamp: number;
   humanReadable: string;
 

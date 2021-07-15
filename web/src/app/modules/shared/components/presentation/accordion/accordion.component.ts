@@ -15,7 +15,8 @@ import { ViewService } from '../../../services/view/view.service';
 })
 export class AccordionComponent
   extends AbstractViewComponent<AccordionView>
-  implements OnInit {
+  implements OnInit
+{
   rows: AccordionRow[];
   title: string;
   allowMultipleExpanded: boolean;

@@ -46,7 +46,8 @@ const defaultZoom = {
 })
 export class ResourceViewerComponent
   extends AbstractViewComponent<ResourceViewerView>
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy
+{
   selectedNodeId: string;
   private subscriptionTheme: Subscription;
   resizeEdges = { left: true, right: true };

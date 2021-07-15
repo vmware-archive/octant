@@ -11,16 +11,17 @@ import { View } from '../../models/content';
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
 export abstract class AbstractViewComponent<T>
-  implements OnInit, AfterViewInit {
+  implements OnInit, AfterViewInit
+{
   v: T;
 
   @Input() set view(v: View) {
-    this.v = (v as unknown) as T;
+    this.v = v as unknown as T;
     this.update();
   }
 
   get view() {
-    return (this.v as unknown) as View;
+    return this.v as unknown as View;
   }
 
   @Output() viewInit: EventEmitter<void> = new EventEmitter<void>();
