@@ -8,17 +8,12 @@ import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from '../src/app/app-routing.module';
-import {
-  setCompodocJson,
-  prepareForInline,
-} from '@storybook/addon-docs/angular';
-import docJson from '../documentation.json';
+import { prepareForInline } from '@storybook/addon-docs/angular';
 import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { windowProvider, WindowToken } from '../src/app/window';
 
 import theme from './theme';
 
-setCompodocJson(docJson);
 
 setConsoleOptions({
   panelExclude: [

@@ -15,7 +15,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --configuration production --output-hashing=all",
+    "build": "node ./node_modules/@angular/cli/bin/ng build --configuration production --output-hashing=all",
     "build-electron": "npx tsc main.ts && npm run build -- --base-href ./",
     "test": "ng test --watch=false --browsers=ElectronDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless --source-map=false",
@@ -27,9 +27,8 @@
     "electron:serve-tsc": "npx tsc -p tsconfig.serve.json",
     "electron:local": "npx tsc main.ts && npx ng build --base-href ./ && npx electron --local .",
     "electron:build": "npm run build-electron && npx electron-builder -p never",
-    "docs:json": "compodoc -p tsconfig.json -e json -d .",
-    "storybook": "npm run docs:json && start-storybook -p 6006 -s src/assets",
-    "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook",
+    "storybook": "start-storybook -p 6006 -s src/assets",
+    "build-storybook": "node ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook",
     "preinstall": "npx npm-force-resolutions",
     "postinstall": "rimraf ./node_modules/cytoscape-node-html-label/dist/cytoscape-node-html-label.d.ts"
   },
@@ -99,7 +98,6 @@
     "@angular/compiler-cli": "^12.1.2",
     "@angular/language-service": "^12.1.2",
     "@babel/core": "^7.11.6",
-    "@compodoc/compodoc": "^1.1.13",
     "@mdx-js/loader": "^1.6.18",
     "@storybook/addon-a11y": "v6.3.4",
     "@storybook/addon-actions": "v6.3.4",
