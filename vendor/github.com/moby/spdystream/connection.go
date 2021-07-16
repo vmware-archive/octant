@@ -1,3 +1,19 @@
+/*
+   Copyright 2014-2021 Docker Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 package spdystream
 
 import (
@@ -9,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/spdystream/spdy"
+	"github.com/moby/spdystream/spdy"
 )
 
 var (
@@ -101,14 +117,14 @@ Loop:
 			// attempts to grab the write lock that Write() already has, causing a
 			// deadlock.
 			//
-			// See https://github.com/docker/spdystream/issues/49 for more details.
+			// See https://github.com/moby/spdystream/issues/49 for more details.
 			go func() {
-				for _ = range resetChan {
+				for range resetChan {
 				}
 			}()
 
 			go func() {
-				for _ = range setTimeoutChan {
+				for range setTimeoutChan {
 				}
 			}()
 
@@ -127,7 +143,7 @@ Loop:
 	}
 
 	// Drain resetChan
-	for _ = range resetChan {
+	for range resetChan {
 	}
 }
 
@@ -200,7 +216,7 @@ type Connection struct {
 	shutdownChan chan error
 	hasShutdown  bool
 
-	// for testing https://github.com/docker/spdystream/pull/56
+	// for testing https://github.com/moby/spdystream/pull/56
 	dataFrameHandler func(*spdy.DataFrame) error
 }
 
@@ -284,7 +300,7 @@ func (s *Connection) Ping() (time.Duration, error) {
 		}
 		break
 	}
-	return time.Now().Sub(startTime), nil
+	return time.Since(startTime), nil
 }
 
 // Serve handles frames sent from the server, including reply frames
@@ -727,8 +743,6 @@ func (s *Connection) shutdown(closeTimeout time.Duration) {
 		s.shutdownChan <- err
 	}
 	close(s.shutdownChan)
-
-	return
 }
 
 // Closes spdy connection by sending GoAway frame and initiating shutdown
@@ -752,11 +766,10 @@ func (s *Connection) Close() error {
 	}
 
 	err := s.framer.WriteFrame(goAwayFrame)
+	go s.shutdown(s.closeTimeout)
 	if err != nil {
 		return err
 	}
-
-	go s.shutdown(s.closeTimeout)
 
 	return nil
 }
