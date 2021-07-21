@@ -76,15 +76,20 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal error config")
 		o = t
-	case TypeExpressionSelector:
-		t := &ExpressionSelector{Base: Base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal expressionSelector config")
-		o = t
 	case TypeExpandableRowDetail:
 		t := &ExpandableRowDetail{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal expandable row detail config")
+		o = t
+	case TypeExtension:
+		t := &Extension{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal expandable row detail config")
+		o = t
+	case TypeExpressionSelector:
+		t := &ExpressionSelector{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal expressionSelector config")
 		o = t
 	case TypeFlexLayout:
 		t := &FlexLayout{Base: Base{Metadata: to.Metadata}}
@@ -106,6 +111,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal gridActions config")
 		o = t
+	case TypeIcon:
+		t := &Icon{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal icon config")
+		o = t
 	case TypeIFrame:
 		t := &IFrame{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -126,11 +136,6 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal labelSelector config")
 		o = t
-	case TypeLoading:
-		t := &Loading{Base: Base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal loading config")
-		o = t
 	case TypeLink:
 		t := &Link{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -146,10 +151,30 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal logs config")
 		o = t
+	case TypeLoading:
+		t := &Loading{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal loading config")
+		o = t
 	case TypeModal:
 		t := &Modal{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal modal config")
+		o = t
+	case TypePodStatus:
+		t := &PodStatus{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal pod status config")
+		o = t
+	case TypePort:
+		t := &Port{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal loading config")
+		o = t
+	case TypePorts:
+		t := &Ports{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal loading config")
 		o = t
 	case TypeQuadrant:
 		t := &Quadrant{Base: Base{Metadata: to.Metadata}}
@@ -171,6 +196,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal selectors config")
 		o = t
+	case TypeSignpost:
+		t := &Signpost{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal signpost config")
+		o = t
 	case TypeSingleStat:
 		t := &SingleStat{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -191,6 +221,16 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal table config")
 		o = t
+	case TypeTabsView:
+		t := &TabsView{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal tabs config")
+		o = t
+	case TypeTerminal:
+		t := &Terminal{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal tabs config")
+		o = t
 	case TypeText:
 		t := &Text{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -206,20 +246,10 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal timestamp config")
 		o = t
-	case TypeIcon:
-		t := &Icon{Base: Base{Metadata: to.Metadata}}
+	case TypeYAML:
+		t := &YAML{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal icon config")
-		o = t
-	case TypeSignpost:
-		t := &Signpost{Base: Base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal signpost config")
-		o = t
-	case TypeTabsView:
-		t := &TabsView{Base: Base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal tabs config")
+			"unmarshal timestamp config")
 		o = t
 	default:
 		return nil, errors.Errorf("unknown view component %q", to.Metadata.Type)
