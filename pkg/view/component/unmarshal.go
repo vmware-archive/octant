@@ -84,7 +84,7 @@ func unmarshal(to TypedObject) (Component, error) {
 	case TypeExtension:
 		t := &Extension{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal expandable row detail config")
+			"unmarshal extension config")
 		o = t
 	case TypeExpressionSelector:
 		t := &ExpressionSelector{Base: Base{Metadata: to.Metadata}}
@@ -169,12 +169,12 @@ func unmarshal(to TypedObject) (Component, error) {
 	case TypePort:
 		t := &Port{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal loading config")
+			"unmarshal port config")
 		o = t
 	case TypePorts:
 		t := &Ports{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal loading config")
+			"unmarshal ports config")
 		o = t
 	case TypeQuadrant:
 		t := &Quadrant{Base: Base{Metadata: to.Metadata}}
@@ -229,7 +229,7 @@ func unmarshal(to TypedObject) (Component, error) {
 	case TypeTerminal:
 		t := &Terminal{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal tabs config")
+			"unmarshal terminal config")
 		o = t
 	case TypeText:
 		t := &Text{Base: Base{Metadata: to.Metadata}}
@@ -249,7 +249,7 @@ func unmarshal(to TypedObject) (Component, error) {
 	case TypeYAML:
 		t := &YAML{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal timestamp config")
+			"unmarshal YAML config")
 		o = t
 	default:
 		return nil, errors.Errorf("unknown view component %q", to.Metadata.Type)
