@@ -433,18 +433,22 @@ func NewHandlerObjectStatus(objectStore store.Store, pluginManager plugin.Manage
 }
 
 func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object, link link.Interface) (*objectstatus.ObjectStatus, error) {
-	status, err := objectstatus.Status(ctx, object, h.objectStore, link)
+	pluginStatus, err := h.pluginManager.ObjectStatus(ctx, object)
 	if err != nil {
 		return nil, err
 	}
 
-	pluginStatus, err := h.pluginManager.ObjectStatus(ctx, object)
+	status, err := objectstatus.Status(ctx, object, h.objectStore, link)
 	if err != nil {
 		return nil, err
 	}
 
 	status.Details = append(status.Details, pluginStatus.ObjectStatus.Details...)
 	status.Properties = append(status.Properties, pluginStatus.ObjectStatus.Properties...)
+
+	if pluginStatus.ObjectStatus.Status != "" {
+		status.NodeStatus = pluginStatus.ObjectStatus.Status
+	}
 
 	return &status, nil
 }

@@ -44,6 +44,7 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 
 	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols, opts.DashConfig.ObjectStore())
 	ot.AddFilters(podTableFilters())
+	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 
 	for i := range list.Items {
 		row := component.TableRow{}

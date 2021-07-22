@@ -27,7 +27,7 @@ func IngressListHandler(ctx context.Context, list *networkingv1.IngressList, opt
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
 	ot := NewObjectTable("Ingresses", "We couldn't find any ingresses!", cols, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, ingress := range list.Items {
 		ports := "80"
 		if len(ingress.Spec.TLS) > 0 {

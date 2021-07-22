@@ -46,6 +46,7 @@ func Test_DaemonSetListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := DaemonSetListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
@@ -169,7 +170,6 @@ func Test_DaemonSetPods(t *testing.T) {
 	tpo.link.EXPECT().
 		ForGVK("", "v1", "Node", "node", "node").
 		Return(nodeLink, nil).AnyTimes()
-
 	daemonSet := testutil.CreateDaemonSet("daemonset")
 
 	pod := testutil.CreatePod("fluentd-elasticsearch-dvskv")
@@ -193,6 +193,7 @@ func Test_DaemonSetPods(t *testing.T) {
 			},
 		},
 	}
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 
 	pods := &corev1.PodList{
 		Items: []corev1.Pod{*pod},
@@ -222,7 +223,7 @@ func Test_DaemonSetPods(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "fluentd-elasticsearch-dvskv", "/pod",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

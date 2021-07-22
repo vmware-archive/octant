@@ -81,6 +81,7 @@ func Test_StorageClassListHandler(t *testing.T) {
 					Kind:       object.Kind,
 					Name:       object.Name,
 				}).Return(testutil.ToUnstructured(t, object), nil).AnyTimes()
+				tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 			}
 			got, err := StorageClassListHandler(ctx, tc.list, printOptions)
 			if tc.isErr {

@@ -41,7 +41,7 @@ func CustomResourceDefinitionListHandler(
 		"We couldn't find any custom resource definitions!",
 		cols,
 		opts.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 	for _, crd := range list.Items {
 		row := component.TableRow{}
 

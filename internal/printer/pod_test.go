@@ -78,6 +78,7 @@ func Test_PodListHandler(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pod")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
@@ -86,7 +87,7 @@ func Test_PodListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod", "/pod",
 			genObjectStatus(component.TextStatusWarning, []string{
-				"",
+				"Pod may require additional action",
 			})),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
@@ -145,6 +146,7 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
@@ -152,7 +154,7 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Succeeded"),
 		"Restarts": component.NewText("0"),
@@ -188,6 +190,9 @@ func TestPodListHandler_sorted(t *testing.T) {
 	tpo.PathForObject(pod2, pod2.Name, "/pod2")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod1)
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod2)
+
 	got, err := PodListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
@@ -195,7 +200,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod1", "/pod1",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),
@@ -208,7 +213,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 	})
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod2", "/pod2",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),

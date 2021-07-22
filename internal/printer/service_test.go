@@ -99,6 +99,7 @@ func Test_ServiceListHandler(t *testing.T) {
 	tpo.PathForObject(&object.Items[0], object.Items[0].Name, "/service")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, &object.Items[0])
 	got, err := ServiceListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 

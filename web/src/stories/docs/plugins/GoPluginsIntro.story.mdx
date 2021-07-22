@@ -181,22 +181,41 @@ func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*compo
 
 ## Object Status
 
-An `ObjectStatusResponse` has an `ObjectStatus` which currently maps to a `PodSummary` and contains a list of Details and a NodeStatus (ok, warning, error). Details can be any of the various components found in [reference](/docs/reference).
+An `ObjectStatusResponse` has an `ObjectStatus` which contains a list of Properties, Details, and a Status (ok, warning, error). Details can be any of the various components found in [reference](/docs/reference).
+
+A resource viewer shows the property labels and their respective components inside a table. Details can be seen in datagrid tables by clicking the icon.
 
 ```go
-func handleObjectStatus(dashboardClient service.Dashboard, object runtime.Object) (plugin.ObjectStatusResponse, error) {
-	if object == nil {
-		return plugin.ObjectStatusResponse{}, errors.New("object is nil")
+func handleStatus(request *service.PrintRequest) (plugin.ObjectStatusResponse, error) {
+	if request.Object == nil {
+		return plugin.ObjectStatusResponse{}, errors.Errorf("object is nil")
 	}
 
-	objectStatusResp := plugin.ObjectStatusResponse{
+	key, err := store.KeyFromObject(request.Object)
+	if err != nil {
+		return plugin.ObjectStatusResponse{}, err
+	}
+	u, err := request.DashboardClient.Get(request.Context(), key)
+	if err != nil {
+		return plugin.ObjectStatusResponse{}, err
+	}
+
+	if u == nil {
+		return plugin.ObjectStatusResponse{}, errors.New("object doesn't exist")
+	}
+
+	return plugin.ObjectStatusResponse{
 		ObjectStatus: component.PodSummary{
-			Details: []component.Component{component.NewText("plugin-name: added status")},
-			Status:  component.NodeStatusOK,
+			Status: component.NodeStatusError,
+			Details: []component.Component{
+				component.NewText("from plugin: " + string(u.GetUID())),
+			},
+			Properties: []component.Property{{
+				Label: "ID (from plugin)",
+				Value: component.NewText(string(u.GetUID())),
+			}},
 		},
-	}
-
-	return objectStatusResp, nil
+	}, nil
 }
 ```
 

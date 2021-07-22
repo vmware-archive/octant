@@ -77,6 +77,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	tpo.PathForObject(validReplicationController, validReplicationController.Name, "/rc")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, validReplicationController)
 	got, err := ReplicationControllerListHandler(ctx, validReplicationControllerList, printOptions)
 	require.NoError(t, err)
 
@@ -270,6 +271,7 @@ func Test_ReplicationControllerPods(t *testing.T) {
 	}
 
 	tpo.PathForObject(pod, pod.Name, "/pod")
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 
 	podList := &unstructured.UnstructuredList{}
 	for _, p := range pods.Items {
@@ -293,7 +295,7 @@ func Test_ReplicationControllerPods(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "nginx-hv4qs", "/pod",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

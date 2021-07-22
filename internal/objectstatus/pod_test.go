@@ -36,9 +36,9 @@ func Test_pod(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details: []component.Component{
-					component.NewText(""),
+					component.NewText("Pod is OK"),
 				},
 				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
 					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
@@ -52,9 +52,9 @@ func Test_pod(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details: []component.Component{
-					component.NewText(""),
+					component.NewText("Pod is unhealthy"),
 				},
 				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
 					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
@@ -68,9 +68,9 @@ func Test_pod(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details: []component.Component{
-					component.NewText(""),
+					component.NewText("Pod may require additional action"),
 				},
 				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},
 					{Label: "Node", Value: component.NewLink("", "Node", "some-url/node")},
@@ -98,9 +98,9 @@ func Test_pod(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details: []component.Component{
-					component.NewText(""),
+					component.NewText("Pod is OK"),
 					component.NewText("Ephemeral container is running"),
 				},
 				Properties: []component.Property{{Label: "ServiceAccount", Value: component.NewLink("", "ServiceAccount", "some-url/service-account")},

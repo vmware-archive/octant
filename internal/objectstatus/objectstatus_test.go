@@ -29,7 +29,7 @@ import (
 func Test_status(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 	deployObjectStatus := ObjectStatus{
-		nodeStatus: component.NodeStatusOK,
+		NodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("apps/v1 Deployment is OK")},
 		Properties: []component.Property{{Label: "Namespace", Value: component.NewText("namespace")},
 			{Label: "Created", Value: component.NewTimestamp(deployment.CreationTimestamp.Time)}},

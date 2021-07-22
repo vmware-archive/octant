@@ -47,7 +47,7 @@ func service(ctx context.Context, object runtime.Object, o store.Store, _ link.I
 
 		if !found {
 			return ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Service has no endpoints")},
 			}, nil
 		}
@@ -60,7 +60,7 @@ func service(ctx context.Context, object runtime.Object, o store.Store, _ link.I
 
 		if addressCount == 0 {
 			return ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
 			}, nil
 		}
@@ -69,7 +69,7 @@ func service(ctx context.Context, object runtime.Object, o store.Store, _ link.I
 		{Label: "Session Affinity", Value: component.NewText(string(service.Spec.SessionAffinity))}}
 
 	return ObjectStatus{
-		nodeStatus: component.NodeStatusOK,
+		NodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("Service is OK")},
 		Properties: properties,
 	}, nil

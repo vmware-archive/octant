@@ -23,7 +23,7 @@ func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBin
 
 	columns := component.NewTableCols("Name", "Age", "Role kind", "Role name")
 	ot := NewObjectTable("Role Bindings", "We couldn't find any role bindings!", columns, opts.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 	for _, roleBinding := range roleBindingList.Items {
 		row := component.TableRow{}
 		nameLink, err := opts.Link.ForObject(&roleBinding, roleBinding.Name)

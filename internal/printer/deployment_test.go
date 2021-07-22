@@ -90,6 +90,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := DeploymentListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
@@ -334,6 +335,7 @@ func Test_DeploymentPods(t *testing.T) {
 		Return(testutil.ToUnstructuredList(t, pod), false, nil)
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 
 	replicaSets, err := listReplicaSetsAsObjects(ctx, deployment, printOptions)
 	require.NoError(t, err)
@@ -344,7 +346,7 @@ func Test_DeploymentPods(t *testing.T) {
 	expected := component.NewTableWithRows("Pods", "We couldn't find any pods!", podColsWithOutLabels, []component.TableRow{
 		{
 			"Name": component.NewLink("", pod.Name, "/pod",
-				genObjectStatus(component.TextStatusOK, []string{""})),
+				genObjectStatus(component.TextStatusOK, []string{"Pod is OK"})),
 			"Age":      component.NewTimestamp(now),
 			"Ready":    component.NewText("1/1"),
 			"Restarts": component.NewText("0"),

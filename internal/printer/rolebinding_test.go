@@ -40,6 +40,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 	tpo.PathForGVK(roleBinding.Namespace, rbacAPIVersion, "Role", "pod-reader", "pod-reader", "/role")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, roleBinding)
 	observed, err := RoleBindingListHandler(ctx, roleBindingList, printOptions)
 	require.NoError(t, err)
 

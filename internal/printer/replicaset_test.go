@@ -83,6 +83,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 	tpo.PathForObject(&object.Items[0], object.Items[0].Name, "/replica-set")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, &object.Items[0])
 	got, err := ReplicaSetListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
@@ -297,6 +298,7 @@ func Test_ReplicaSetPods(t *testing.T) {
 	}
 
 	tpo.PathForObject(pod, pod.Name, "/pod")
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 
 	podList := &unstructured.UnstructuredList{}
 	for _, p := range pods.Items {
@@ -320,7 +322,7 @@ func Test_ReplicaSetPods(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "nginx-deployment-59478d9757-nfqbk", "/pod",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

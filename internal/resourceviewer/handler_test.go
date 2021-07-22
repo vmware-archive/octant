@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
+	"github.com/vmware-tanzu/octant/pkg/store"
+
 	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"github.com/golang/mock/gomock"
@@ -334,6 +338,64 @@ func Test_isObjectParent(t *testing.T) {
 			assert.Equal(t, test.expected, got)
 		})
 	}
+}
+
+func TestHandlerObjectStatus_Status(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	ctx := context.Background()
+
+	objectStore := storeFake.NewMockStore(controller)
+	pluginManager := pluginFake.NewMockManagerInterface(controller)
+
+	pod := testutil.CreatePod("pod")
+	response := plugin.ObjectStatusResponse{ObjectStatus: component.PodSummary{
+		Details: []component.Component{component.NewText("detail")},
+		Properties: []component.Property{
+			{
+				Label: "label",
+				Value: component.NewText("value"),
+			},
+		},
+		Status: component.NodeStatusError,
+	}}
+	pluginManager.EXPECT().ObjectStatus(ctx, pod).Return(&response, nil)
+
+	dashConfig := configFake.NewMockDash(controller)
+	dashConfig.EXPECT().ObjectPath("namespace", "v1", "ServiceAccount", "")
+	objectStore.EXPECT().List(ctx, store.Key{Namespace: "namespace", APIVersion: "v1", Kind: "Event"}).Return(&unstructured.UnstructuredList{}, false, nil)
+
+	l, err := link.NewFromDashConfig(dashConfig)
+	require.NoError(t, err)
+
+	handler := NewHandlerObjectStatus(objectStore, pluginManager)
+	result, err := handler.Status(ctx, pod, l)
+	require.NoError(t, err)
+
+	expected := objectstatus.ObjectStatus{
+		NodeStatus: component.NodeStatusError,
+		Details:    []component.Component{component.NewText("Pod may require additional action"), component.NewText("detail")},
+		Properties: []component.Property{
+			{
+				Label: "Namespace",
+				Value: component.NewText("namespace"),
+			},
+			{
+				Label: "Created",
+				Value: component.NewTimestamp(pod.CreationTimestamp.Time),
+			},
+			{
+				Label: "ServiceAccount",
+				Value: component.NewLink("", "", ""),
+			},
+			{
+				Label: "label",
+				Value: component.NewText("value"),
+			},
+		},
+	}
+	require.Equal(t, expected, *result)
 }
 
 func Test_adjListStorage(t *testing.T) {
