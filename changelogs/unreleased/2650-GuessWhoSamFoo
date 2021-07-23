@@ -1,0 +1,1 @@
+Fixed panic when viewing objects with no owner reference in applications view
