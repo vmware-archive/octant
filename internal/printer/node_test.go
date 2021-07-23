@@ -35,17 +35,25 @@ func TestNodeListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, node)
+
 	got, err := NodeListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows("Nodes", "We couldn't find any nodes!", nodeListColumns, []component.TableRow{
 		{
-			"Age":     component.NewTimestamp(node.CreationTimestamp.Time),
-			"Name":    component.NewLink("", "node-1", "/node"),
+			"Age": component.NewTimestamp(node.CreationTimestamp.Time),
+			"Name": component.NewLink("", "node-1", "/node",
+				genObjectStatus(component.TextStatusOK, []string{
+					"v1 Node is OK",
+				})),
 			"Labels":  component.NewLabels(make(map[string]string)),
 			"Version": component.NewText("1.15.1"),
 			"Status":  component.NewText("Unknown"),
 			"Roles":   component.NewText("<none>"),
+			component.GridActionKey: gridActionsFactory([]component.GridAction{
+				buildObjectDeleteAction(t, node),
+			}),
 		},
 	})
 
