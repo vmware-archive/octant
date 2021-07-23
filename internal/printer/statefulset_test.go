@@ -310,6 +310,14 @@ func Test_StatefulSetPods(t *testing.T) {
 				Image:        "nginx:1.15",
 				RestartCount: 0,
 				Ready:        true,
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ContainerCreating",
+						Message: "",
+					},
+					Running:    nil,
+					Terminated: nil,
+				},
 			},
 		},
 	}
@@ -338,13 +346,14 @@ func Test_StatefulSetPods(t *testing.T) {
 	got, err := createPodListView(ctx, statefulSet, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "web-0", "/pod",
 			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("1/1"),
 		"Phase":    component.NewText("Pending"),
+		"Status":   component.NewText("ContainerCreating"),
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),

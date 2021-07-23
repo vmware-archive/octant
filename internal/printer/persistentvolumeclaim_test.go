@@ -278,6 +278,11 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 				Image:        "mysql:5.6",
 				RestartCount: 0,
 				Ready:        true,
+				State: corev1.ContainerState{
+					Waiting:    nil,
+					Running:    &corev1.ContainerStateRunning{StartedAt: metav1.Time{Time: now}},
+					Terminated: nil,
+				},
 			},
 		},
 	}
@@ -316,7 +321,7 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 	got, err := createMountedPodListView(ctx, pvc.Namespace, pvc.Name, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "wordpress-mysql-67565bd57-8fzbh", "/pod",
@@ -324,6 +329,7 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 
 		"Ready":    component.NewText("1/1"),
 		"Phase":    component.NewText("Running"),
+		"Status":   component.NewText("Running"),
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
