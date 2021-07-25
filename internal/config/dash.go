@@ -74,6 +74,7 @@ type Live struct {
 	buildInfo            config.BuildInfo
 	kubeConfigPath       string
 	contextChosenInUI    bool
+	terminateThreshold   int64
 }
 
 var _ config.Dash = (*Live)(nil)
@@ -92,6 +93,7 @@ func NewLiveConfig(
 	buildInfo config.BuildInfo,
 	kubeConfigPath string,
 	contextChosenInUI bool,
+	terminateThreshold int64,
 ) *Live {
 	l := &Live{
 		kubeContextDecorator: kubeContextDecorator,
@@ -106,6 +108,7 @@ func NewLiveConfig(
 		buildInfo:            buildInfo,
 		kubeConfigPath:       kubeConfigPath,
 		contextChosenInUI:    contextChosenInUI,
+		terminateThreshold:   terminateThreshold,
 	}
 
 	return l
@@ -251,4 +254,12 @@ func (l *Live) BuildInfo() (string, string, string) {
 
 func (l *Live) KubeConfigPath() string {
 	return l.kubeConfigPath
+}
+
+func (l *Live) TerminateThreshold() int64 {
+	return l.terminateThreshold
+}
+
+func (l *Live) SetTerminateThreshold(time int64) {
+	l.terminateThreshold = time
 }

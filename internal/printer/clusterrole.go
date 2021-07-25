@@ -24,8 +24,9 @@ func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, o
 	}
 
 	cols := component.NewTableCols("Name", "Age")
-	ot := NewObjectTable("Cluster Roles", "We couldn't find any cluster roles!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Cluster Roles", "We couldn't find any cluster roles!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
+
 	for _, clusterRole := range list.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&clusterRole, clusterRole.Name)

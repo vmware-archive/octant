@@ -107,6 +107,7 @@ func TestLiveConfig(t *testing.T) {
 		buildInfo,
 		"",
 		false,
+		5,
 	)
 
 	assert.NoError(t, config.Validate())
@@ -156,6 +157,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToTrue(t *testing.T) {
 		buildInfo,
 		"",
 		true, // contextChosenInUI
+		5,
 	)
 
 	objectStore.EXPECT().UpdateClusterClient(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -214,6 +216,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToFalse(t *testing.T) {
 		buildInfo,
 		"",
 		false, // contextChosenInUI
+		5,
 	)
 
 	objectStore.EXPECT().UpdateClusterClient(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()

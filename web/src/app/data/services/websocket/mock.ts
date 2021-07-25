@@ -10,7 +10,7 @@ export class WebsocketServiceMock implements BackendService {
 
   isOpen = false;
 
-  sendMessage = (messageType: string, payload: {}) => {};
+  sendMessage(messageType: string, payload: {}) {}
 
   close() {
     this.isOpen = false;

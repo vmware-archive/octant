@@ -63,6 +63,18 @@ export class ContainerComponent implements OnInit, OnDestroy {
       });
 
     this.websocketService.open();
+    this.preferencesService.preferenceChange.subscribe(
+      (change: { key: string; value: any }) => {
+        this.onPreferencesChange(change.key, change.value);
+      }
+    );
+
+    // Since terminationThreshold is saved on the localStorage is necessary to be send to the back-end on start
+    this.preferencesService.sendToBackEnd(
+      'general.terminationThreshold',
+      this.preferencesService.getStoredValue('general.terminationThreshold', 5)
+    );
+
     this.localKubeConfigPath = this.helperService
       .localKubeConfigPath()
       .subscribe(path => {
@@ -72,8 +84,8 @@ export class ContainerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptionPreferencesOpened.unsubscribe();
-    this.localKubeConfigPath.unsubscribe();
+    this.subscriptionPreferencesOpened?.unsubscribe();
+    this.localKubeConfigPath?.unsubscribe();
   }
 
   preferencesChanged(update: any) {
@@ -94,5 +106,14 @@ export class ContainerComponent implements OnInit, OnDestroy {
 
   preferencesOpenChanged(opened: boolean) {
     this.preferencesService.preferencesOpened.next(opened);
+  }
+
+  onPreferencesChange(key: string, value: any): void {
+    if (key === 'general.terminationThreshold') {
+      this.websocketService.sendMessage(
+        'action.octant.dev/setTerminatingThreshold',
+        { threshold: value.toString() }
+      );
+    }
   }
 }

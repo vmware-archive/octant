@@ -8,6 +8,9 @@ package objectstatus
 import (
 	"context"
 	"testing"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -67,7 +70,6 @@ func Test_status(t *testing.T) {
 			isErr:  true,
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
@@ -78,7 +80,7 @@ func Test_status(t *testing.T) {
 			o.EXPECT().List(gomock.Any(), gomock.Any()).Return(&unstructured.UnstructuredList{}, false, nil).AnyTimes()
 
 			ctx := context.Background()
-			got, err := status(ctx, tc.object, o, tc.lookup, linkInterface)
+			got, err := status(ctx, tc.object, o, tc.lookup, linkInterface, 5)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -128,4 +130,59 @@ func Test_ObjectStatus_Default(t *testing.T) {
 
 	expected := component.NodeStatusOK
 	assert.Equal(t, expected, os.Status())
+}
+
+func Test_getDeletedObjectStatus_StatusError(t *testing.T) {
+	now := time.Now()
+	timeDeletion := &metav1.Time{Time: now.Add(-6 * time.Minute)}
+
+	given, _ := getDeletedObjectStatus(timeDeletion, int64(5), "service")
+
+	e := ObjectStatus{
+		NodeStatus: component.NodeStatusError,
+		Details: []component.Component{
+			component.NewTextf("%s %s", "service", "was been deleted for longer than the given finalize threshold"),
+		},
+		Properties: []component.Property{
+			{
+				Label: "Deleted Date",
+				Value: component.NewTimestamp(timeDeletion.Time),
+			},
+		},
+	}
+
+	assert.Equal(t, e.NodeStatus, given.NodeStatus)
+
+	ej, _ := e.Details[0].MarshalJSON()
+	gj, _ := given.Details[0].MarshalJSON()
+
+	assert.Equal(t, ej, gj)
+	assert.Equal(t, e.NodeStatus, given.NodeStatus)
+}
+
+func Test_getDeletedObjectStatus_StatusWarning(t *testing.T) {
+	timeDeletion := &metav1.Time{Time: time.Now()}
+
+	given, _ := getDeletedObjectStatus(timeDeletion, int64(5), "service")
+
+	e := ObjectStatus{
+		NodeStatus: component.NodeStatusWarning,
+		Details: []component.Component{
+			component.NewTextf("%s %s", "service", "is being deleted"),
+		},
+		Properties: []component.Property{
+			{
+				Label: "Deleted Date",
+				Value: component.NewTimestamp(timeDeletion.Time),
+			},
+		},
+	}
+
+	assert.Equal(t, e.NodeStatus, given.NodeStatus)
+
+	ej, _ := e.Details[0].MarshalJSON()
+	gj, _ := given.Details[0].MarshalJSON()
+
+	assert.Equal(t, ej, gj)
+	assert.Equal(t, e.NodeStatus, given.NodeStatus)
 }

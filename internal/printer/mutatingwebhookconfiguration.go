@@ -23,7 +23,7 @@ func MutatingWebhookConfigurationListHandler(ctx context.Context, list *admissio
 	}
 
 	cols := component.NewTableCols("Name", "Age")
-	ot := NewObjectTable("Mutating Webhook Configurations", "We couldn't find any mutating webhook configurations!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Mutating Webhook Configurations", "We couldn't find any mutating webhook configurations!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, mutatingWebhookConfiguration := range list.Items {
 		row := component.TableRow{}

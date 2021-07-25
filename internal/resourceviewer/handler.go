@@ -98,10 +98,11 @@ type Handler struct {
 	nodes   nodesStorage
 	adjList adjListStorage
 
-	mu           sync.Mutex
-	objectStatus ObjectStatus
-	edgeCache    []EdgeEntry
-	levels       map[string]int
+	mu                   sync.Mutex
+	objectStatus         ObjectStatus
+	edgeCache            []EdgeEntry
+	levels               map[string]int
+	terminationThreshold int64
 }
 
 var _ objectvisitor.ObjectHandler = (*Handler)(nil)
@@ -114,14 +115,15 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 	}
 
 	h := &Handler{
-		objectStore:   dashConfig.ObjectStore(),
-		link:          l,
-		pluginPrinter: dashConfig.PluginManager(),
-		adjList:       adjListStorage{},
-		nodes:         nodesStorage{},
-		objectStatus:  NewHandlerObjectStatus(dashConfig.ObjectStore(), dashConfig.PluginManager()),
-		edgeCache:     []EdgeEntry{},
-		levels:        make(map[string]int),
+		objectStore:          dashConfig.ObjectStore(),
+		link:                 l,
+		pluginPrinter:        dashConfig.PluginManager(),
+		adjList:              adjListStorage{},
+		nodes:                nodesStorage{},
+		objectStatus:         NewHandlerObjectStatus(dashConfig.ObjectStore(), dashConfig.PluginManager()),
+		edgeCache:            []EdgeEntry{},
+		levels:               make(map[string]int),
+		terminationThreshold: dashConfig.TerminateThreshold(),
 	}
 
 	for _, option := range options {
@@ -265,7 +267,7 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 			objectStatus:  h.objectStatus,
 		}
 
-		componentNode, err := onc.Create(ctx, node)
+		componentNode, err := onc.Create(ctx, node, h.terminationThreshold)
 		if err != nil {
 			if isSkippedNode(err) {
 				continue
@@ -285,7 +287,7 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 		pgn := podGroupNode{
 			objectStatus: h.objectStatus,
 		}
-		group, err := pgn.Create(ctx, podGroupName, objects, h.link)
+		group, err := pgn.Create(ctx, podGroupName, objects, h.link, h.terminationThreshold)
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +417,7 @@ func isObjectParent(child, parent runtime.Object) (bool, error) {
 }
 
 type ObjectStatus interface {
-	Status(ctx context.Context, object runtime.Object, link link.Interface) (*objectstatus.ObjectStatus, error)
+	Status(ctx context.Context, object runtime.Object, link link.Interface, th int64) (*objectstatus.ObjectStatus, error)
 }
 
 type HandlerObjectStatus struct {
@@ -432,13 +434,13 @@ func NewHandlerObjectStatus(objectStore store.Store, pluginManager plugin.Manage
 	}
 }
 
-func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object, link link.Interface) (*objectstatus.ObjectStatus, error) {
+func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object, link link.Interface, th int64) (*objectstatus.ObjectStatus, error) {
 	pluginStatus, err := h.pluginManager.ObjectStatus(ctx, object)
 	if err != nil {
 		return nil, err
 	}
 
-	status, err := objectstatus.Status(ctx, object, h.objectStore, link)
+	status, err := objectstatus.Status(ctx, object, h.objectStore, link, th)
 	if err != nil {
 		return nil, err
 	}

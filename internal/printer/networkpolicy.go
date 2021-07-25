@@ -31,8 +31,9 @@ func NetworkPolicyListHandler(ctx context.Context, list *networkingv1.NetworkPol
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	ot := NewObjectTable("Network Policies", "We couldn't find any network policies!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Network Policies", "We couldn't find any network policies!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
+
 	for _, networkPolicy := range list.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&networkPolicy, networkPolicy.Name)

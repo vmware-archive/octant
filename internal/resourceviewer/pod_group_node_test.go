@@ -23,7 +23,7 @@ func Test_podGroupNode(t *testing.T) {
 	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), pod, gomock.Any()).
+		Status(gomock.Any(), pod, gomock.Any(), int64(5)).
 		Return(&objectstatus.ObjectStatus{}, nil)
 
 	pgn := podGroupNode{objectStatus: objectStatus}
@@ -33,7 +33,7 @@ func Test_podGroupNode(t *testing.T) {
 
 	ctx := context.Background()
 
-	got, err := pgn.Create(ctx, name, objects.Items, linkInterface)
+	got, err := pgn.Create(ctx, name, objects.Items, linkInterface, 5)
 	require.NoError(t, err)
 
 	podStatus := component.NewPodStatus()

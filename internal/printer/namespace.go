@@ -30,8 +30,9 @@ func NamespaceListHandler(ctx context.Context, list *corev1.NamespaceList, optio
 		return nil, errors.New("namespace list is nil")
 	}
 
-	ot := NewObjectTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
+
 	for _, namespace := range list.Items {
 		row := component.TableRow{}
 		p := path.Join("/cluster-overview/namespaces", namespace.Name)

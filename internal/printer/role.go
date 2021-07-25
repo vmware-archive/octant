@@ -23,7 +23,7 @@ func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, options Opt
 	}
 
 	columns := component.NewTableCols("Name", "Age")
-	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, role := range roleList.Items {
 		row := component.TableRow{}

@@ -27,7 +27,7 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	ot := NewObjectTable("ReplicationControllers",
-		"We couldn't find any replication controllers!", cols, options.DashConfig.ObjectStore())
+		"We couldn't find any replication controllers!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, rc := range list.Items {
 		row := component.TableRow{}

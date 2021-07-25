@@ -26,7 +26,7 @@ func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts 
 
 	// Data column
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
-	ot := NewObjectTable("ConfigMaps", "We couldn't find any config maps!", cols, opts.DashConfig.ObjectStore())
+	ot := NewObjectTable("ConfigMaps", "We couldn't find any config maps!", cols, opts.DashConfig.ObjectStore(), opts.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 	for _, c := range list.Items {
 		row := component.TableRow{}

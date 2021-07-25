@@ -325,6 +325,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		buildInfo,
 		options.KubeConfig,
 		false,
+		5,
 	)
 
 	pluginManager.SetOctantClient(dashConfig)

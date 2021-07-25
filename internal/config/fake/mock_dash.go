@@ -255,6 +255,32 @@ func (mr *MockDashMockRecorder) SetContextChosenInUI(arg0 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetContextChosenInUI", reflect.TypeOf((*MockDash)(nil).SetContextChosenInUI), arg0)
 }
 
+// SetTerminateThreshold mocks base method.
+func (m *MockDash) SetTerminateThreshold(arg0 int64) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetTerminateThreshold", arg0)
+}
+
+// SetTerminateThreshold indicates an expected call of SetTerminateThreshold.
+func (mr *MockDashMockRecorder) SetTerminateThreshold(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTerminateThreshold", reflect.TypeOf((*MockDash)(nil).SetTerminateThreshold), arg0)
+}
+
+// TerminateThreshold mocks base method.
+func (m *MockDash) TerminateThreshold() int64 {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TerminateThreshold")
+	ret0, _ := ret[0].(int64)
+	return ret0
+}
+
+// TerminateThreshold indicates an expected call of TerminateThreshold.
+func (mr *MockDashMockRecorder) TerminateThreshold() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminateThreshold", reflect.TypeOf((*MockDash)(nil).TerminateThreshold))
+}
+
 // UseContext mocks base method.
 func (m *MockDash) UseContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

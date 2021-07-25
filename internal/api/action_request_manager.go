@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+	"strconv"
 
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -17,6 +18,7 @@ import (
 
 const (
 	RequestPerformAction = "action.octant.dev/performAction"
+	TerminatingThreshold = "action.octant.dev/setTerminatingThreshold"
 )
 
 // ActionRequestManager manages action requests. Action requests allow a generic interface
@@ -34,7 +36,7 @@ func NewActionRequestManager(dashConfig config.Dash) *ActionRequestManager {
 	}
 }
 
-func (a ActionRequestManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
+func (a ActionRequestManager) Start(_ context.Context, _ octant.State, _ api.OctantClient) {
 }
 
 // Handlers returns the handlers this manager supports.
@@ -43,6 +45,10 @@ func (a *ActionRequestManager) Handlers() []octant.ClientRequestHandler {
 		{
 			RequestType: RequestPerformAction,
 			Handler:     a.PerformAction,
+		},
+		{
+			RequestType: TerminatingThreshold,
+			Handler:     a.SetTerminateThreshold,
 		},
 	}
 }
@@ -67,5 +73,14 @@ func (a *ActionRequestManager) PerformAction(state octant.State, payload action.
 		return err
 	}
 
+	return nil
+}
+
+func (a *ActionRequestManager) SetTerminateThreshold(_ octant.State, payload action.Payload) error {
+	n, err := strconv.ParseInt(payload["threshold"].(string), 10, 64)
+	if err != nil {
+		return err
+	}
+	a.dashConfig.SetTerminateThreshold(n)
 	return nil
 }

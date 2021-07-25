@@ -22,8 +22,10 @@ export class PreferencesService implements OnDestroy {
   private kubeConfigFullPath: string;
 
   public preferences: Map<string, PreferencesEntry<any>> = new Map();
-  public preferencesOpened: BehaviorSubject<boolean> =
-    new BehaviorSubject<boolean>(false);
+  public preferencesOpened = new BehaviorSubject<boolean>(false);
+  public preferenceChange = new BehaviorSubject<{ key: string; value: any }>(
+    null
+  );
 
   constructor(private themeService: ThemeService) {
     if (this.isElectron()) {
@@ -49,6 +51,11 @@ export class PreferencesService implements OnDestroy {
     this.preferences.set(
       'general.pageSize',
       new PreferencesEntry<number>(this, 'general.pageSize', 10, '')
+    );
+
+    this.preferences.set(
+      'general.terminationThreshold',
+      new PreferencesEntry<number>(this, 'general.terminationThreshold', 5, '')
     );
 
     this.preferences.set(
@@ -103,6 +110,7 @@ export class PreferencesService implements OnDestroy {
     } else {
       localStorage.setItem(key, value);
     }
+    this.sendToBackEnd(key, value);
   }
 
   getStoredValue(key: string, defaultValue: any) {
@@ -111,6 +119,10 @@ export class PreferencesService implements OnDestroy {
     } else {
       return localStorage.getItem(key) || defaultValue;
     }
+  }
+
+  sendToBackEnd(key: string, value: any): void {
+    this.preferenceChange.next({ key, value });
   }
 
   isElectron(): boolean {
@@ -257,6 +269,9 @@ export class PreferencesService implements OnDestroy {
 
   private getGeneralPanels(): PreferencePanel {
     const pageSize = this.preferences.get('general.pageSize').subject.value;
+    const terminationThreshold = this.preferences.get(
+      'general.terminationThreshold'
+    ).subject.value;
 
     return {
       name: 'General',
@@ -328,6 +343,67 @@ export class PreferencesService implements OnDestroy {
                     name: '100',
                     type: 'text',
                     label: '100',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          name: 'Finalize Threshold',
+          elements: [
+            {
+              name: 'general.terminationThreshold',
+              value: terminationThreshold,
+              label: 'Finalize Threshold:',
+              type: 'dropdown',
+              metadata: {
+                type: 'dropdown',
+                title: [
+                  {
+                    metadata: {
+                      type: 'input',
+                    },
+                    config: {
+                      value: terminationThreshold,
+                    },
+                  },
+                ],
+              },
+              config: {
+                type: 'label',
+                selection: terminationThreshold,
+                useSelection: true,
+                items: [
+                  {
+                    name: '5',
+                    type: 'text',
+                    label: '5',
+                  },
+                  {
+                    name: '10',
+                    type: 'text',
+                    label: '10',
+                  },
+                  {
+                    name: '20',
+                    type: 'text',
+                    label: '20',
+                  },
+                  {
+                    name: '50',
+                    type: 'text',
+                    label: '50',
+                  },
+                  {
+                    name: '100',
+                    type: 'text',
+                    label: '100',
+                  },
+                  {
+                    name: '100000',
+                    type: 'text',
+                    label: '100000',
                   },
                 ],
               },

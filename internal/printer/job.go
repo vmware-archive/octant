@@ -30,7 +30,7 @@ func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (c
 		return nil, errors.New("job list is nil")
 	}
 
-	ot := NewObjectTable("Jobs", "We couldn't find any jobs!", JobCols, opts.DashConfig.ObjectStore())
+	ot := NewObjectTable("Jobs", "We couldn't find any jobs!", JobCols, opts.DashConfig.ObjectStore(), opts.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 	for _, job := range list.Items {
 		row := component.TableRow{}

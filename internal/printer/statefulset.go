@@ -26,7 +26,7 @@ func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, o
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
-	ot := NewObjectTable("StatefulSets", "We couldn't find any stateful sets!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("StatefulSets", "We couldn't find any stateful sets!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, statefulSet := range list.Items {
 		row := component.TableRow{}

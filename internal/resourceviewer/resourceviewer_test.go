@@ -63,6 +63,7 @@ func Test_ResourceViewer(t *testing.T) {
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
+	dashConfig.EXPECT().TerminateThreshold().Return(int64(5)).AnyTimes()
 
 	rv, err := New(dashConfig, stubVisitor(false))
 	require.NoError(t, err)
@@ -99,6 +100,7 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
+	dashConfig.EXPECT().TerminateThreshold().Return(int64(5)).AnyTimes()
 
 	rv, err := New(dashConfig, stubVisitor(true))
 	require.NoError(t, err)

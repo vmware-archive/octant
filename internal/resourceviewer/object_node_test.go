@@ -30,7 +30,7 @@ func Test_objectNode(t *testing.T) {
 	pluginPrinter := pluginFake.NewMockManagerInterface(controller)
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), gomock.Any(), gomock.Any()).
+		Status(gomock.Any(), gomock.Any(), gomock.Any(), int64(5)).
 		Return(&objectstatus.ObjectStatus{}, nil)
 
 	on := objectNode{
@@ -41,7 +41,7 @@ func Test_objectNode(t *testing.T) {
 
 	ctx := context.Background()
 
-	got, err := on.Create(ctx, deployment)
+	got, err := on.Create(ctx, deployment, 5)
 	require.NoError(t, err)
 
 	expected := &component.Node{

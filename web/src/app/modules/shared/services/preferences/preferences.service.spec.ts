@@ -48,11 +48,33 @@ describe('PreferencesService', () => {
     expect(newElement.value.toString()).toEqual('100');
   });
 
+  it('table set termination threshold', () => {
+    service.preferences.get('general.terminationThreshold').subject.next(50);
+    const defaultPrefs = service.getPreferences();
+    const defaultElement = defaultPrefs.panels[0].sections[2].elements[0];
+    expect(defaultElement.name).toEqual('general.terminationThreshold');
+    expect(defaultElement.value.toString()).toEqual('50');
+    const subs = service.preferenceChange.subscribe(
+      (e: { key: string; value: any }) => {
+        expect(e.key).toEqual('general.terminationThreshold');
+        expect(e.value).toEqual(50);
+        subs?.unsubscribe();
+      }
+    );
+
+    service.preferences.get('general.terminationThreshold').subject.next(100);
+    const newPrefs = service.getPreferences();
+    const newElement = newPrefs.panels[0].sections[2].elements[0];
+    expect(newElement.name).toEqual('general.terminationThreshold');
+    expect(newElement.value.toString()).toEqual('100');
+  });
+
   it('properties are persisted', () => {
     // default values
     service.preferences.get('navigation.collapsed').subject.next(true);
     service.preferences.get('navigation.labels').subject.next(true);
     service.preferences.get('general.pageSize').subject.next(10);
+    service.preferences.get('general.terminationThreshold').subject.next(10);
     expect(
       JSON.parse(service.getStoredValue('navigation.labels', true))
     ).toEqual(true);
@@ -62,6 +84,9 @@ describe('PreferencesService', () => {
     expect(JSON.parse(service.getStoredValue('general.pageSize', 10))).toEqual(
       10
     );
+    expect(
+      JSON.parse(service.getStoredValue('general.terminationThreshold', 10))
+    ).toEqual(10);
 
     // change through exposed variables
     service.preferences.get('navigation.collapsed').subject.next(false);
@@ -79,6 +104,11 @@ describe('PreferencesService', () => {
       20
     );
 
+    service.preferences.get('general.terminationThreshold').subject.next(20);
+    expect(
+      JSON.parse(service.getStoredValue('general.terminationThreshold', 10))
+    ).toEqual(20);
+
     // change by modifying stored values
     service.setStoredValue('navigation.collapsed', true);
     expect(
@@ -94,6 +124,11 @@ describe('PreferencesService', () => {
     expect(JSON.parse(service.getStoredValue('general.pageSize', 10))).toEqual(
       100
     );
+
+    service.setStoredValue('general.terminationThreshold', 100);
+    expect(
+      JSON.parse(service.getStoredValue('general.terminationThreshold', 10))
+    ).toEqual(100);
   });
 
   it('theme initial value set properly', () => {

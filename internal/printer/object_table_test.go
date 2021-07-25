@@ -175,7 +175,7 @@ func TestObjectTable(t *testing.T) {
 
 			objectStore := fake.NewMockStore(ctrl)
 
-			ot := NewObjectTable("table", "placeholder", cols, objectStore)
+			ot := NewObjectTable("table", "placeholder", cols, objectStore, 5)
 			if test.enablePluginResponse {
 				pluginResponse := plugin.ObjectStatusResponse{
 					ObjectStatus: component.PodSummary{

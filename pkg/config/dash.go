@@ -108,4 +108,8 @@ type Dash interface {
 	BuildInfo() (string, string, string)
 
 	KubeConfigPath() string
+
+	TerminateThreshold() int64
+
+	SetTerminateThreshold(int64)
 }

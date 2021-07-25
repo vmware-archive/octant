@@ -24,7 +24,7 @@ func APIServiceListHandler(ctx context.Context, list *apiregistrationv1.APIServi
 	}
 
 	cols := component.NewTableCols("Name", "Service", "Age")
-	ot := NewObjectTable("API Services", "We couldn't find any api services!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("API Services", "We couldn't find any api services!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 
 	for _, apiService := range list.Items {

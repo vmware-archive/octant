@@ -71,6 +71,7 @@ func newTestDescriberOptions(t *testing.T, controller *gomock.Controller) *testD
 	dashConfig.EXPECT().ClusterClient().Return(clusterClient).AnyTimes()
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
+	dashConfig.EXPECT().TerminateThreshold().Return(int64(5)).AnyTimes()
 
 	queryer := queryerFake.NewMockQueryer(controller)
 	queryer.EXPECT().PersistentVolumeClaimsForPod(gomock.Any(), pod)

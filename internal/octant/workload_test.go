@@ -232,7 +232,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			linkInterface := linkFake.NewMockInterface(controller)
 
 			wl, err := octant.NewClusterWorkloadLoader(c.objectStore, c.podMetricLoader, func(wl *octant.ClusterWorkloadLoader) {
-				wl.ObjectStatuser = func(context.Context, runtime.Object, store.Store, link.Interface) (status objectstatus.ObjectStatus, e error) {
+				wl.ObjectStatuser = func(context.Context, runtime.Object, store.Store, link.Interface, int64) (status objectstatus.ObjectStatus, e error) {
 					objectStatus := objectstatus.ObjectStatus{}
 					return objectStatus, nil
 
@@ -240,7 +240,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			actual, err := wl.Load(ctx, c.namespace, linkInterface)
+			actual, err := wl.Load(ctx, c.namespace, linkInterface, 5)
 			if c.isErr {
 				require.Error(t, err)
 				return

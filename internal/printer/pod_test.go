@@ -252,8 +252,8 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
-			genObjectStatus(component.TextStatusWarning, []string{
-				"Pod is being deleted",
+			genObjectStatus(component.TextStatusError, []string{
+				"Pod was been deleted for longer than the given finalize threshold",
 			}),
 		),
 		"Labels":     component.NewLabels(labels),

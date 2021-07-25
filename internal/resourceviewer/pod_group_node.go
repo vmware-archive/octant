@@ -15,7 +15,7 @@ type podGroupNode struct {
 	objectStatus ObjectStatus
 }
 
-func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []unstructured.Unstructured, link link.Interface) (*component.Node, error) {
+func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []unstructured.Unstructured, link link.Interface, th int64) (*component.Node, error) {
 	podStatus := component.NewPodStatus()
 	var podProperties []component.Property
 
@@ -32,7 +32,7 @@ func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, object
 			return nil, err
 		}
 
-		status, err := pgn.objectStatus.Status(ctx, &object, link)
+		status, err := pgn.objectStatus.Status(ctx, &object, link, th)
 		if err != nil {
 			return nil, err
 		}

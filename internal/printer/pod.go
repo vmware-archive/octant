@@ -42,7 +42,7 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 		cols = podColsWithOutLabels
 	}
 
-	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols, opts.DashConfig.ObjectStore())
+	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols, opts.DashConfig.ObjectStore(), opts.DashConfig.TerminateThreshold())
 	ot.AddFilters(podTableFilters())
 	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
 

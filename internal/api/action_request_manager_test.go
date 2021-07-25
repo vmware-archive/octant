@@ -27,7 +27,7 @@ func TestActionRequestManager_Handlers(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 	manager := api.NewActionRequestManager(dashConfig)
-	AssertHandlers(t, manager, []string{api.RequestPerformAction})
+	AssertHandlers(t, manager, []string{api.RequestPerformAction, api.TerminatingThreshold})
 }
 
 func TestActionRequestManager_PerformAction(t *testing.T) {
@@ -60,4 +60,21 @@ func TestActionRequestManager_PerformAction(t *testing.T) {
 		Return(nil)
 
 	require.NoError(t, manager.PerformAction(state, payload))
+}
+
+func TestActionRequestManager_SetTerminateThreshold(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashConfig := configFake.NewMockDash(controller)
+	dashConfig.EXPECT().SetTerminateThreshold(int64(5))
+	state := octantFake.NewMockState(controller)
+
+	manager := api.NewActionRequestManager(dashConfig)
+
+	payload := action.CreatePayload(api.TerminatingThreshold, map[string]interface{}{
+		"threshold": "5",
+	})
+
+	require.NoError(t, manager.SetTerminateThreshold(state, payload))
 }

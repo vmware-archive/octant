@@ -45,6 +45,7 @@ func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 	dashConfig.EXPECT().PortForwarder().Return(portForwarder).AnyTimes()
+	dashConfig.EXPECT().TerminateThreshold().Return(int64(5)).AnyTimes()
 
 	tpo := &testPrinterOptions{
 		dashConfig:    dashConfig,

@@ -26,7 +26,7 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		return nil, errors.New("list of secrets is nil")
 	}
 
-	ot := NewObjectTable("Secrets", "We couldn't find any secrets!", secretTableCols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Secrets", "We couldn't find any secrets!", secretTableCols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, secret := range list.Items {
 		row := component.TableRow{}

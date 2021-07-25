@@ -22,24 +22,26 @@ import (
 
 // ObjectTable is a helper for creating a table containing a list of objects.
 type ObjectTable struct {
-	cols          []component.TableCol
-	title         string
-	placeholder   string
-	rows          []component.TableRow
-	filters       map[string]component.TableFilter
-	sortOrder     *tableSetOrder
-	store         store.Store
-	pluginManager plugin.ManagerInterface
+	cols               []component.TableCol
+	title              string
+	placeholder        string
+	rows               []component.TableRow
+	filters            map[string]component.TableFilter
+	sortOrder          *tableSetOrder
+	store              store.Store
+	pluginManager      plugin.ManagerInterface
+	terminateThreshold int64
 }
 
 // NewObjectTable creates an instance of ObjectTable.
-func NewObjectTable(title, placeholder string, cols []component.TableCol, objectStore store.Store) *ObjectTable {
+func NewObjectTable(title, placeholder string, cols []component.TableCol, objectStore store.Store, terminateThreshold int64) *ObjectTable {
 	ol := ObjectTable{
-		cols:        cols,
-		title:       title,
-		placeholder: placeholder,
-		filters:     map[string]component.TableFilter{},
-		store:       objectStore,
+		cols:               cols,
+		title:              title,
+		placeholder:        placeholder,
+		filters:            map[string]component.TableFilter{},
+		store:              objectStore,
+		terminateThreshold: terminateThreshold,
 	}
 
 	return &ol
@@ -76,7 +78,7 @@ func (ol *ObjectTable) AddRowForObject(ctx context.Context, object runtime.Objec
 		row["_isDeleted"] = component.NewText("deleted")
 	}
 
-	status, err := objectstatus.Status(ctx, object, ol.store, nil)
+	status, err := objectstatus.Status(ctx, object, ol.store, nil, ol.terminateThreshold)
 	if err != nil {
 		return fmt.Errorf("get status for object: %w", err)
 	}

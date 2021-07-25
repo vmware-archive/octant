@@ -20,7 +20,7 @@ type objectNode struct {
 	objectStatus  ObjectStatus
 }
 
-func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructured) (*component.Node, error) {
+func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructured, th int64) (*component.Node, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -49,7 +49,7 @@ func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructur
 		return nil, err
 	}
 
-	status, err := o.objectStatus.Status(ctx, object, o.link)
+	status, err := o.objectStatus.Status(ctx, object, o.link, th)
 	if err != nil {
 		return nil, err
 	}

@@ -39,10 +39,14 @@ import { windowProvider, WindowToken } from '../../../../../window';
 import { SharedModule } from 'src/app/modules/shared/shared.module';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 import { ApplyYAMLComponent } from '../apply-yaml/apply-yaml.component';
+import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
+import {anything} from "ts-mockito";
 
 describe('AppComponent', () => {
   let component: ContainerComponent;
   let fixture: ComponentFixture<ContainerComponent>;
+  let sendToBackEnd;
+  let sendMessage;
 
   beforeEach(
     waitForAsync(() => {
@@ -87,6 +91,9 @@ describe('AppComponent', () => {
   );
 
   beforeEach(() => {
+    sendMessage = spyOn(WebsocketServiceMock.prototype, 'sendMessage');
+    sendToBackEnd = spyOn(PreferencesService.prototype, 'sendToBackEnd');
+
     fixture = TestBed.createComponent(ContainerComponent);
     component = fixture.componentInstance;
   });
@@ -107,5 +114,17 @@ describe('AppComponent', () => {
         expect(websocketService.isOpen).toBeTruthy();
       }
     ));
+
+    it('should verify terminationThreshold preference are send on init to the back-end', () => {
+      expect(sendToBackEnd).toHaveBeenCalled();
+    });
+
+    it('should verify websocket sends terminationThreshold to the back-end', () => {
+      component.onPreferencesChange('general.terminationThreshold', 100);
+      expect(sendMessage).toHaveBeenCalledWith(
+        'action.octant.dev/setTerminatingThreshold',
+        { threshold: '100' }
+      );
+    });
   });
 });

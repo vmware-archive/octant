@@ -24,7 +24,7 @@ func StorageClassListHandler(ctx context.Context, list *storagev1.StorageClassLi
 	}
 
 	cols := component.NewTableCols("Name", "Provisioner", "Age")
-	ot := NewObjectTable("Storage Class", "We couldn't find any storage class!", cols, options.DashConfig.ObjectStore())
+	ot := NewObjectTable("Storage Class", "We couldn't find any storage class!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, sc := range list.Items {
 		row := component.TableRow{}

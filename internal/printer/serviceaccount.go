@@ -28,7 +28,7 @@ func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountL
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
 	ot := NewObjectTable("Service Accounts",
-		"We couldn't find any service accounts!", cols, options.DashConfig.ObjectStore())
+		"We couldn't find any service accounts!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, serviceAccount := range list.Items {
 		row := component.TableRow{}

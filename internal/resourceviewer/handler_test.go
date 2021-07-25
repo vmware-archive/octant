@@ -76,6 +76,7 @@ func TestHandler(t *testing.T) {
 	defer controller.Finish()
 
 	dashConfig := configFake.NewMockDash(controller)
+	dashConfig.EXPECT().TerminateThreshold().Return(int64(5)).AnyTimes()
 
 	objectStore := storeFake.NewMockStore(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
@@ -85,7 +86,7 @@ func TestHandler(t *testing.T) {
 
 	objectStatus := fake.NewMockObjectStatus(controller)
 	objectStatus.EXPECT().
-		Status(gomock.Any(), gomock.Any(), gomock.Any()).
+		Status(gomock.Any(), gomock.Any(), gomock.Any(), int64(5)).
 		Return(&objectstatus.ObjectStatus{}, nil).
 		AnyTimes()
 
@@ -370,7 +371,7 @@ func TestHandlerObjectStatus_Status(t *testing.T) {
 	require.NoError(t, err)
 
 	handler := NewHandlerObjectStatus(objectStore, pluginManager)
-	result, err := handler.Status(ctx, pod, l)
+	result, err := handler.Status(ctx, pod, l, int64(5))
 	require.NoError(t, err)
 
 	expected := objectstatus.ObjectStatus{

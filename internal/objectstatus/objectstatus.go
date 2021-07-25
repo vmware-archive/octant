@@ -10,6 +10,9 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -95,11 +98,11 @@ func (os *ObjectStatus) Status() component.NodeStatus {
 }
 
 // Status creates an ObjectStatus for an object.
-func Status(ctx context.Context, object runtime.Object, o store.Store, link link.Interface) (ObjectStatus, error) {
-	return status(ctx, object, o, defaultStatusLookup, link)
+func Status(ctx context.Context, object runtime.Object, o store.Store, link link.Interface, th int64) (ObjectStatus, error) {
+	return status(ctx, object, o, defaultStatusLookup, link, th)
 }
 
-func status(ctx context.Context, object runtime.Object, o store.Store, lookup statusLookup, link link.Interface) (ObjectStatus, error) {
+func status(ctx context.Context, object runtime.Object, o store.Store, lookup statusLookup, link link.Interface, th int64) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.New("object is nil")
 	}
@@ -113,12 +116,7 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 	}
 
 	if accessor.GetDeletionTimestamp() != nil {
-		return ObjectStatus{
-			NodeStatus: component.NodeStatusWarning,
-			Details: []component.Component{
-				component.NewTextf("%s is being deleted", kind),
-			},
-		}, nil
+		return getDeletedObjectStatus(accessor.GetDeletionTimestamp(), th, kind)
 	}
 
 	if lookup == nil {
@@ -163,4 +161,30 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 	oStatus.InsertProperty("Namespace", component.NewText(accessor.GetNamespace()))
 
 	return oStatus, nil
+}
+
+func surpassTerminationThreshold(t int64, th int64) (component.NodeStatus, string) {
+	timestampNow := time.Now().Unix()
+	secondInMinute := int64(60)
+	if (timestampNow - t) > (th * secondInMinute) {
+		return component.NodeStatusError, "was been deleted for longer than the given finalize threshold"
+	} else {
+		return component.NodeStatusWarning, "is being deleted"
+	}
+}
+
+func getDeletedObjectStatus(timeDeletion *metav1.Time, th int64, kind string) (ObjectStatus, error) {
+	ns, message := surpassTerminationThreshold(timeDeletion.Unix(), th)
+	return ObjectStatus{
+		NodeStatus: ns,
+		Details: []component.Component{
+			component.NewTextf("%s %s", kind, message),
+		},
+		Properties: []component.Property{
+			{
+				Label: "Deleted Date",
+				Value: component.NewTimestamp(timeDeletion.Time),
+			},
+		},
+	}, nil
 }

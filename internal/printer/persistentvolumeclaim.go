@@ -27,7 +27,7 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes", "Storage Class", "Age")
 	ot := NewObjectTable("Persistent Volume Claims",
-		"We couldn't find any persistent volume claims!", cols, options.DashConfig.ObjectStore())
+		"We couldn't find any persistent volume claims!", cols, options.DashConfig.ObjectStore(), options.DashConfig.TerminateThreshold())
 	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, persistentVolumeClaim := range list.Items {
 		row := component.TableRow{}
