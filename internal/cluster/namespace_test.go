@@ -12,15 +12,19 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 )
 
 func Test_namespaceClient_Names(t *testing.T) {
 	scheme := runtime.NewScheme()
 
-	dc := dynamicfake.NewSimpleDynamicClient(scheme,
-		newUnstructured("v1", "Namespace", "", "default"),
-		newUnstructured("v1", "Namespace", "", "app-1"),
+	dc := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme,
+		map[schema.GroupVersionResource]string{
+			{Group: "", Version: "v1", Resource: "namespaces"}: "NamespacesList",
+		},
+		newUnstructured("v1", "Namespace", "default", "default"),
+		newUnstructured("v1", "Namespace", "app-1", "app-1"),
 	)
 
 	nc := newNamespaceClient(dc, nil, "default", []string{})
