@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/pkg/plugin"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -20,13 +22,14 @@ import (
 
 // ObjectTable is a helper for creating a table containing a list of objects.
 type ObjectTable struct {
-	cols        []component.TableCol
-	title       string
-	placeholder string
-	rows        []component.TableRow
-	filters     map[string]component.TableFilter
-	sortOrder   *tableSetOrder
-	store       store.Store
+	cols          []component.TableCol
+	title         string
+	placeholder   string
+	rows          []component.TableRow
+	filters       map[string]component.TableFilter
+	sortOrder     *tableSetOrder
+	store         store.Store
+	pluginManager plugin.ManagerInterface
 }
 
 // NewObjectTable creates an instance of ObjectTable.
@@ -47,6 +50,10 @@ func (ol *ObjectTable) AddFilters(filters map[string]component.TableFilter) {
 	for k, v := range filters {
 		ol.filters[k] = v
 	}
+}
+
+func (ol *ObjectTable) EnablePluginStatus(pluginManager plugin.ManagerInterface) {
+	ol.pluginManager = pluginManager
 }
 
 type componentStatus interface {
@@ -74,11 +81,30 @@ func (ol *ObjectTable) AddRowForObject(ctx context.Context, object runtime.Objec
 		return fmt.Errorf("get status for object: %w", err)
 	}
 
+	var pluginStatus *plugin.ObjectStatusResponse
+	var detailComponent *component.List
+	if ol.pluginManager != nil {
+		pluginStatus, err = ol.pluginManager.ObjectStatus(ctx, object)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(ol.cols) > 0 {
 		firstRow := row[ol.cols[0].Name]
-		if cs, ok := firstRow.(componentStatus); ok {
-			detailComponent := component.NewList(nil, status.Details)
+		details := status.Details
+		cs, ok := firstRow.(componentStatus)
+		if ok {
+			detailComponent = component.NewList(nil, details)
 			cs.SetStatus(convertNodeStatusToTextStatus(status.Status()), detailComponent)
+		}
+		if pluginStatus != nil {
+			details = append(details, pluginStatus.ObjectStatus.Details...)
+			detailComponent = component.NewList(nil, details)
+
+			if pluginStatus.ObjectStatus.Status != "" {
+				cs.SetStatus(convertNodeStatusToTextStatus(pluginStatus.ObjectStatus.Status), detailComponent)
+			}
 		}
 	}
 

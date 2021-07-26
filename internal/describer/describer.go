@@ -43,7 +43,7 @@ func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string,
 	return LoadObjects(ctx, f.dashConfig.ObjectStore(), f.dashConfig.ErrorStore(), namespace, fields, objectStoreKeys)
 }
 
-// loadObject loads a single object from the object store.
+// LoadObject loads a single object from the object store.
 func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	objectStoreKey.Namespace = namespace
 
@@ -73,7 +73,7 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 	return object, nil
 }
 
-// loadObjects loads objects from the object store sorted by their name.
+// LoadObjects loads objects from the object store sorted by their name.
 func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 	list := &unstructured.UnstructuredList{}
 

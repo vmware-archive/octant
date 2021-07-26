@@ -40,19 +40,19 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store, _
 	switch {
 	case status.Replicas == status.UnavailableReplicas:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusError,
+			NodeStatus: component.NodeStatusError,
 			Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
 			Properties: properties,
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Deployment is OK")},
 			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details: []component.Component{
 				component.NewText(
 					fmt.Sprintf("Expected %d replicas, but %d are available",

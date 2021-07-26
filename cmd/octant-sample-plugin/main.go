@@ -115,9 +115,13 @@ func handleStatus(request *service.PrintRequest) (plugin.ObjectStatusResponse, e
 		return plugin.ObjectStatusResponse{}, errors.New("object doesn't exist")
 	}
 
-	// Will add object UID to the Resource Viewer properties table
+	// Will add object UID to the Resource Viewer properties table and status icon details
 	return plugin.ObjectStatusResponse{
 		ObjectStatus: component.PodSummary{
+			// Status: component.NodeStatus,
+			Details: []component.Component{
+				component.NewText("from plugin: " + string(u.GetUID())),
+			},
 			Properties: []component.Property{{
 				Label: "ID (from plugin)",
 				Value: component.NewText(string(u.GetUID())),

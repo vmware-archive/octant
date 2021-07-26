@@ -54,7 +54,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Backend refers to service \"no-such-service\" which doesn't exist")},
 				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
@@ -67,7 +67,7 @@ func Test_runIngressStatus(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Backend for service \"service-wrong-port\" specifies an invalid port")},
 				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
@@ -83,7 +83,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("No matching TLS host for rule \"not-the-tls-host.com\"")},
 				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},
@@ -116,7 +116,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Secret \"no-such-secret\" does not exist")},
 				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("Not configured")}},
 			},

@@ -57,6 +57,7 @@ func Test_SecretListHandler(t *testing.T) {
 	tpo.PathForObject(&object.Items[0], object.Items[0].Name, "/secret")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, &object.Items[0])
 	got, err := SecretListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 

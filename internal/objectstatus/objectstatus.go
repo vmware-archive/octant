@@ -46,7 +46,7 @@ var (
 )
 
 type ObjectStatus struct {
-	nodeStatus component.NodeStatus
+	NodeStatus component.NodeStatus
 	Details    []component.Component
 	Properties []component.Property
 }
@@ -74,21 +74,21 @@ func (os *ObjectStatus) AddDetailf(msg string, args ...interface{}) {
 }
 
 func (os *ObjectStatus) SetError() {
-	os.nodeStatus = component.NodeStatusError
+	os.NodeStatus = component.NodeStatusError
 }
 
 func (os *ObjectStatus) SetWarning() {
-	if os.nodeStatus != component.NodeStatusError {
-		os.nodeStatus = component.NodeStatusWarning
+	if os.NodeStatus != component.NodeStatusError {
+		os.NodeStatus = component.NodeStatusWarning
 	}
 }
 
 func (os *ObjectStatus) Status() component.NodeStatus {
-	switch os.nodeStatus {
+	switch os.NodeStatus {
 	case component.NodeStatusWarning,
 		component.NodeStatusError,
 		component.NodeStatusOK:
-		return os.nodeStatus
+		return os.NodeStatus
 	default:
 		return component.NodeStatusOK
 	}
@@ -114,7 +114,7 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 
 	if accessor.GetDeletionTimestamp() != nil {
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details: []component.Component{
 				component.NewTextf("%s is being deleted", kind),
 			},
@@ -132,7 +132,7 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 		oStatus, err = fn(ctx, object, o, link)
 	} else {
 		oStatus = ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))},
 			Properties: []component.Property{},
 		}

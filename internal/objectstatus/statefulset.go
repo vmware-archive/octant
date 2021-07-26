@@ -41,13 +41,13 @@ func statefulSet(_ context.Context, object runtime.Object, _ store.Store, _ link
 	switch {
 	case status.ReadyReplicas != status.Replicas:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
 			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Stateful Set is OK")},
 			Properties: properties,
 		}, nil

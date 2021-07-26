@@ -35,12 +35,12 @@ func replicationController(_ context.Context, object runtime.Object, _ store.Sto
 	switch {
 	case status.ReadyReplicas != status.Replicas:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Replication Controller pods are not ready")},
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Replication Controller is OK")},
 		}, nil
 	}

@@ -24,7 +24,7 @@ func ValidatingWebhookConfigurationListHandler(ctx context.Context, list *admiss
 
 	cols := component.NewTableCols("Name", "Age")
 	ot := NewObjectTable("Validating Webhook Configurations", "We couldn't find any validating webhook configurations!", cols, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, validatingWebhookConfiguration := range list.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&validatingWebhookConfiguration, validatingWebhookConfiguration.Name)

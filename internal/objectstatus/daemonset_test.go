@@ -37,7 +37,7 @@ func Test_daemonSet(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Daemon Set is OK")},
 				Properties: []component.Property{{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("name", "fluentd")})}},
 			},
@@ -50,7 +50,7 @@ func Test_daemonSet(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
 				Properties: []component.Property{{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("name", "fluentd")})}},
 			},
@@ -63,7 +63,7 @@ func Test_daemonSet(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
 				Properties: []component.Property{{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("name", "fluentd")})}},
 			},

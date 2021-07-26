@@ -240,12 +240,14 @@ func Test_IngressListHandler(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
+			ctx := context.Background()
+
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
 			if tc.list != nil {
 				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/ingress")
-
+				tpo.pluginManager.EXPECT().ObjectStatus(ctx, &tc.list.Items[0])
 			}
 
 			tpo.objectStore.EXPECT().
@@ -265,7 +267,6 @@ func Test_IngressListHandler(t *testing.T) {
 				Return(secret, nil).
 				AnyTimes()
 
-			ctx := context.Background()
 			got, err := IngressListHandler(ctx, tc.list, printOptions)
 			if tc.isErr {
 				require.Error(t, err)

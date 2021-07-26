@@ -38,6 +38,7 @@ func Test_ValidatingWebhookConfigurationListHandler(t *testing.T) {
 	now := testutil.Time()
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := ValidatingWebhookConfigurationListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

@@ -39,6 +39,7 @@ func Test_NamespaceListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, namespace)
 	got, err := NamespaceListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

@@ -45,19 +45,19 @@ func daemonSet(_ context.Context, object runtime.Object, _ store.Store, _ link.I
 	switch {
 	case status.NumberMisscheduled > 0:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
 			Properties: properties,
 		}, nil
 	case status.DesiredNumberScheduled != status.NumberReady:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
 			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Daemon Set is OK")},
 			Properties: properties,
 		}, nil
