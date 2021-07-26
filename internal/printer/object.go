@@ -90,9 +90,10 @@ type ObjectOpts func(o *Object)
 
 // Object prints an object.
 type Object struct {
-	config          *component.Summary
-	summary         *component.Summary
-	isEventsEnabled bool
+	config              *component.Summary
+	summary             *component.Summary
+	isEventsEnabled     bool
+	isConditionsEnabled bool
 
 	itemsLists [][]ItemDescriptor
 
@@ -109,6 +110,7 @@ type Object struct {
 	PodTemplateGen func(context.Context, runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
 	JobTemplateGen func(context.Context, runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
+	ConditionsGen  func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
 }
 
 // NewObject creates an instance of Object.
@@ -156,6 +158,11 @@ func (o *Object) EnableJobTemplate(templateSpec batchv1beta1.JobTemplateSpec) {
 // EnableEvents enables the event view for the object.
 func (o *Object) EnableEvents() {
 	o.isEventsEnabled = true
+}
+
+// EnableConditions enables the conditions view for the object.
+func (o *Object) EnableConditions() {
+	o.isConditionsEnabled = true
 }
 
 // RegisterItems registers one or more items to be printed in a section.
@@ -267,6 +274,12 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 	if o.isEventsEnabled {
 		if err := o.EventsGen(ctx, o.object, o.flexLayout, options); err != nil {
 			return nil, fmt.Errorf("add events to layout: %w", err)
+		}
+	}
+
+	if o.isConditionsEnabled {
+		if err := o.ConditionsGen(ctx, o.object, o.flexLayout, options); err != nil {
+			return nil, fmt.Errorf("add conditions to layout: %w", err)
 		}
 	}
 

@@ -178,12 +178,12 @@ func Test_createJobConditions(t *testing.T) {
 		},
 	}
 
-	got, err := createJobConditions(job.Status.Conditions)
+	got, err := createJobConditions(job)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Last Probe", "Last Transition",
 		"Status", "Message", "Reason")
-	expected := component.NewTable("Conditions", "There are no job conditions!", cols)
+	expected := component.NewTable("Conditions", "There are no conditions!", cols)
 	expected.Add([]component.TableRow{
 		{
 			"Type":            component.NewText("Complete"),

@@ -15,6 +15,8 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -310,25 +312,20 @@ func createNodeConditionsView(node *corev1.Node) (*component.Table, error) {
 	if node == nil {
 		return nil, errors.New("cannot generate conditions for nil node")
 	}
-
-	table := component.NewTable("Conditions", "There are no node conditions!", nodeConditionsColumns)
-
-	for _, condition := range node.Status.Conditions {
-		row := component.TableRow{
-			"Type":            component.NewText(string(condition.Type)),
-			"Reason":          component.NewText(condition.Reason),
-			"Status":          component.NewText(string(condition.Status)),
-			"Message":         component.NewText(condition.Message),
-			"Last Heartbeat":  component.NewTimestamp(condition.LastHeartbeatTime.Time),
-			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
-		}
-
-		table.Add(row)
+	columns := [][]string{
+		{"Type", "type"},
+		{"Reason", "reason"},
+		{"Status", "status"},
+		{"Message", "message"},
+		{"Last Heartbeat", "lastHeartbeatTime"},
+		{"Last Transition", "lastTransitionTime"},
 	}
-
-	table.Sort("Type")
-
-	return table, nil
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(node)
+	if err != nil {
+		return nil, err
+	}
+	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: m}, conditionType, columns)
+	return table, err
 }
 
 const GB = float64(1073741824)

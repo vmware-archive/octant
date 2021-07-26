@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
@@ -131,22 +132,24 @@ func createJobStatus(job batchv1.Job) (*component.Summary, error) {
 	return summary, nil
 }
 
-func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, error) {
-	cols := component.NewTableCols("Type", "Last Probe", "Last Transition",
-		"Status", "Message", "Reason")
-	table := component.NewTable("Conditions", "There are no job conditions!", cols)
+func createJobConditions(job *batchv1.Job) (*component.Table, error) {
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(job)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, condition := range conditions {
-		row := component.TableRow{}
+	customColumns := [][]string{
+		{"Type", "type"},
+		{"Last Probe", "lastProbeTime"},
+		{"Last Transition", "lastTransitionTime"},
+		{"Status", "status"},
+		{"Message", "message"},
+		{"Reason", "reason"},
+	}
 
-		row["Type"] = component.NewText(string(condition.Type))
-		row["Last Probe"] = component.NewTimestamp(condition.LastProbeTime.Time)
-		row["Last Transition"] = component.NewTimestamp(condition.LastTransitionTime.Time)
-		row["Status"] = component.NewText(string(condition.Status))
-		row["Message"] = component.NewText(condition.Message)
-		row["Reason"] = component.NewText(condition.Reason)
-
-		table.Add(row)
+	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: m}, conditionType, customColumns)
+	if err == nil {
+		table.Sort("Type")
 	}
 
 	return table, nil
@@ -307,5 +310,5 @@ func (j *jobHandler) Conditions(options Options) error {
 }
 
 func defaultJobConditions(job *batchv1.Job, options Options) (*component.Table, error) {
-	return createJobConditions(job.Status.Conditions)
+	return createJobConditions(job)
 }

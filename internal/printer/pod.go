@@ -15,6 +15,7 @@ import (
 	apiEquality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -497,41 +498,6 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	return PodListHandler(ctx, mountedPodList, options)
 }
 
-var (
-	podConditionsColumns = component.NewTableCols("Type", "Status", "Last Transition Time", "Message", "Reason")
-)
-
-func createPodConditionsView(pod *corev1.Pod) (*component.Table, error) {
-	if pod == nil {
-		return nil, errors.New("pod is nil")
-	}
-
-	table := component.NewTable("Pod Conditions", "There are no pod conditions!", podConditionsColumns)
-
-	for _, condition := range pod.Status.Conditions {
-		row := component.TableRow{}
-
-		row["Type"] = component.NewText(string(condition.Type))
-		row["Status"] = component.NewText(string(condition.Status))
-		row["Last Transition Time"] = component.NewTimestamp(condition.LastTransitionTime.Time)
-		row["Message"] = component.NewText(condition.Message)
-		row["Reason"] = component.NewText(condition.Reason)
-
-		table.Add(row)
-	}
-
-	return table, nil
-}
-
-func hasOwnerReference(ownerReferences []metav1.OwnerReference, kind string) bool {
-	for _, ownerReference := range ownerReferences {
-		if ownerReference.Kind == kind {
-			return true
-		}
-	}
-	return false
-}
-
 func printPodResources(podSpec corev1.PodSpec) (*component.Table, error) {
 	table := component.NewTable("Resources", "Pod has no resource needs", podResourceCols)
 
@@ -678,6 +644,16 @@ func (p *podHandler) Conditions(options Options) error {
 	return nil
 }
 
+func createPodConditionsView(pod *corev1.Pod) (*component.Table, error) {
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(pod)
+	if err != nil {
+		return nil, err
+	}
+	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: m}, conditionType, nil)
+	addPodTableFilters(table)
+	return table, err
+}
+
 func defaultPodConditions(pod *corev1.Pod, options Options) (*component.Table, error) {
 	return createPodConditionsView(pod)
 }
@@ -738,17 +714,17 @@ func (p *podHandler) Additional(options Options) error {
 	return nil
 }
 
-func addPodTableFilters(table *component.Table) {
-	for k, v := range podTableFilters() {
-		table.AddFilter(k, v)
-	}
-}
-
 func podTableFilters() map[string]component.TableFilter {
 	return map[string]component.TableFilter{
 		"Phase": {
 			Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
 			Selected: []string{"Pending", "Running"},
 		},
+	}
+}
+
+func addPodTableFilters(table *component.Table) {
+	for k, v := range podTableFilters() {
+		table.AddFilter(k, v)
 	}
 }

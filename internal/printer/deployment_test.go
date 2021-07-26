@@ -264,7 +264,7 @@ func Test_createDeploymentConditionsView(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
-	expected := component.NewTable("Conditions", "There are no deployment conditions!", cols)
+	expected := component.NewTable("Conditions", "There are no conditions!", cols)
 	expected.Add([]component.TableRow{
 		{
 			"Type":            component.NewText("Available"),

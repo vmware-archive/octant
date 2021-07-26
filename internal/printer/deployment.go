@@ -15,14 +15,11 @@ import (
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
-)
-
-var (
-	deploymentConditionColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
 )
 
 // DeploymentListHandler is a printFunc that lists deployments
@@ -126,28 +123,12 @@ func createDeploymentSummaryStatus(deployment *appsv1.Deployment) (*component.Su
 }
 
 func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.Table, error) {
-	if deployment == nil {
-		return nil, errors.New("unable to generate conditions from a nil deployment")
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
+	if err != nil {
+		return nil, err
 	}
-
-	table := component.NewTable("Conditions", "There are no deployment conditions!", deploymentConditionColumns)
-
-	for _, condition := range deployment.Status.Conditions {
-		row := component.TableRow{
-			"Type":            component.NewText(string(condition.Type)),
-			"Reason":          component.NewText(condition.Reason),
-			"Status":          component.NewText(string(condition.Status)),
-			"Message":         component.NewText(condition.Message),
-			"Last Update":     component.NewTimestamp(condition.LastUpdateTime.Time),
-			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
-		}
-
-		table.Add(row)
-	}
-
-	table.Sort("Type")
-
-	return table, nil
+	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: m}, conditionType, nil)
+	return table, err
 }
 
 type actionGeneratorFunction func(*appsv1.Deployment) ([]component.Action, error)

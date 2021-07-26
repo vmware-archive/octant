@@ -373,14 +373,16 @@ func Test_createPodConditionsView(t *testing.T) {
 	got, err := createPodConditionsView(pod)
 	require.NoError(t, err)
 
-	expected := component.NewTable("Pod Conditions", "There are no pod conditions!", podConditionsColumns)
+	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Transition")
+	expected := component.NewTable("Conditions", "There are no conditions!", cols)
+	addPodTableFilters(expected)
 	expected.Add([]component.TableRow{
 		{
-			"Type":                 component.NewText("Initialized"),
-			"Status":               component.NewText("True"),
-			"Last Transition Time": component.NewTimestamp(now.Time),
-			"Message":              component.NewText("message"),
-			"Reason":               component.NewText("reason"),
+			"Type":            component.NewText("Initialized"),
+			"Status":          component.NewText("True"),
+			"Last Transition": component.NewTimestamp(now.Time),
+			"Message":         component.NewText("message"),
+			"Reason":          component.NewText("reason"),
 		},
 	}...)
 

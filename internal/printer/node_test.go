@@ -290,7 +290,7 @@ func Test_createNodeConditionsView(t *testing.T) {
 	got, err := createNodeConditionsView(node)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Conditions", "There are no node conditions!", nodeConditionsColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Conditions", "There are no conditions!", nodeConditionsColumns, []component.TableRow{
 		{
 			"Type":            component.NewText("type"),
 			"Reason":          component.NewText("reason"),
