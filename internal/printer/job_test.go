@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
@@ -161,39 +160,4 @@ func Test_createJobStatus(t *testing.T) {
 	expected := component.NewSummary("Status", sections...)
 
 	assert.Equal(t, expected, got)
-}
-
-func Test_createJobConditions(t *testing.T) {
-	now := metav1.Time{Time: time.Now()}
-
-	job := testutil.CreateJob("job")
-	job.Status.Conditions = []batchv1.JobCondition{
-		{
-			Type:               batchv1.JobComplete,
-			LastProbeTime:      now,
-			LastTransitionTime: now,
-			Status:             corev1.ConditionTrue,
-			Message:            "message",
-			Reason:             "reason",
-		},
-	}
-
-	got, err := createJobConditions(job)
-	require.NoError(t, err)
-
-	cols := component.NewTableCols("Type", "Last Probe", "Last Transition",
-		"Status", "Message", "Reason")
-	expected := component.NewTable("Conditions", "There are no conditions!", cols)
-	expected.Add([]component.TableRow{
-		{
-			"Type":            component.NewText("Complete"),
-			"Last Probe":      component.NewTimestamp(now.Time),
-			"Last Transition": component.NewTimestamp(now.Time),
-			"Status":          component.NewText("True"),
-			"Message":         component.NewText("message"),
-			"Reason":          component.NewText("reason"),
-		},
-	}...)
-
-	component.AssertEqual(t, expected, got)
 }

@@ -273,37 +273,6 @@ func Test_createNodeResourcesView(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_createNodeConditionsView(t *testing.T) {
-
-	node := testutil.CreateNode("node-1")
-	node.Status.Conditions = []corev1.NodeCondition{
-		{
-			Type:               "type",
-			Status:             "status",
-			LastHeartbeatTime:  *testutil.CreateTimestamp(),
-			LastTransitionTime: *testutil.CreateTimestamp(),
-			Reason:             "reason",
-			Message:            "message",
-		},
-	}
-
-	got, err := createNodeConditionsView(node)
-	require.NoError(t, err)
-
-	expected := component.NewTableWithRows("Conditions", "There are no conditions!", nodeConditionsColumns, []component.TableRow{
-		{
-			"Type":            component.NewText("type"),
-			"Reason":          component.NewText("reason"),
-			"Status":          component.NewText("status"),
-			"Message":         component.NewText("message"),
-			"Last Heartbeat":  component.NewTimestamp(node.Status.Conditions[0].LastHeartbeatTime.Time),
-			"Last Transition": component.NewTimestamp(node.Status.Conditions[0].LastTransitionTime.Time),
-		},
-	})
-
-	component.AssertEqual(t, expected, got)
-}
-
 func Test_createNodeImagesView(t *testing.T) {
 
 	node := testutil.CreateNode("node-1")

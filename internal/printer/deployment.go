@@ -15,7 +15,6 @@ import (
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -82,9 +81,6 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 	if err := dh.Pods(ctx, deployment, options); err != nil {
 		return nil, errors.Wrap(err, "print deployment pods")
 	}
-	if err := dh.Conditions(); err != nil {
-		return nil, errors.Wrap(err, "print deployment conditions")
-	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -120,15 +116,6 @@ func createDeploymentSummaryStatus(deployment *appsv1.Deployment) (*component.Su
 	}...)
 
 	return summary, nil
-}
-
-func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.Table, error) {
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
-	if err != nil {
-		return nil, err
-	}
-	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: m}, conditionType, nil)
-	return table, err
 }
 
 type actionGeneratorFunction func(*appsv1.Deployment) ([]component.Action, error)
@@ -268,16 +255,14 @@ type deploymentObject interface {
 	Config() error
 	Status() error
 	Pods(ctx context.Context, object runtime.Object, options Options) error
-	Conditions() error
 }
 
 type deploymentHandler struct {
-	deployment     *appsv1.Deployment
-	configFunc     func(*appsv1.Deployment) (*component.Summary, error)
-	summaryFunc    func(*appsv1.Deployment) (*component.Summary, error)
-	podFunc        func(context.Context, []runtime.Object, Options) (component.Component, error)
-	conditionsFunc func(*appsv1.Deployment) (*component.Table, error)
-	object         *Object
+	deployment  *appsv1.Deployment
+	configFunc  func(*appsv1.Deployment) (*component.Summary, error)
+	summaryFunc func(*appsv1.Deployment) (*component.Summary, error)
+	podFunc     func(context.Context, []runtime.Object, Options) (component.Component, error)
+	object      *Object
 }
 
 var _ deploymentObject = (*deploymentHandler)(nil)
@@ -292,12 +277,11 @@ func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deplo
 	}
 
 	dh := &deploymentHandler{
-		deployment:     deployment,
-		configFunc:     defaultDeploymentConfig,
-		summaryFunc:    defaultDeploymentSummary,
-		podFunc:        defaultDeploymentPods,
-		conditionsFunc: defaultDeploymentConditions,
-		object:         object,
+		deployment:  deployment,
+		configFunc:  defaultDeploymentConfig,
+		summaryFunc: defaultDeploymentSummary,
+		podFunc:     defaultDeploymentPods,
+		object:      object,
 	}
 
 	return dh, nil
@@ -329,25 +313,6 @@ func (d *deploymentHandler) Status() error {
 
 func defaultDeploymentSummary(deployment *appsv1.Deployment) (*component.Summary, error) {
 	return createDeploymentSummaryStatus(deployment)
-}
-
-func (d *deploymentHandler) Conditions() error {
-	if d.deployment == nil {
-		return errors.New("can't display conditions for nil deployment")
-	}
-
-	d.object.RegisterItems(ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return d.conditionsFunc(d.deployment)
-		},
-	})
-
-	return nil
-}
-
-func defaultDeploymentConditions(deployment *appsv1.Deployment) (*component.Table, error) {
-	return createDeploymentConditionsView(deployment)
 }
 
 func (d *deploymentHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {

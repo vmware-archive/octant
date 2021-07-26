@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -354,39 +353,6 @@ func Test_createPodSummaryStatus(t *testing.T) {
 	expected := component.NewSummary("Status", sections...)
 
 	assert.Equal(t, expected, got)
-}
-
-func Test_createPodConditionsView(t *testing.T) {
-	now := metav1.Time{Time: time.Now()}
-
-	pod := testutil.CreatePod("pod")
-	pod.Status.Conditions = []corev1.PodCondition{
-		{
-			Type:               corev1.PodInitialized,
-			Status:             corev1.ConditionTrue,
-			LastTransitionTime: now,
-			Message:            "message",
-			Reason:             "reason",
-		},
-	}
-
-	got, err := createPodConditionsView(pod)
-	require.NoError(t, err)
-
-	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Transition")
-	expected := component.NewTable("Conditions", "There are no conditions!", cols)
-	addPodTableFilters(expected)
-	expected.Add([]component.TableRow{
-		{
-			"Type":            component.NewText("Initialized"),
-			"Status":          component.NewText("True"),
-			"Last Transition": component.NewTimestamp(now.Time),
-			"Message":         component.NewText("message"),
-			"Reason":          component.NewText("reason"),
-		},
-	}...)
-
-	component.AssertEqual(t, expected, got)
 }
 
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {

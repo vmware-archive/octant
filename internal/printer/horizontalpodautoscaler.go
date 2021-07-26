@@ -71,6 +71,7 @@ func HorizontalPodAutoscalerListHandler(ctx context.Context, list *autoscalingv1
 func HorizontalPodAutoscalerHandler(ctx context.Context, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, options Options) (component.Component, error) {
 	o := NewObject(horizontalPodAutoscaler)
 	o.EnableEvents()
+	o.DisableConditions()
 
 	hh, err := newHorizontalPodAutoscalerHandler(horizontalPodAutoscaler, o)
 	if err != nil {
@@ -213,6 +214,14 @@ func createHorizontalPodAutoscalerMetricsStatusView(metricStatus *autoscalingv1.
 	return summary, nil
 }
 
+var hpaConditionColumns = [][]string{
+	{"Type", "type"},
+	{"Reason", "reason"},
+	{"Status", "status"},
+	{"Message", "message"},
+	{"Last Transition", "lastTransitionTime"},
+}
+
 func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) (*component.Table, error) {
 	horizontalPodAutoscalerConditions := make([]interface{}, 0)
 
@@ -229,7 +238,7 @@ func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autosc
 		},
 	}
 
-	table, _, err := createConditionsTable(&unstructured.Unstructured{Object: object}, conditionType, nil)
+	table, _, err := createConditionsTable(unstructured.Unstructured{Object: object}, conditionType, hpaConditionColumns)
 	return table, err
 }
 

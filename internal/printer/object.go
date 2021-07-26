@@ -64,6 +64,20 @@ func defaultEventsGen(ctx context.Context, object runtime.Object, fl *flexlayout
 	return nil
 }
 
+type conditionsGenFn func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error
+type conditionsFilterFn func(*component.Table)
+type mapGenFn func(runtime.Object) (map[string]interface{}, error)
+
+func conditionsGenFactory(sortKey string, columns [][]string, mapFn mapGenFn) conditionsGenFn {
+	return func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error {
+		if err := createConditionsForObject(ctx, fl, object, sortKey, columns, mapFn); err != nil {
+			return fmt.Errorf("add conditions to layout: %w", err)
+		}
+
+		return nil
+	}
+}
+
 // ObjectPrinterFunc is a func that create a view.
 type ObjectPrinterFunc func() (component.Component, error)
 
@@ -110,7 +124,7 @@ type Object struct {
 	PodTemplateGen func(context.Context, runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
 	JobTemplateGen func(context.Context, runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
-	ConditionsGen  func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
+	ConditionsGen  func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error
 }
 
 // NewObject creates an instance of Object.
@@ -122,11 +136,14 @@ func NewObject(object runtime.Object, options ...ObjectOpts) *Object {
 		PodTemplateGen: defaultPodTemplateGen,
 		JobTemplateGen: defaultJobTemplateGen,
 		EventsGen:      defaultEventsGen,
+		ConditionsGen:  conditionsGenFactory("", nil, nil),
 	}
 
 	for _, option := range options {
 		option(o)
 	}
+
+	o.isConditionsEnabled = true
 
 	return o
 }
@@ -161,8 +178,8 @@ func (o *Object) EnableEvents() {
 }
 
 // EnableConditions enables the conditions view for the object.
-func (o *Object) EnableConditions() {
-	o.isConditionsEnabled = true
+func (o *Object) DisableConditions() {
+	o.isConditionsEnabled = false
 }
 
 // RegisterItems registers one or more items to be printed in a section.
@@ -278,7 +295,7 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 	}
 
 	if o.isConditionsEnabled {
-		if err := o.ConditionsGen(ctx, o.object, o.flexLayout, options); err != nil {
+		if err := o.ConditionsGen(ctx, o.object, o.flexLayout); err != nil {
 			return nil, fmt.Errorf("add conditions to layout: %w", err)
 		}
 	}

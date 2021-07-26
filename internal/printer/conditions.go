@@ -6,13 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
 var (
@@ -35,25 +38,22 @@ var (
 
 // createConditionsTable returns a component.Table, if conditions exist on the object, and any err.
 // For objects with empty conditions, an empty table with placeholder text is used.
-func createConditionsTable(u *unstructured.Unstructured, sortKey string, customConditionMap [][]string) (*component.Table, bool, error) {
-	if u == nil {
-		return nil, false, errors.New("object is nil")
-	}
-
+func createConditionsTable(u unstructured.Unstructured, sortKey string, customConditionMap [][]string) (*component.Table, bool, error) {
 	localConditionMap := conditionMap
 	if customConditionMap != nil {
 		localConditionMap = customConditionMap
 	}
 
-	table := component.NewTable("Conditions", "There are no conditions!", nil)
 	status, ok, err := unstructured.NestedMap(u.Object, "status")
 	if err != nil {
 		return nil, false, err
 	}
 	// No status found
 	if !ok {
-		return table, false, nil
+		return nil, false, nil
 	}
+
+	table := component.NewTable("Conditions", "There are no conditions!", nil)
 
 	conditions, ok, err := unstructured.NestedSlice(status, "conditions")
 	if err != nil {
@@ -76,11 +76,11 @@ func createConditionsTable(u *unstructured.Unstructured, sortKey string, customC
 			}
 			columnKey, jsonKey := pair[0], pair[1]
 			conditionValue, ok := cm[jsonKey]
-			if ok {
-				if !columnSet[columnKey] {
-					table.AddColumn(columnKey)
-					columnSet[columnKey] = true
-				}
+			if !columnSet[columnKey] {
+				table.AddColumn(columnKey)
+				columnSet[columnKey] = true
+			}
+			if ok && conditionValue != nil {
 				if strings.Contains(jsonKey, "Time") {
 					t, err := time.Parse(time.RFC3339, conditionValue.(string))
 					if err == nil {
@@ -95,5 +95,34 @@ func createConditionsTable(u *unstructured.Unstructured, sortKey string, customC
 	}
 
 	table.Sort(sortKey)
-	return table, false, nil
+	return table, true, nil
+}
+
+func createConditionsForObject(ctx context.Context, fl *flexlayout.FlexLayout, object runtime.Object, sortKey string, columns [][]string, mapFn mapGenFn) error {
+	var obj map[string]interface{}
+	var err error
+
+	if mapFn != nil {
+		obj, err = mapFn(object)
+	} else {
+		obj, err = runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+	}
+
+	if err != nil {
+		return nil
+	}
+	conditionsTable, _, err := createConditionsTable(unstructured.Unstructured{Object: obj}, conditionType, columns)
+	if err != nil {
+		return fmt.Errorf("create conditions table for object: %w", err)
+	}
+	if sortKey != "" {
+		conditionsTable.Sort(sortKey)
+	}
+	if conditionsTable != nil {
+		conditionsSection := fl.AddSection()
+		if err := conditionsSection.Add(conditionsTable, component.WidthFull); err != nil {
+			return fmt.Errorf("add conditions table to layout: %w", err)
+		}
+	}
+	return nil
 }
