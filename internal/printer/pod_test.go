@@ -244,6 +244,7 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
