@@ -1,5 +1,5 @@
 # Octant Adopters
-<a href="https://www.terasky.com" border="0" target="_blank"><img alt="terasky.com" src="site/static/img/adopters/TeraSky-Color.png" height="50"></a>&nbsp; &nbsp; &nbsp; 
+<a href="https://www.terasky.com" border="0" target="_blank"><img alt="terasky.com" src="site/themes/octant/static/img/adopters/TeraSky-Color.png" height="50"></a>&nbsp; &nbsp; &nbsp; 
 
 
 ## Success Stories
