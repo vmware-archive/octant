@@ -75,6 +75,16 @@ message LinkResponse {
     string ref = 1;
 }
 
+message EventRequest {
+    string clientID = 1;
+    string eventName = 2;
+    bytes payload = 3;
+}
+
+message EventResponse {
+
+}
+
 service Dashboard {
     rpc List(KeyRequest) returns (ListResponse);
     rpc Get(KeyRequest) returns (GetResponse);
@@ -87,4 +97,5 @@ service Dashboard {
     rpc ForceFrontendUpdate(Empty) returns(Empty);
     rpc SendAlert(AlertRequest) returns(Empty);
     rpc CreateLink(KeyRequest) returns(LinkResponse);
+    rpc SendEvent(EventRequest) returns(EventResponse);
 }

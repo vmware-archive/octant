@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	// PluginName is the name of the dashboard plugin.
+	// Name is the name of the dashboard plugin.
 	Name = "plugin"
 )
 
