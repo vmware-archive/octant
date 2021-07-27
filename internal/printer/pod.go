@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
-	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	podResourceCols      = component.NewTableCols("Container", "Request: Memory", "Request: CPU", "Limit: Memory", "Limit: CPU")
 )
 
@@ -70,6 +70,22 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 		row["Ready"] = component.NewText(ready)
 
 		row["Phase"] = component.NewText(string(pod.Status.Phase))
+
+		if len(pod.Status.ContainerStatuses) > 0 {
+			lastStatus := pod.Status.ContainerStatuses[len(pod.Status.ContainerStatuses)-1]
+
+			if state := lastStatus.State.Waiting; state != nil {
+				row["Status"] = component.NewText(lastStatus.State.Waiting.Reason)
+			} else if state := lastStatus.State.Running; state != nil {
+				row["Status"] = component.NewText("Running")
+			}
+
+			if pod.DeletionTimestamp != nil && lastStatus.State.Terminated == nil {
+				row["Status"] = component.NewText("Terminating")
+			}
+		} else {
+			row["Status"] = component.NewText("")
+		}
 
 		restartCounter := 0
 		for _, c := range pod.Status.ContainerStatuses {
