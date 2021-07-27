@@ -213,7 +213,6 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	nsClient.EXPECT().InitialNamespace().Return(namespace)
 	nsClient.EXPECT().ProvidedNamespaces().Return([]string{namespace})
 	nsClient.EXPECT().Names().AnyTimes()
-	nsClient.EXPECT().HasNamespace(namespace).Return(true)
 
 	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
 
