@@ -25,8 +25,7 @@ export const REAL_DATA_STATEFUL_SET: NodeDataDef = {
       path: {
         config: {
           value: 'kafka-config',
-          ref:
-            '/overview/namespace/milan/config-and-storage/config-maps/kafka-config',
+          ref: '/overview/namespace/milan/config-and-storage/config-maps/kafka-config',
         },
         metadata: {
           type: 'link',
@@ -45,8 +44,7 @@ export const REAL_DATA_STATEFUL_SET: NodeDataDef = {
       path: {
         config: {
           value: 'kafka-headless',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/kafka-headless',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/kafka-headless',
         },
         metadata: {
           type: 'link',
@@ -65,8 +63,7 @@ export const REAL_DATA_STATEFUL_SET: NodeDataDef = {
       path: {
         config: {
           value: 'default-token-4dln7',
-          ref:
-            '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
+          ref: '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
         },
         metadata: {
           type: 'link',
@@ -107,8 +104,7 @@ export const REAL_DATA_STATEFUL_SET: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/config-and-storage/service-accounts/default',
+          ref: '/overview/namespace/milan/config-and-storage/service-accounts/default',
         },
         metadata: {
           type: 'link',
@@ -180,8 +176,7 @@ export const REAL_DATA_DAEMON_SET: NodeDataDef = {
       path: {
         config: {
           value: 'hubble-token-smc5q',
-          ref:
-            '/overview/namespace/kube-system/config-and-storage/secrets/hubble-token-smc5q',
+          ref: '/overview/namespace/kube-system/config-and-storage/secrets/hubble-token-smc5q',
         },
         metadata: {
           type: 'link',
@@ -203,8 +198,7 @@ export const REAL_DATA_DAEMON_SET: NodeDataDef = {
       path: {
         config: {
           value: 'hubble-grpc',
-          ref:
-            '/overview/namespace/kube-system/discovery-and-load-balancing/services/hubble-grpc',
+          ref: '/overview/namespace/kube-system/discovery-and-load-balancing/services/hubble-grpc',
         },
         metadata: {
           type: 'link',
@@ -226,8 +220,7 @@ export const REAL_DATA_DAEMON_SET: NodeDataDef = {
       path: {
         config: {
           value: 'hubble',
-          ref:
-            '/overview/namespace/kube-system/config-and-storage/service-accounts/hubble',
+          ref: '/overview/namespace/kube-system/config-and-storage/service-accounts/hubble',
         },
         metadata: {
           type: 'link',
@@ -330,8 +323,7 @@ export const REAL_DATA_DAEMON_SET2: NodeDataDef = {
         },
         config: {
           value: 'metadata-proxy-v0.1',
-          ref:
-            '/overview/namespace/kube-system/workloads/daemon-sets/metadata-proxy-v0.1',
+          ref: '/overview/namespace/kube-system/workloads/daemon-sets/metadata-proxy-v0.1',
         },
       },
       hasChildren: false,
@@ -365,8 +357,7 @@ export const REAL_DATA_DEPLOYMENT: NodeDataDef = {
       path: {
         config: {
           value: 'default-token-4dln7',
-          ref:
-            '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
+          ref: '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
         },
         metadata: {
           type: 'link',
@@ -385,8 +376,7 @@ export const REAL_DATA_DEPLOYMENT: NodeDataDef = {
       path: {
         config: {
           value: 'echo1-56b7744b6c',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/echo1-56b7744b6c',
+          ref: '/overview/namespace/milan/workloads/replica-sets/echo1-56b7744b6c',
         },
         metadata: {
           type: 'link',
@@ -408,8 +398,7 @@ export const REAL_DATA_DEPLOYMENT: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/config-and-storage/service-accounts/default',
+          ref: '/overview/namespace/milan/config-and-storage/service-accounts/default',
         },
         metadata: {
           type: 'link',
@@ -428,8 +417,7 @@ export const REAL_DATA_DEPLOYMENT: NodeDataDef = {
       path: {
         config: {
           value: 'echo1',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/echo1',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/echo1',
         },
         metadata: {
           type: 'link',
@@ -519,8 +507,7 @@ export const REAL_DATA_TWO_REPLICAS: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch-dbf4fc4df',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/elasticsearch-dbf4fc4df',
+          ref: '/overview/namespace/milan/workloads/replica-sets/elasticsearch-dbf4fc4df',
         },
         metadata: {
           type: 'link',
@@ -542,8 +529,7 @@ export const REAL_DATA_TWO_REPLICAS: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch-569cc48595',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/elasticsearch-569cc48595',
+          ref: '/overview/namespace/milan/workloads/replica-sets/elasticsearch-569cc48595',
         },
         metadata: {
           type: 'link',
@@ -562,8 +548,7 @@ export const REAL_DATA_TWO_REPLICAS: NodeDataDef = {
       path: {
         config: {
           value: 'default-token-4dln7',
-          ref:
-            '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
+          ref: '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
         },
         metadata: {
           type: 'link',
@@ -604,8 +589,7 @@ export const REAL_DATA_TWO_REPLICAS: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/elasticsearch',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/elasticsearch',
         },
         metadata: {
           type: 'link',
@@ -627,8 +611,7 @@ export const REAL_DATA_TWO_REPLICAS: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/config-and-storage/service-accounts/default',
+          ref: '/overview/namespace/milan/config-and-storage/service-accounts/default',
         },
         metadata: {
           type: 'link',
@@ -708,8 +691,7 @@ export const REAL_DATA_JOB: NodeDataDef = {
       path: {
         config: {
           value: 'contour-certgen-v1.12.0',
-          ref:
-            '/overview/namespace/contour-internal/workloads/jobs/contour-certgen-v1.12.0',
+          ref: '/overview/namespace/contour-internal/workloads/jobs/contour-certgen-v1.12.0',
         },
         metadata: {
           type: 'link',
@@ -728,8 +710,7 @@ export const REAL_DATA_JOB: NodeDataDef = {
       path: {
         config: {
           value: 'contour-certgen-token-5ggj6',
-          ref:
-            '/overview/namespace/contour-internal/config-and-storage/secrets/contour-certgen-token-5ggj6',
+          ref: '/overview/namespace/contour-internal/config-and-storage/secrets/contour-certgen-token-5ggj6',
         },
         metadata: {
           type: 'link',
@@ -751,8 +732,7 @@ export const REAL_DATA_JOB: NodeDataDef = {
       path: {
         config: {
           value: 'contour-certgen',
-          ref:
-            '/overview/namespace/contour-internal/config-and-storage/service-accounts/contour-certgen',
+          ref: '/overview/namespace/contour-internal/config-and-storage/service-accounts/contour-certgen',
         },
         metadata: {
           type: 'link',
@@ -831,8 +811,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'web-79d88c97d6',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/web-79d88c97d6',
+          ref: '/overview/namespace/milan/workloads/replica-sets/web-79d88c97d6',
         },
         metadata: {
           type: 'link',
@@ -851,8 +830,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'default-token-4dln7',
-          ref:
-            '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
+          ref: '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
         },
         metadata: {
           type: 'link',
@@ -871,8 +849,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'web',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/web',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/web',
         },
         metadata: {
           type: 'link',
@@ -894,8 +871,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'web2',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/web2',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/web2',
         },
         metadata: {
           type: 'link',
@@ -917,8 +893,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/config-and-storage/service-accounts/default',
+          ref: '/overview/namespace/milan/config-and-storage/service-accounts/default',
         },
         metadata: {
           type: 'link',
@@ -937,8 +912,7 @@ export const REAL_DATA_INGRESS: NodeDataDef = {
       path: {
         config: {
           value: 'example-ingress',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/ingresses/example-ingress',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/ingresses/example-ingress',
         },
         metadata: {
           type: 'link',
@@ -1015,8 +989,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-54w8c',
-          ref:
-            '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-54w8c',
+          ref: '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-54w8c',
         },
         metadata: {
           type: 'link',
@@ -1040,8 +1013,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-hswzw',
-          ref:
-            '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-hswzw',
+          ref: '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-hswzw',
         },
         metadata: {
           type: 'link',
@@ -1063,8 +1035,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-996bb7685-kgwqk',
-          ref:
-            '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-kgwqk',
+          ref: '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-kgwqk',
         },
         metadata: {
           type: 'link',
@@ -1088,8 +1059,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-pc6tv',
-          ref:
-            '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-pc6tv',
+          ref: '/overview/namespace/milan/custom-resources/gcpmachines.infrastructure.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-pc6tv',
         },
         metadata: {
           type: 'link',
@@ -1111,8 +1081,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-996bb7685-lq985',
-          ref:
-            '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-lq985',
+          ref: '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-lq985',
         },
         metadata: {
           type: 'link',
@@ -1136,8 +1105,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-vvklf',
-          ref:
-            '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-vvklf',
+          ref: '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-vvklf',
         },
         metadata: {
           type: 'link',
@@ -1161,8 +1129,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0',
-          ref:
-            '/overview/namespace/milan/custom-resources/machinedeployments.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0',
+          ref: '/overview/namespace/milan/custom-resources/machinedeployments.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0',
         },
         metadata: {
           type: 'link',
@@ -1184,8 +1151,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-996bb7685',
-          ref:
-            '/overview/namespace/milan/custom-resources/machinesets.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685',
+          ref: '/overview/namespace/milan/custom-resources/machinesets.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685',
         },
         metadata: {
           type: 'link',
@@ -1207,8 +1173,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart',
-          ref:
-            '/overview/namespace/milan/custom-resources/clusters.cluster.x-k8s.io/v1alpha3/capi-quickstart',
+          ref: '/overview/namespace/milan/custom-resources/clusters.cluster.x-k8s.io/v1alpha3/capi-quickstart',
         },
         metadata: {
           type: 'link',
@@ -1232,8 +1197,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-4rqgc',
-          ref:
-            '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-4rqgc',
+          ref: '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-4rqgc',
         },
         metadata: {
           type: 'link',
@@ -1255,8 +1219,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-996bb7685-wh2tx',
-          ref:
-            '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-wh2tx',
+          ref: '/overview/namespace/milan/custom-resources/machines.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-996bb7685-wh2tx',
         },
         metadata: {
           type: 'link',
@@ -1280,8 +1243,7 @@ export const REAL_DATA_CRDS: NodeDataDef = {
       path: {
         config: {
           value: 'capi-quickstart-md-0-8rwp6',
-          ref:
-            '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-8rwp6',
+          ref: '/overview/namespace/milan/custom-resources/kubeadmconfigs.bootstrap.cluster.x-k8s.io/v1alpha3/capi-quickstart-md-0-8rwp6',
         },
         metadata: {
           type: 'link',
@@ -1429,8 +1391,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'loader',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/loader',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/loader',
         },
         metadata: {
           type: 'link',
@@ -1449,8 +1410,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch-dbf4fc4df',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/elasticsearch-dbf4fc4df',
+          ref: '/overview/namespace/milan/workloads/replica-sets/elasticsearch-dbf4fc4df',
         },
         metadata: {
           type: 'link',
@@ -1469,8 +1429,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'kafka-config',
-          ref:
-            '/overview/namespace/milan/config-and-storage/config-maps/kafka-config',
+          ref: '/overview/namespace/milan/config-and-storage/config-maps/kafka-config',
         },
         metadata: {
           type: 'link',
@@ -1508,8 +1467,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'jobposting-57bd4c8596',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/jobposting-57bd4c8596',
+          ref: '/overview/namespace/milan/workloads/replica-sets/jobposting-57bd4c8596',
         },
         metadata: {
           type: 'link',
@@ -1528,8 +1486,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'kafka-headless',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/kafka-headless',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/kafka-headless',
         },
         metadata: {
           type: 'link',
@@ -1570,8 +1527,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch-569cc48595',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/elasticsearch-569cc48595',
+          ref: '/overview/namespace/milan/workloads/replica-sets/elasticsearch-569cc48595',
         },
         metadata: {
           type: 'link',
@@ -1609,8 +1565,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'web-79d88c97d6',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/web-79d88c97d6',
+          ref: '/overview/namespace/milan/workloads/replica-sets/web-79d88c97d6',
         },
         metadata: {
           type: 'link',
@@ -1632,8 +1587,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/custom-resources/brokers.eventing.knative.dev/v1/default',
+          ref: '/overview/namespace/milan/custom-resources/brokers.eventing.knative.dev/v1/default',
         },
         metadata: {
           type: 'link',
@@ -1652,8 +1606,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'zookeeper-66b5f99f97',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/zookeeper-66b5f99f97',
+          ref: '/overview/namespace/milan/workloads/replica-sets/zookeeper-66b5f99f97',
         },
         metadata: {
           type: 'link',
@@ -1672,8 +1625,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'default-token-4dln7',
-          ref:
-            '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
+          ref: '/overview/namespace/milan/config-and-storage/secrets/default-token-4dln7',
         },
         metadata: {
           type: 'link',
@@ -1733,8 +1685,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'recruiter-54f94f7b87',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/recruiter-54f94f7b87',
+          ref: '/overview/namespace/milan/workloads/replica-sets/recruiter-54f94f7b87',
         },
         metadata: {
           type: 'link',
@@ -1753,8 +1704,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'web',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/web',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/web',
         },
         metadata: {
           type: 'link',
@@ -1776,8 +1726,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'default-kne-trigger',
-          ref:
-            '/overview/namespace/milan/custom-resources/inmemorychannels.messaging.knative.dev/v1/default-kne-trigger',
+          ref: '/overview/namespace/milan/custom-resources/inmemorychannels.messaging.knative.dev/v1/default-kne-trigger',
         },
         metadata: {
           type: 'link',
@@ -1796,8 +1745,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'jobposting',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/jobposting',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/jobposting',
         },
         metadata: {
           type: 'link',
@@ -1816,8 +1764,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'recruiter',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/recruiter',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/recruiter',
         },
         metadata: {
           type: 'link',
@@ -1836,8 +1783,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'zk-headless',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/zk-headless',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/zk-headless',
         },
         metadata: {
           type: 'link',
@@ -1859,8 +1805,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'web2',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/web2',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/web2',
         },
         metadata: {
           type: 'link',
@@ -1879,8 +1824,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'default-kne-trigger-kn-channel',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/default-kne-trigger-kn-channel',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/default-kne-trigger-kn-channel',
         },
         metadata: {
           type: 'link',
@@ -1899,8 +1843,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'elasticsearch',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/elasticsearch',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/elasticsearch',
         },
         metadata: {
           type: 'link',
@@ -1919,8 +1862,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'echo1-56b7744b6c',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/echo1-56b7744b6c',
+          ref: '/overview/namespace/milan/workloads/replica-sets/echo1-56b7744b6c',
         },
         metadata: {
           type: 'link',
@@ -1961,8 +1903,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'default',
-          ref:
-            '/overview/namespace/milan/config-and-storage/service-accounts/default',
+          ref: '/overview/namespace/milan/config-and-storage/service-accounts/default',
         },
         metadata: {
           type: 'link',
@@ -1981,8 +1922,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'loader-69fb98c8b5',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/loader-69fb98c8b5',
+          ref: '/overview/namespace/milan/workloads/replica-sets/loader-69fb98c8b5',
         },
         metadata: {
           type: 'link',
@@ -2001,8 +1941,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'rolling-test-574b87c764',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/rolling-test-574b87c764',
+          ref: '/overview/namespace/milan/workloads/replica-sets/rolling-test-574b87c764',
         },
         metadata: {
           type: 'link',
@@ -2083,8 +2022,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'echo1',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/services/echo1',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/services/echo1',
         },
         metadata: {
           type: 'link',
@@ -2213,8 +2151,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'crawler-67cf8bbcdd',
-          ref:
-            '/overview/namespace/milan/workloads/replica-sets/crawler-67cf8bbcdd',
+          ref: '/overview/namespace/milan/workloads/replica-sets/crawler-67cf8bbcdd',
         },
         metadata: {
           type: 'link',
@@ -2233,8 +2170,7 @@ export const REAL_DATA_CRDS2: NodeDataDef = {
       path: {
         config: {
           value: 'example-ingress',
-          ref:
-            '/overview/namespace/milan/discovery-and-load-balancing/ingresses/example-ingress',
+          ref: '/overview/namespace/milan/discovery-and-load-balancing/ingresses/example-ingress',
         },
         metadata: {
           type: 'link',

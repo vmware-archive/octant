@@ -22,7 +22,8 @@ import { JSONEditorView } from '../../../models/content';
 })
 export class JSONEditorComponent
   extends AbstractViewComponent<JSONEditorView>
-  implements AfterViewChecked {
+  implements AfterViewChecked
+{
   container: HTMLElement;
   id: string;
   options = {

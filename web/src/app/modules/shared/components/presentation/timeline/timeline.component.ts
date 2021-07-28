@@ -14,7 +14,8 @@ import { TimelineStep, TimelineView } from '../../../models/content';
 })
 export class TimelineComponent
   extends AbstractViewComponent<TimelineView>
-  implements OnInit {
+  implements OnInit
+{
   vertical: boolean;
   steps: TimelineStep[];
   constructor() {

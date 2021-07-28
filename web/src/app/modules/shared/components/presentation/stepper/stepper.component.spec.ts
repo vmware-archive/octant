@@ -78,15 +78,13 @@ describe('StepperComponent', () => {
     'should submit form after completing each step',
     waitForAsync(() => {
       fixture.whenStable().then(() => {
-        let nextButton = fixture.debugElement.nativeElement.querySelector(
-          '.next'
-        );
+        let nextButton =
+          fixture.debugElement.nativeElement.querySelector('.next');
         nextButton.click();
         fixture.detectChanges();
 
-        nextButton = fixture.debugElement.nativeElement.querySelector(
-          '.submit'
-        );
+        nextButton =
+          fixture.debugElement.nativeElement.querySelector('.submit');
         nextButton.click();
         fixture.detectChanges();
 

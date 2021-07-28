@@ -13,11 +13,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/api"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 )
 
@@ -134,18 +134,9 @@ func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]st
 		names = []string{initialNamespace}
 	}
 
-	for _, namespace := range providedNamespaces {
-		found := false
-		for _, foundNamespace := range names {
-			if namespace == foundNamespace {
-				found = true
-				break
-			}
-		}
-		if !found && namespaceClient.HasNamespace(namespace) {
-			names = append(names, namespace)
-		}
-	}
+	names = append(names, providedNamespaces...)
+	names = uniqueStringSlice(names)
+
 	return names, nil
 }
 
@@ -157,4 +148,16 @@ func CreateNamespacesEvent(namespaces []string) oevent.Event {
 			"namespaces": namespaces,
 		},
 	}
+}
+
+func uniqueStringSlice(nsSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range nsSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

@@ -59,6 +59,7 @@ func Test_JobListHandler(t *testing.T) {
 	tpo.PathForObject(validJob, validJob.Name, "/job")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, validJob)
 	got, err := JobListHandler(ctx, validJobList, printOptions)
 	require.NoError(t, err)
 

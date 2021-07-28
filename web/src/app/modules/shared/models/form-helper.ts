@@ -55,7 +55,9 @@ export class FormHelper {
 
     if (
       field.config?.configuration?.choices &&
-      (field.config.type === 'checkbox' || field.config.type === 'radio')
+      (field.config.type === 'checkbox' ||
+        field.config.type === 'radio' ||
+        field.config.type === 'select')
     ) {
       const choices: Choice[] = field.config.configuration.choices;
       controls[field.config.name] = new FormArray([]);

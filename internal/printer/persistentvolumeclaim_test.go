@@ -104,6 +104,7 @@ func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 			table := component.NewTable("Persistent Volume Claims", "We couldn't find any persistent volume claims!", cols)
 
 			tpo.PathForObject(object, object.Name, "/pvc")
+			tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 
 			if tc.persistentvolume != nil {
 				tpo.PathForObject(tc.persistentvolume, tc.persistentvolume.GetName(), fmt.Sprintf("/%s", tc.persistentvolume.GetName()))
@@ -278,6 +279,11 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 				Image:        "mysql:5.6",
 				RestartCount: 0,
 				Ready:        true,
+				State: corev1.ContainerState{
+					Waiting:    nil,
+					Running:    &corev1.ContainerStateRunning{StartedAt: metav1.Time{Time: now}},
+					Terminated: nil,
+				},
 			},
 		},
 	}
@@ -297,6 +303,7 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 	}
 
 	tpo.PathForObject(pod, pod.Name, "/pod")
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 
 	podList := &unstructured.UnstructuredList{}
 	for _, p := range pods.Items {
@@ -316,14 +323,15 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 	got, err := createMountedPodListView(ctx, pvc.Namespace, pvc.Name, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "wordpress-mysql-67565bd57-8fzbh", "/pod",
-			genObjectStatus(component.TextStatusOK, []string{""})),
+			genObjectStatus(component.TextStatusOK, []string{"Pod is OK"})),
 
 		"Ready":    component.NewText("1/1"),
 		"Phase":    component.NewText("Running"),
+		"Status":   component.NewText("Running"),
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),

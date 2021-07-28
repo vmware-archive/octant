@@ -16,7 +16,6 @@ import (
 
 	. "github.com/vmware-tanzu/octant/internal/config"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
@@ -25,6 +24,8 @@ import (
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	portForwardFake "github.com/vmware-tanzu/octant/internal/portforward/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
@@ -52,7 +53,7 @@ func TestCRDWatchConfig_CanPerform(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			config := CRDWatchConfig{
+			config := config.CRDWatchConfig{
 				IsNamespaced: test.isNamespaced,
 			}
 
@@ -89,7 +90,7 @@ func TestLiveConfig(t *testing.T) {
 	assert.NoError(t, err)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
-	buildInfo := BuildInfo{}
+	buildInfo := config.BuildInfo{}
 
 	restConfigOptions := cluster.RESTConfigOptions{}
 
@@ -136,7 +137,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToTrue(t *testing.T) {
 	assert.NoError(t, err)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
-	buildInfo := BuildInfo{}
+	buildInfo := config.BuildInfo{}
 
 	restConfigOptions := cluster.RESTConfigOptions{}
 
@@ -194,7 +195,7 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToFalse(t *testing.T) {
 	assert.NoError(t, err)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
-	buildInfo := BuildInfo{}
+	buildInfo := config.BuildInfo{}
 
 	restConfigOptions := cluster.RESTConfigOptions{}
 
@@ -239,9 +240,9 @@ func TestLiveConfig_UseContext_WithContextChosenByUISetToFalse(t *testing.T) {
 
 type stubCRDWatcher struct{}
 
-var _ CRDWatcher = (*stubCRDWatcher)(nil)
+var _ config.CRDWatcher = (*stubCRDWatcher)(nil)
 
-func (w stubCRDWatcher) AddConfig(config *CRDWatchConfig) error {
+func (w stubCRDWatcher) AddConfig(config *config.CRDWatchConfig) error {
 	return nil
 }
 

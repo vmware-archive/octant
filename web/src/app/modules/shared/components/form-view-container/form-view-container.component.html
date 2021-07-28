@@ -89,12 +89,14 @@
       <cds-select [style.width.%]="field.config.width">
         <label [for]="field.config.name">{{ field.config.label }}</label>
         <select
-          [formControlName]="field.config.name"
+          [formArrayName]="field.config.name"
           [attr.multiple]="field.config.configuration.multiple"
+          (change)="onSelect($event, field.config.name)"
         >
           <option
             *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
             [value]="opt.value"
+            [selected]="opt.checked"
           >
             {{ opt.label }}
           </option>

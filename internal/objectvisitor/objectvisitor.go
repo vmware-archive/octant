@@ -17,8 +17,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 //go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware-tanzu/octant/internal/objectvisitor/fake github.com/vmware-tanzu/octant/internal/objectvisitor ObjectHandler

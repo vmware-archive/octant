@@ -11,8 +11,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	config "github.com/vmware-tanzu/octant/internal/config"
 	api "github.com/vmware-tanzu/octant/pkg/api"
+	config "github.com/vmware-tanzu/octant/pkg/config"
 	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 

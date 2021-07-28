@@ -46,6 +46,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, configMap)
 	got, err := ConfigMapListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 

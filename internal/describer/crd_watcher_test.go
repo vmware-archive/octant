@@ -17,8 +17,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
-	"github.com/vmware-tanzu/octant/internal/config"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )

@@ -27,9 +27,8 @@ const emptyKubeContext: KubeContextResponse = {
   providedIn: 'root',
 })
 export class KubeContextService {
-  private contextsSource: BehaviorSubject<
-    ContextDescription[]
-  > = new BehaviorSubject<ContextDescription[]>([]);
+  private contextsSource: BehaviorSubject<ContextDescription[]> =
+    new BehaviorSubject<ContextDescription[]>([]);
   private selectedSource = new BehaviorSubject<string>('');
 
   constructor(private websocketService: WebsocketService) {

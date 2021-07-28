@@ -23,7 +23,7 @@ func ClusterRoleBindingListHandler(ctx context.Context, clusterRoleBindingList *
 
 	columns := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
 	ot := NewObjectTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, roleBinding := range clusterRoleBindingList.Items {
 		row := component.TableRow{}
 

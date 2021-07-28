@@ -68,13 +68,11 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.namespaceSubscription = this.namespaceService.availableNamespaces.subscribe(
-      namespaces => {
-        this.namespaceDestinations = this.buildNamespaceDestinations(
-          namespaces
-        );
-      }
-    );
+    this.namespaceSubscription =
+      this.namespaceService.availableNamespaces.subscribe(namespaces => {
+        this.namespaceDestinations =
+          this.buildNamespaceDestinations(namespaces);
+      });
     this.navigationSubscription = this.navigationService.current.subscribe(
       navigation => {
         this.navigation = navigation;

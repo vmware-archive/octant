@@ -7,6 +7,7 @@ package navigation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path"
 	"sort"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
-	"github.com/pkg/errors"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -85,7 +85,7 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 
 	crds, _, err := CustomResourceDefinitions(ctx, objectStore)
 	if err != nil {
-		return nil, false, errors.Wrap(err, "retrieving CRDs")
+		return nil, false, fmt.Errorf("retrieving CRDs: %w", err)
 	}
 
 	for i := range crds {
@@ -144,12 +144,12 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1.
 		// See https://github.com/kubernetes/kubernetes/issues/87675
 		crdObj, err := json.Marshal(rawList.Items[i].UnstructuredContent())
 		if err != nil {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "marshaling unstructured object to custom resource definition"), rawList.Items[i].GetName()))
+			logger.Errorf("%v", fmt.Errorf("marshaling unstructured object to custom resource definition: %s, %w", rawList.Items[i].GetName(), err))
 			continue
 		}
 
 		if err != json.Unmarshal(crdObj, &crd) {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "unmarshaling unstructured object to custom resource definition"), rawList.Items[i].GetName()))
+			logger.Errorf("%v", fmt.Errorf("unmarshaling unstructured object to custom resource definition: %s, %w", rawList.Items[i].GetName(), err))
 			continue
 		}
 		list = append(list, crd)
@@ -199,7 +199,9 @@ func ListCustomResources(
 
 		objects, _, err := o.List(ctx, key)
 		if err != nil {
-			return nil, false, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
+			logger := log.From(ctx)
+			logger.Errorf("listing custom resources for %q, %w", crd.Name, err)
+			continue
 		}
 
 		list.Items = append(list.Items, objects.Items...)

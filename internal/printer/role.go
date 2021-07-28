@@ -24,7 +24,7 @@ func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, options Opt
 
 	columns := component.NewTableCols("Name", "Age")
 	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, role := range roleList.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&role, role.Name)

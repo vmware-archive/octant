@@ -61,12 +61,28 @@ func Test_PodListHandler(t *testing.T) {
 				Image:        "nginx:1.15",
 				RestartCount: 0,
 				Ready:        true,
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ContainerCreating",
+						Message: "",
+					},
+					Running:    nil,
+					Terminated: nil,
+				},
 			},
 			{
 				Name:         "kuard",
 				Image:        "gcr.io/kuar-demo/kuard-amd64:1",
 				RestartCount: 0,
 				Ready:        false,
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ContainerCreating",
+						Message: "",
+					},
+					Running:    nil,
+					Terminated: nil,
+				},
 			},
 		},
 	}
@@ -78,19 +94,21 @@ func Test_PodListHandler(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pod")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod", "/pod",
 			genObjectStatus(component.TextStatusWarning, []string{
-				"",
+				"Pod may require additional action",
 			})),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
 		"Phase":    component.NewText("Pending"),
+		"Status":   component.NewText("ContainerCreating"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
@@ -134,6 +152,11 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 				Image:        "perl",
 				RestartCount: 0,
 				Ready:        false,
+				State: corev1.ContainerState{
+					Waiting:    nil,
+					Running:    &corev1.ContainerStateRunning{StartedAt: metav1.Time{Time: now}},
+					Terminated: nil,
+				},
 			},
 		},
 	}
@@ -145,19 +168,102 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Succeeded"),
+		"Status":   component.NewText("Running"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
+	})
+	addPodTableFilters(expected)
+
+	component.AssertEqual(t, expected, got)
+}
+
+func Test_PodListHandlerTerminating(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil)
+	printOptions := tpo.ToOptions()
+
+	now := testutil.Time()
+
+	labels := map[string]string{
+		"app": "testing",
+	}
+
+	pod := testutil.CreatePod("pi-7xpxr")
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Labels = labels
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "pi",
+			Image: "perl",
+		},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Running",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "pi",
+				Image:        "perl",
+				RestartCount: 0,
+				Ready:        false,
+				State: corev1.ContainerState{
+					Waiting:    nil,
+					Running:    nil,
+					Terminated: nil,
+				},
+			},
+		},
+	}
+	pod.DeletionTimestamp = &metav1.Time{Time: now}
+
+	object := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
+
+	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod)
+	got, err := PodListHandler(ctx, object, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	expected.Add(component.TableRow{
+		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Pod is being deleted",
+			}),
+		),
+		"Labels":     component.NewLabels(labels),
+		"Ready":      component.NewText("0/1"),
+		"Phase":      component.NewText("Running"),
+		"Status":     component.NewText("Terminating"),
+		"Restarts":   component.NewText("0"),
+		"Age":        component.NewTimestamp(now),
+		"_isDeleted": component.NewText("deleted"),
+		"Node":       nodeLink,
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
 			buildObjectDeleteAction(t, pod),
 		}),
@@ -188,17 +294,21 @@ func TestPodListHandler_sorted(t *testing.T) {
 	tpo.PathForObject(pod2, pod2.Name, "/pod2")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod1)
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, pod2)
+
 	got, err := PodListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod1", "/pod1",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),
+		"Status":   component.NewText(""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),
@@ -208,10 +318,11 @@ func TestPodListHandler_sorted(t *testing.T) {
 	})
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod2", "/pod2",
-			genObjectStatus(component.TextStatusWarning, []string{""})),
+			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),
+		"Status":   component.NewText(""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),

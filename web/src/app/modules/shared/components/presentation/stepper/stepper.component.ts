@@ -18,7 +18,8 @@ interface Choice {
 })
 export class StepperComponent
   extends AbstractViewComponent<StepperView>
-  implements OnInit {
+  implements OnInit
+{
   @Output()
   submit: EventEmitter<FormGroup> = new EventEmitter(true);
 

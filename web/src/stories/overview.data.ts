@@ -66,8 +66,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'kubernetes',
-                  ref:
-                    '/overview/namespace/default/discovery-and-load-balancing/services/kubernetes',
+                  ref: '/overview/namespace/default/discovery-and-load-balancing/services/kubernetes',
                   status: 1,
                   statusDetail: {
                     metadata: { type: 'list' },
@@ -109,8 +108,7 @@ export const big_data = {
                       },
                       confirmation: {
                         title: 'Delete Service',
-                        body:
-                          'Are you sure you want to delete *Service* **kubernetes**? This action is permanent and cannot be recovered.',
+                        body: 'Are you sure you want to delete *Service* **kubernetes**? This action is permanent and cannot be recovered.',
                       },
                       type: 'danger',
                     },
@@ -160,8 +158,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'default-token-k4mp4',
-                  ref:
-                    '/overview/namespace/default/config-and-storage/secrets/default-token-k4mp4',
+                  ref: '/overview/namespace/default/config-and-storage/secrets/default-token-k4mp4',
                   status: 1,
                   statusDetail: {
                     metadata: { type: 'list' },
@@ -195,8 +192,7 @@ export const big_data = {
                       },
                       confirmation: {
                         title: 'Delete Secret',
-                        body:
-                          'Are you sure you want to delete *Secret* **default-token-k4mp4**? This action is permanent and cannot be recovered.',
+                        body: 'Are you sure you want to delete *Secret* **default-token-k4mp4**? This action is permanent and cannot be recovered.',
                       },
                       type: 'danger',
                     },
@@ -246,8 +242,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'default',
-                  ref:
-                    '/overview/namespace/default/config-and-storage/service-accounts/default',
+                  ref: '/overview/namespace/default/config-and-storage/service-accounts/default',
                   status: 1,
                   statusDetail: {
                     metadata: { type: 'list' },
@@ -278,8 +273,7 @@ export const big_data = {
                       },
                       confirmation: {
                         title: 'Delete ServiceAccount',
-                        body:
-                          'Are you sure you want to delete *ServiceAccount* **default**? This action is permanent and cannot be recovered.',
+                        body: 'Are you sure you want to delete *ServiceAccount* **default**? This action is permanent and cannot be recovered.',
                       },
                       type: 'danger',
                     },
@@ -337,8 +331,7 @@ export const big_data = {
                 config: {
                   value:
                     'Node minikube event: Registered Node minikube in Controller',
-                  ref:
-                    '/overview/namespace/default/events/minikube.1619233ef88b9048',
+                  ref: '/overview/namespace/default/events/minikube.1619233ef88b9048',
                 },
               },
               Reason: {
@@ -369,8 +362,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Starting kube-proxy.',
-                  ref:
-                    '/overview/namespace/default/events/minikube.1619233b5373d195',
+                  ref: '/overview/namespace/default/events/minikube.1619233b5373d195',
                 },
               },
               Reason: {
@@ -401,8 +393,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Node minikube status is now: NodeHasSufficientPID',
-                  ref:
-                    '/overview/namespace/default/events/minikube.16192335109a3bee',
+                  ref: '/overview/namespace/default/events/minikube.16192335109a3bee',
                 },
               },
               Reason: {
@@ -433,8 +424,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Node minikube status is now: NodeHasNoDiskPressure',
-                  ref:
-                    '/overview/namespace/default/events/minikube.1619233510993cda',
+                  ref: '/overview/namespace/default/events/minikube.1619233510993cda',
                 },
               },
               Reason: {
@@ -465,8 +455,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Node minikube status is now: NodeHasSufficientMemory',
-                  ref:
-                    '/overview/namespace/default/events/minikube.161923351097f4ba',
+                  ref: '/overview/namespace/default/events/minikube.161923351097f4ba',
                 },
               },
               Reason: {
@@ -497,8 +486,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Updated Node Allocatable limit across pods',
-                  ref:
-                    '/overview/namespace/default/events/minikube.161923352af5316a',
+                  ref: '/overview/namespace/default/events/minikube.161923352af5316a',
                 },
               },
               Reason: {
@@ -529,8 +517,7 @@ export const big_data = {
                 },
                 config: {
                   value: 'Starting kubelet.',
-                  ref:
-                    '/overview/namespace/default/events/minikube.16192334f653ead2',
+                  ref: '/overview/namespace/default/events/minikube.16192334f653ead2',
                 },
               },
               Reason: {
@@ -562,8 +549,7 @@ export const big_data = {
                 config: {
                   value:
                     'Node minikube event: Registered Node minikube in Controller',
-                  ref:
-                    '/overview/namespace/default/events/minikube.1618e3199521f52d',
+                  ref: '/overview/namespace/default/events/minikube.1618e3199521f52d',
                 },
               },
               Reason: {

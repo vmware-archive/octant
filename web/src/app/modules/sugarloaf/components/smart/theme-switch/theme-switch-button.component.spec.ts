@@ -43,8 +43,9 @@ describe('ThemeSwitchButtonComponent', () => {
   it('should render the right button', () => {
     component.lightThemeEnabled = true;
     fixture.detectChanges();
-    const switchButton = fixture.debugElement.query(By.css('#switchButton'))
-      .nativeElement;
+    const switchButton = fixture.debugElement.query(
+      By.css('#switchButton')
+    ).nativeElement;
 
     expect(switchButton.innerHTML).toContain('dark');
   });

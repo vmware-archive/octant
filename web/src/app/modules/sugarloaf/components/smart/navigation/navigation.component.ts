@@ -64,8 +64,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.subscriptionSelectedItem = this.navigationService.selectedItem.subscribe(
-      selection => {
+    this.subscriptionSelectedItem =
+      this.navigationService.selectedItem.subscribe(selection => {
         if (
           this.selectedItem.index !== selection.index ||
           this.selectedItem.module !== selection.module
@@ -74,8 +74,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
           this.currentModule = this.modules[this.selectedItem.module];
           this.cd.markForCheck();
         }
-      }
-    );
+      });
 
     this.subscriptionCollapsed = this.preferencesService.preferences
       .get('navigation.collapsed')

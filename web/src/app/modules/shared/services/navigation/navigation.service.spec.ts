@@ -179,8 +179,7 @@ describe('NavigationService', () => {
         result: '/overview/namespace/test/workloads/deployments',
       },
       {
-        url:
-          '/overview/namespace/default/workloads/deployments/nginx-deployment',
+        url: '/overview/namespace/default/workloads/deployments/nginx-deployment',
         namespace: 'test',
         result: '/overview/namespace/test',
       },

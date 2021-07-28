@@ -92,8 +92,10 @@ import { IconComponent } from './components/presentation/icon/icon.component';
 import { FormViewContainerComponent } from './components/form-view-container/form-view-container.component';
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @NgModule({
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [
     AccordionComponent,
     AlertComponent,

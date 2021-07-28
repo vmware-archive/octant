@@ -34,7 +34,7 @@ describe('ResourceViewerComponent', () => {
   });
 
   it('should show node labels', done => {
-    component.view = ({
+    component.view = {
       config: {
         nodes: {
           '16428c94-a848-47d5-b1e3-c8245b57959b': {
@@ -55,15 +55,14 @@ describe('ResourceViewerComponent', () => {
               },
               config: {
                 value: 'metadata-proxy-v0.1',
-                ref:
-                  '/overview/namespace/kube-system/workloads/daemon-sets/metadata-proxy-v0.1',
+                ref: '/overview/namespace/kube-system/workloads/daemon-sets/metadata-proxy-v0.1',
               },
             },
             hasChildren: false,
           },
         },
       },
-    } as unknown) as ResourceViewerView;
+    } as unknown as ResourceViewerView;
 
     fixture.detectChanges();
 

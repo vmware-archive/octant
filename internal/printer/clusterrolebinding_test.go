@@ -47,6 +47,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 	tpo.PathForGVK("", "rbac.authorization.k8s.io/v1", "Role", "role-name", "role-name", "/cluster-role-path")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, clusterRoleBinding)
 	observed, err := ClusterRoleBindingListHandler(ctx, roleBindingList, printOptions)
 	require.NoError(t, err)
 

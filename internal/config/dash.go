@@ -7,31 +7,23 @@ package config
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/vmware-tanzu/octant/internal/kubeconfig"
-	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
-	"github.com/pkg/errors"
-	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	"github.com/vmware-tanzu/octant/internal/cluster"
-	internalErr "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
+	oerrors "github.com/vmware-tanzu/octant/pkg/errors"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 )
 
-//go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware-tanzu/octant/internal/config Dash
+//go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware-tanzu/octant/pkg/config Dash
 //go:generate mockgen -destination=./fake/mock_kubecontextdecorator.go -package=fake github.com/vmware-tanzu/octant/internal/config KubeContextDecorator
-
-// CRDWatcher watches for CRDs.
-type CRDWatcher interface {
-	Watch(ctx context.Context) error
-	AddConfig(config *CRDWatchConfig) error
-}
 
 // KubeContextDecorator handles context changes
 type KubeContextDecorator interface {
@@ -65,122 +57,39 @@ func (scc *staticClusterClient) Contexts() []kubeconfig.Context {
 	return nil
 }
 
-// ObjectHandler is a function that is run when a new object is available.
-type ObjectHandler func(ctx context.Context, object *unstructured.Unstructured)
-
-// CRDWatchConfig is configuration for CRDWatcher.
-type CRDWatchConfig struct {
-	Add          ObjectHandler
-	Delete       ObjectHandler
-	IsNamespaced bool
-}
-
-type BuildInfo struct {
-	Version string
-	Commit  string
-	Time    string
-}
-
-type Context struct {
-	Name             string
-	DefaultNamespace string
-}
-
-// CanPerform returns true if config can perform actions on an object.
-func (c *CRDWatchConfig) CanPerform(u *unstructured.Unstructured) bool {
-	spec, ok := u.Object["spec"].(map[string]interface{})
-	if !ok {
-		return false
-	}
-
-	scope, ok := spec["scope"].(string)
-	if !ok {
-		return false
-	}
-
-	if c.IsNamespaced && scope != string(apiextv1.NamespaceScoped) {
-		return false
-	}
-
-	if !c.IsNamespaced && scope != string(apiextv1.ClusterScoped) {
-		return false
-	}
-
-	return true
-}
-
-// Config is configuration for dash. It has knowledge of the all the major sections of
-// dash.
-type Dash interface {
-	octant.LinkGenerator
-	octant.Storage
-
-	ClusterClient() cluster.ClientInterface
-
-	CRDWatcher() CRDWatcher
-
-	ErrorStore() internalErr.ErrorStore
-
-	Logger() log.Logger
-
-	PluginManager() plugin.ManagerInterface
-
-	PortForwarder() portforward.PortForwarder
-
-	SetContextChosenInUI(contextChosen bool)
-
-	UseFSContext(ctx context.Context) error
-
-	UseContext(ctx context.Context, contextName string) error
-
-	CurrentContext() string
-
-	Contexts() []kubeconfig.Context
-
-	DefaultNamespace() string
-
-	Validate() error
-
-	ModuleManager() module.ManagerInterface
-
-	BuildInfo() (string, string, string)
-
-	KubeConfigPath() string
-}
-
 // UseFSContext is used to indicate a context switch to the file system Kubeconfig context
 const UseFSContext = ""
 
 // Live is a live version of dash config.
 type Live struct {
 	kubeContextDecorator KubeContextDecorator
-	crdWatcher           CRDWatcher
+	crdWatcher           config.CRDWatcher
 	logger               log.Logger
 	moduleManager        module.ManagerInterface
 	objectStore          store.Store
-	errorStore           internalErr.ErrorStore
+	errorStore           oerrors.ErrorStore
 	pluginManager        plugin.ManagerInterface
 	portForwarder        portforward.PortForwarder
 	restConfigOptions    cluster.RESTConfigOptions
-	buildInfo            BuildInfo
+	buildInfo            config.BuildInfo
 	kubeConfigPath       string
 	contextChosenInUI    bool
 }
 
-var _ Dash = (*Live)(nil)
+var _ config.Dash = (*Live)(nil)
 
 // NewLiveConfig creates an instance of Live.
 func NewLiveConfig(
 	kubeContextDecorator KubeContextDecorator,
-	crdWatcher CRDWatcher,
+	crdWatcher config.CRDWatcher,
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore store.Store,
-	errorStore internalErr.ErrorStore,
+	errorStore oerrors.ErrorStore,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
 	restConfigOptions cluster.RESTConfigOptions,
-	buildInfo BuildInfo,
+	buildInfo config.BuildInfo,
 	kubeConfigPath string,
 	contextChosenInUI bool,
 ) *Live {
@@ -213,7 +122,7 @@ func (l *Live) ClusterClient() cluster.ClientInterface {
 }
 
 // CRDWatcher returns a CRD watcher.
-func (l *Live) CRDWatcher() CRDWatcher {
+func (l *Live) CRDWatcher() config.CRDWatcher {
 	return l.crdWatcher
 }
 
@@ -223,7 +132,7 @@ func (l *Live) ObjectStore() store.Store {
 }
 
 // ErrorStore returns an error store.
-func (l *Live) ErrorStore() internalErr.ErrorStore {
+func (l *Live) ErrorStore() oerrors.ErrorStore {
 	return l.errorStore
 }
 
@@ -274,7 +183,7 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 
 	for _, m := range l.moduleManager.Modules() {
 		if err := m.ResetCRDs(ctx); err != nil {
-			return errors.Wrapf(err, "unable to reset CRDs for module %s", m.Name())
+			return fmt.Errorf("unable to reset CRDs for module %s, %w", m.Name(), err)
 		}
 	}
 

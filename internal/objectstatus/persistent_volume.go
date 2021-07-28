@@ -42,13 +42,13 @@ func persistentVolume(ctx context.Context, object runtime.Object, o store.Store,
 		if pvc == nil || err != nil {
 			claimWarning := fmt.Sprintf("PVC %s/%s cannot be found", claim.Namespace, claim.Name)
 			return ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText(claimWarning)}}, nil
 		}
 	}
 
 	return ObjectStatus{
-		nodeStatus: component.NodeStatusOK,
+		NodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("v1 PersistentVolume is OK")},
 	}, nil
 }

@@ -76,6 +76,7 @@ func Test_NetworkPolicyListHandler(t *testing.T) {
 
 			if tc.list != nil {
 				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/networkPolicy")
+				tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 			}
 
 			got, err := NetworkPolicyListHandler(ctx, tc.list, printOptions)

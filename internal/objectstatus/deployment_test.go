@@ -37,7 +37,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Deployment is OK")},
 				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
 					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},
@@ -51,7 +51,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
 				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
 					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},
@@ -65,7 +65,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
 				Properties: []component.Property{{Label: "Deployment Strategy", Value: component.NewText("RollingUpdate")},
 					{Label: "Selectors", Value: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "hello-node")})}},

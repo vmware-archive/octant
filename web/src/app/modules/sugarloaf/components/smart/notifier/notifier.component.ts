@@ -28,8 +28,8 @@ export class NotifierComponent implements OnInit, OnDestroy {
   constructor(private notifierService: NotifierService) {}
 
   ngOnInit() {
-    this.signalSubscription = this.notifierService.globalSignalsStream.subscribe(
-      currentSignals => {
+    this.signalSubscription =
+      this.notifierService.globalSignalsStream.subscribe(currentSignals => {
         const lastLoadingSignal = findLast(currentSignals, {
           type: NotifierSignalType.LOADING,
         });
@@ -60,8 +60,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
           : '';
 
         this.setAlert();
-      }
-    );
+      });
   }
 
   ngOnDestroy(): void {

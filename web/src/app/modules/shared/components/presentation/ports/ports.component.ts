@@ -22,7 +22,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 })
 export class PortsComponent
   extends AbstractViewComponent<PortsView>
-  implements OnDestroy {
+  implements OnDestroy
+{
   private previousView: PortsView;
 
   @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);

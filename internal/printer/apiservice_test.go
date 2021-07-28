@@ -42,6 +42,8 @@ func Test_APIServiceListHandler(t *testing.T) {
 	now := testutil.Time()
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
+
 	got, err := APIServiceListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
@@ -82,6 +84,8 @@ func Test_APIServiceListHandler_local(t *testing.T) {
 	now := testutil.Time()
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
+
 	got, err := APIServiceListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

@@ -105,7 +105,7 @@ func (w *Workload) Pods() *unstructured.UnstructuredList {
 	return list
 }
 
-// AddStatus adds a pod status to the workload.
+// AddPodStatus adds a pod status to the workload.
 func (w *Workload) AddPodStatus(status component.NodeStatus, object *unstructured.Unstructured, resourceList corev1.ResourceList) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -327,7 +327,7 @@ type ClusterWorkloadLoader struct {
 	PodMetricsLoader PodMetricsLoader
 }
 
-// NewWorkloadLoader creates an instance of ClusterWorkloadLoader.
+// NewClusterWorkloadLoader creates an instance of ClusterWorkloadLoader.
 func NewClusterWorkloadLoader(objectStore store.Store, pml PodMetricsLoader, options ...ClusterWorkloadLoaderOption) (*ClusterWorkloadLoader, error) {
 	wl := &ClusterWorkloadLoader{
 		ObjectStatuser:   objectstatus.Status,

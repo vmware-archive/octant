@@ -38,6 +38,7 @@ func Test_RoleListHandler(t *testing.T) {
 	tpo.PathForObject(role, role.Name, "/role")
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, role)
 	observed, err := RoleListHandler(ctx, roleList, printOptions)
 	require.NoError(t, err)
 

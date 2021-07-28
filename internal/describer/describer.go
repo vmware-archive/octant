@@ -14,12 +14,13 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware-tanzu/octant/internal/config"
-	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+	internalErrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/pkg/config"
+	oerrors "github.com/vmware-tanzu/octant/pkg/errors"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -42,7 +43,7 @@ func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string,
 	return LoadObjects(ctx, f.dashConfig.ObjectStore(), f.dashConfig.ErrorStore(), namespace, fields, objectStoreKeys)
 }
 
-// loadObject loads a single object from the object store.
+// LoadObject loads a single object from the object store.
 func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	objectStoreKey.Namespace = namespace
 
@@ -52,9 +53,9 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 
 	object, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
-		var ae *oerrors.AccessError
+		var ae *internalErrors.AccessError
 		if errors.As(err, &ae) {
-			if ae.Name() == oerrors.OctantAccessError {
+			if ae.Name() == internalErrors.OctantAccessError {
 				found := errorStore.Add(ae)
 				if !found {
 					logger := log.From(ctx)
@@ -72,7 +73,7 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 	return object, nil
 }
 
-// loadObjects loads objects from the object store sorted by their name.
+// LoadObjects loads objects from the object store sorted by their name.
 func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 	list := &unstructured.UnstructuredList{}
 
@@ -85,13 +86,13 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerror
 
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
-			var ae *oerrors.AccessError
+			var ae *internalErrors.AccessError
 			if errors.As(err, &ae) {
-				if ae.Name() == oerrors.OctantAccessError {
+				if ae.Name() == internalErrors.OctantAccessError {
 					found := errorStore.Add(ae)
 					if !found {
 						logger := log.From(ctx)
-						logger.WithErr(ae).Errorf("load object")
+						logger.WithErr(ae).Errorf("LoadObjects")
 					}
 					return &unstructured.UnstructuredList{}, nil
 				}

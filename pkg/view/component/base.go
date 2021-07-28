@@ -10,6 +10,8 @@ const (
 	TypeAccordion = "accordion"
 	// TypeAnnotations is an annotations component.
 	TypeAnnotations = "annotations"
+	// TypeButton is a Button component.
+	TypeButton = "button"
 	// TypeButtonGroup is a button group component.
 	TypeButtonGroup = "buttonGroup"
 	// TypeCard is a card component.
@@ -42,6 +44,8 @@ const (
 	TypeGraphviz = "graphviz"
 	// TypeGridActions is a grid actions component.
 	TypeGridActions = "gridActions"
+	// TypeIcon is a Icon component.
+	TypeIcon = "icon"
 	// TypeIFrame is an iframe component.
 	TypeIFrame = "iframe"
 	// TypeJSONEditor is a JSON Editor component.
@@ -74,6 +78,8 @@ const (
 	TypeSelectFile = "selectFile"
 	// TypeSelectors is a selectors component.
 	TypeSelectors = "selectors"
+	// TypeSignpost is a SignPost component.
+	TypeSignpost = "signpost"
 	// TypeSingleStat is a single stat component.
 	TypeSingleStat = "singleStat"
 	// TypeStepper is a stepper component.
@@ -82,6 +88,8 @@ const (
 	TypeSummary = "summary"
 	// TypeTable is a table component.
 	TypeTable = "table"
+	// TypeTabsView is a Tab component.
+	TypeTabsView = "tabsView"
 	// TypeTerminal is a terminal component.
 	TypeTerminal = "terminal"
 	// TypeText is a text component.
@@ -92,14 +100,6 @@ const (
 	TypeTimestamp = "timestamp"
 	// TypeYAML is a YAML component.
 	TypeYAML = "yaml"
-	// TypeIcon is a Icon component.
-	TypeIcon = "icon"
-	// TypeSignpost is a SignPost component.
-	TypeSignpost = "signpost"
-	// TypeButton is a Button component.
-	TypeButton = "button"
-	// TypeTabsView is a Tab component.
-	TypeTabsView = "tabsView"
 )
 
 // Base is an abstract base for components..

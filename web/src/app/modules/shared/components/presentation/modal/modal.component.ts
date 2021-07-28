@@ -28,7 +28,8 @@ interface Choice {
 })
 export class ModalComponent
   extends AbstractViewComponent<ModalView>
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy
+{
   @ViewChild('modalAppForm') modalAppForm: FormComponent;
 
   title: TitleView[];

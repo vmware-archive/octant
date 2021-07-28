@@ -47,18 +47,18 @@ func replicaSetAppsV1(_ context.Context, object runtime.Object, _ store.Store, _
 	switch {
 	case status.Replicas == 0 && specReplicas != 0:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusError,
+			NodeStatus: component.NodeStatusError,
 			Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
 			Properties: properties,
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
-		return ObjectStatus{nodeStatus: component.NodeStatusOK,
+		return ObjectStatus{NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("Replica Set is OK")},
 			Properties: properties,
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))},
 			Properties: properties,
 		}, nil

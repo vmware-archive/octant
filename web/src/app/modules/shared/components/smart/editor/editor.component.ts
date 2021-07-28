@@ -11,6 +11,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 import { ThemeService } from '../../../services/theme/theme.service';
 import { Subscription } from 'rxjs';
 import { SelectFileComponent } from '../../presentation/select-file/select-file.component';
+import '@cds/core/button/register.js';
 
 interface Options {
   readOnly: boolean;
@@ -25,7 +26,8 @@ interface Options {
 })
 export class EditorComponent
   extends AbstractViewComponent<EditorView>
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy
+{
   set value(v: string) {
     if (v !== this.editorValue) {
       this.isModified = true;

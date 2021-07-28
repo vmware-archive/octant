@@ -30,7 +30,8 @@ type File = {
 })
 export class SelectFileComponent
   extends AbstractViewComponent<SelectFileView>
-  implements OnInit {
+  implements OnInit
+{
   label: string;
   multiple: boolean;
   layout: string;

@@ -11,8 +11,8 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/config"
 )
 
 type buildInfoResponse struct {

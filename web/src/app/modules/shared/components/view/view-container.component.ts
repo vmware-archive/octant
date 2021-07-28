@@ -90,15 +90,13 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
         component = MissingComponentComponent;
       }
 
-      const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-        component
-      );
+      const componentFactory =
+        this.componentFactoryResolver.resolveComponentFactory(component);
       const viewContainerRef = this.appView.viewContainerRef;
       viewContainerRef.clear();
 
-      this.componentRef = viewContainerRef.createComponent<Viewer>(
-        componentFactory
-      );
+      this.componentRef =
+        viewContainerRef.createComponent<Viewer>(componentFactory);
     }
     this.componentRef.instance.view = view;
     this.componentRef.instance.viewInit.subscribe(_ => this.viewInit.emit());

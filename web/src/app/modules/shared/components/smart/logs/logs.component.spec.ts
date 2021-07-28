@@ -157,12 +157,10 @@ describe('LogsComponent', () => {
     component.filterText = 'Test log';
     fixture.detectChanges();
 
-    const prevButton = fixture.debugElement.nativeElement.querySelector(
-      '#button-prev'
-    );
-    const nextButton = fixture.debugElement.nativeElement.querySelector(
-      '#button-next'
-    );
+    const prevButton =
+      fixture.debugElement.nativeElement.querySelector('#button-prev');
+    const nextButton =
+      fixture.debugElement.nativeElement.querySelector('#button-next');
     const badgeElement: HTMLDivElement = fixture.debugElement.query(
       By.css('.clr-filter-summary')
     ).nativeElement;

@@ -21,7 +21,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func pod(ctx context.Context, object runtime.Object, o store.Store, link link.Interface) (ObjectStatus, error) {
+func pod(_ context.Context, object runtime.Object, o store.Store, link link.Interface) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("pod is nil")
 	}
@@ -36,19 +36,23 @@ func pod(ctx context.Context, object runtime.Object, o store.Store, link link.In
 
 	switch pod.Status.Phase {
 	case corev1.PodRunning:
-		status.nodeStatus = component.NodeStatusOK
+		status.NodeStatus = component.NodeStatusOK
+		status.Details = []component.Component{component.NewText("Pod is OK")}
 	case corev1.PodUnknown:
-		status.nodeStatus = component.NodeStatusError
+		status.NodeStatus = component.NodeStatusError
+		status.Details = []component.Component{component.NewText("Pod is unhealthy")}
 	default:
-		status.nodeStatus = component.NodeStatusWarning
+		status.NodeStatus = component.NodeStatusWarning
+		status.Details = []component.Component{component.NewText("Pod may require additional action")}
 	}
 
-	status.Details = []component.Component{
-		component.NewText(pod.Status.Message),
+	if pod.Status.Message != "" {
+		status.Details = []component.Component{
+			component.NewText(pod.Status.Message),
+		}
 	}
-
 	if len(pod.Spec.EphemeralContainers) > 0 {
-		status.nodeStatus = component.NodeStatusWarning
+		status.NodeStatus = component.NodeStatusWarning
 		status.Details = append(status.Details, component.NewText("Ephemeral container is running"))
 	}
 

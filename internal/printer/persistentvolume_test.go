@@ -128,6 +128,7 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 
 				claimText := fmt.Sprintf("%s/%s", pvcObject.Namespace, pvcObject.Name)
 				tpo.PathForGVK(pvcObject.Namespace, pvcObject.APIVersion, pvcObject.Kind, pvcObject.Name, claimText, "/pvc")
+				tpo.pluginManager.EXPECT().ObjectStatus(ctx, &tc.list.Items[0])
 			}
 			got, err := PersistentVolumeListHandler(ctx, tc.list, printOptions)
 			if tc.isErr {

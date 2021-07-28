@@ -83,20 +83,17 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
       },
       {
         title: 'Horizontal Pod Autoscalers',
-        path:
-          'overview/namespace/default/discovery-and-load-balancing/horizontal-pod-autoscalers',
+        path: 'overview/namespace/default/discovery-and-load-balancing/horizontal-pod-autoscalers',
         isLoading: false,
       },
       {
         title: 'Ingresses',
-        path:
-          'overview/namespace/default/discovery-and-load-balancing/ingresses',
+        path: 'overview/namespace/default/discovery-and-load-balancing/ingresses',
         isLoading: false,
       },
       {
         title: 'Services',
-        path:
-          'overview/namespace/default/discovery-and-load-balancing/services',
+        path: 'overview/namespace/default/discovery-and-load-balancing/services',
         isLoading: false,
       },
     ],
@@ -119,8 +116,7 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
       },
       {
         title: 'Persistent Volume Claims',
-        path:
-          'overview/namespace/default/config-and-storage/persistent-volume-claims',
+        path: 'overview/namespace/default/config-and-storage/persistent-volume-claims',
         isLoading: false,
       },
       {
@@ -222,8 +218,7 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
       {
         title:
           'antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com',
-        path:
-          'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com',
+        path: 'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com',
         iconName: 'internal:crd',
         isLoading: false,
       },
@@ -373,10 +368,11 @@ export const expectedSelection = {
     module: 1,
     index: 2,
   },
-  'overview/namespace/default/discovery-and-load-balancing/horizontal-pod-autoscalers': {
-    module: 1,
-    index: 2,
-  },
+  'overview/namespace/default/discovery-and-load-balancing/horizontal-pod-autoscalers':
+    {
+      module: 1,
+      index: 2,
+    },
   'overview/namespace/default/discovery-and-load-balancing/ingresses': {
     module: 1,
     index: 2,
@@ -419,10 +415,11 @@ export const expectedSelection = {
     module: 2,
     index: 2,
   },
-  'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com': {
-    module: 2,
-    index: 2,
-  },
+  'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com':
+    {
+      module: 2,
+      index: 2,
+    },
   'cluster-overview/rbac': { module: 2, index: 3 },
   'cluster-overview/rbac/cluster-roles': { module: 2, index: 3 },
   'cluster-overview/rbac/cluster-role-bindings': { module: 2, index: 3 },
