@@ -36,33 +36,39 @@ var (
 	}
 )
 
+// parseConditions returns an error if no status is found or conditions fail to parse in
+// to the expected `NestedSlice` format.
+func parseConditions(u unstructured.Unstructured) ([]interface{}, error) {
+	status, ok, err := unstructured.NestedMap(u.Object, "status")
+	if err != nil {
+		return nil, err
+	}
+	// No status found
+	if !ok {
+		return nil, fmt.Errorf("no status found for object")
+	}
+
+	conditions, ok, err := unstructured.NestedSlice(status, "conditions")
+	if err != nil {
+		return nil, err
+	}
+	// No conditions found
+	if !ok {
+		return make([]interface{}, 0), nil
+	}
+
+	return conditions, nil
+}
+
 // createConditionsTable returns a component.Table, if conditions exist on the object, and any err.
 // For objects with empty conditions, an empty table with placeholder text is used.
-func createConditionsTable(u unstructured.Unstructured, sortKey string, customConditionMap [][]string) (*component.Table, bool, error) {
+func createConditionsTable(conditions []interface{}, sortKey string, customConditionMap [][]string) *component.Table {
 	localConditionMap := conditionMap
 	if customConditionMap != nil {
 		localConditionMap = customConditionMap
 	}
 
-	status, ok, err := unstructured.NestedMap(u.Object, "status")
-	if err != nil {
-		return nil, false, err
-	}
-	// No status found
-	if !ok {
-		return nil, false, nil
-	}
-
 	table := component.NewTable("Conditions", "There are no conditions!", nil)
-
-	conditions, ok, err := unstructured.NestedSlice(status, "conditions")
-	if err != nil {
-		return nil, false, err
-	}
-	// No conditions found
-	if !ok {
-		return table, false, nil
-	}
 
 	columnSet := map[string]bool{}
 
@@ -95,7 +101,7 @@ func createConditionsTable(u unstructured.Unstructured, sortKey string, customCo
 	}
 
 	table.Sort(sortKey)
-	return table, true, nil
+	return table
 }
 
 func createConditionsForObject(ctx context.Context, fl *flexlayout.FlexLayout, object runtime.Object, sortKey string, columns [][]string, mapFn mapGenFn) error {
@@ -111,18 +117,19 @@ func createConditionsForObject(ctx context.Context, fl *flexlayout.FlexLayout, o
 	if err != nil {
 		return nil
 	}
-	conditionsTable, _, err := createConditionsTable(unstructured.Unstructured{Object: obj}, conditionType, columns)
+	conditions, err := parseConditions(unstructured.Unstructured{Object: obj})
 	if err != nil {
-		return fmt.Errorf("create conditions table for object: %w", err)
+		return err
 	}
-	if sortKey != "" {
-		conditionsTable.Sort(sortKey)
+
+	if sortKey == "" {
+		sortKey = conditionType
 	}
-	if conditionsTable != nil {
-		conditionsSection := fl.AddSection()
-		if err := conditionsSection.Add(conditionsTable, component.WidthFull); err != nil {
-			return fmt.Errorf("add conditions table to layout: %w", err)
-		}
+
+	conditionsTable := createConditionsTable(conditions, sortKey, columns)
+	conditionsSection := fl.AddSection()
+	if err := conditionsSection.Add(conditionsTable, component.WidthFull); err != nil {
+		return fmt.Errorf("add conditions table to layout: %w", err)
 	}
 	return nil
 }

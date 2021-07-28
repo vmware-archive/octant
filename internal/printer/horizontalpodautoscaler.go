@@ -238,8 +238,12 @@ func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autosc
 		},
 	}
 
-	table, _, err := createConditionsTable(unstructured.Unstructured{Object: object}, conditionType, hpaConditionColumns)
-	return table, err
+	conditions, err := parseConditions(unstructured.Unstructured{Object: object})
+	if err != nil {
+		return nil, err
+	}
+	table := createConditionsTable(conditions, conditionType, hpaConditionColumns)
+	return table, nil
 }
 
 // HorizontalPodAutoscalerConfiguration generates a horizontalpodautoscaler configuration

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -15,26 +16,47 @@ import (
 )
 
 func Test_createConditionsTableErrs(t *testing.T) {
-	// No status found
-	noStatus := unstructured.Unstructured{Object: map[string]interface{}{"noStatus": nil}}
-	table, ok, err := createConditionsTable(noStatus, "", nil)
-	assert.Nil(t, err)
-	assert.False(t, ok)
-	assert.Nil(t, table)
+	cases := []struct {
+		name          string
+		status        unstructured.Unstructured
+		err           error
+		nilConditions bool
+		conditions    []interface{}
+	}{
+		{
+			name:          "no status",
+			status:        unstructured.Unstructured{Object: map[string]interface{}{"noStatus": nil}},
+			err:           fmt.Errorf("no status found for object"),
+			nilConditions: true,
+		},
+		{
+			name:          "bad status",
+			status:        unstructured.Unstructured{Object: map[string]interface{}{"status": 1}},
+			err:           fmt.Errorf(".status accessor error: 1 is of the type int, expected map[string]interface{}"),
+			nilConditions: true,
+		},
+		{
+			name:       "no conditions",
+			status:     unstructured.Unstructured{Object: map[string]interface{}{"status": map[string]interface{}{"noConditions": nil}}},
+			conditions: []interface{}{},
+		},
+	}
 
-	// Bad status, not a map[string]interface{}
-	badStatus := unstructured.Unstructured{Object: map[string]interface{}{"status": 1}}
-	table, ok, err = createConditionsTable(badStatus, "", nil)
-	assert.EqualError(t, err, ".status accessor error: 1 is of the type int, expected map[string]interface{}")
-	assert.False(t, ok)
-	assert.Nil(t, table)
-
-	// No conditions found
-	noConditions := unstructured.Unstructured{Object: map[string]interface{}{"status": map[string]interface{}{"noConditions": nil}}}
-	table, ok, err = createConditionsTable(noConditions, "", nil)
-	assert.Nil(t, err)
-	assert.False(t, ok)
-	assert.NotNil(t, table)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			conditions, err := parseConditions(tc.status)
+			if tc.err == nil {
+				require.NoError(t, err)
+			} else {
+				require.Errorf(t, tc.err, ".status accessor error: 1 is of the type int, expected map[string]interface{}", err)
+			}
+			if !tc.nilConditions {
+				assert.NotNil(t, tc.conditions)
+			} else {
+				assert.Nil(t, conditions)
+			}
+		})
+	}
 }
 
 func Test_createPodConditionsView(t *testing.T) {
@@ -53,9 +75,10 @@ func Test_createPodConditionsView(t *testing.T) {
 	}
 
 	u := toUnstructured(t, pod)
-	got, ok, err := createConditionsTable(*u, "", podConditionColumns)
+	conditions, err := parseConditions(*u)
 	require.NoError(t, err)
-	assert.True(t, ok)
+	got := createConditionsTable(conditions, "", podConditionColumns)
+	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Probe", "Last Transition")
 	expected := component.NewTable("Conditions", "There are no conditions!", cols)
