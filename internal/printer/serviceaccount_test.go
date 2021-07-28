@@ -48,6 +48,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := ServiceAccountListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

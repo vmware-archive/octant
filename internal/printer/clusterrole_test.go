@@ -37,6 +37,7 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 	now := testutil.Time()
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := ClusterRoleListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

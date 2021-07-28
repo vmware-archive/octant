@@ -43,22 +43,22 @@ func apiService(_ context.Context, object runtime.Object, _ store.Store, _ link.
 	switch {
 	case availableCondition == nil:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("No available condition for this apiservice")},
 		}, nil
 	case availableCondition.Status == apiregistrationv1.ConditionFalse:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusError,
+			NodeStatus: component.NodeStatusError,
 			Details:    []component.Component{component.NewTextf("Not available: (%s) %s", availableCondition.Reason, availableCondition.Message)},
 		}, nil
 	case availableCondition.Status == apiregistrationv1.ConditionTrue:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusOK,
+			NodeStatus: component.NodeStatusOK,
 			Details:    []component.Component{component.NewText("API Service is OK")},
 		}, nil
 	default:
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details: []component.Component{
 				component.NewTextf("Unknown availability for apiservice")},
 		}, nil

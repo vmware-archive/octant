@@ -31,7 +31,7 @@ func NamespaceListHandler(ctx context.Context, list *corev1.NamespaceList, optio
 	}
 
 	ot := NewObjectTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, namespace := range list.Items {
 		row := component.TableRow{}
 		p := path.Join("/cluster-overview/namespaces", namespace.Name)
@@ -39,6 +39,7 @@ func NamespaceListHandler(ctx context.Context, list *corev1.NamespaceList, optio
 		row["Labels"] = component.NewLabels(namespace.Labels)
 		row["Status"] = component.NewText(string(namespace.Status.Phase))
 		row["Age"] = component.NewTimestamp(namespace.CreationTimestamp.Time)
+
 		if err := ot.AddRowForObject(ctx, &namespace, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}

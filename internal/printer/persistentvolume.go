@@ -23,7 +23,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVol
 
 	cols := component.NewTableCols("Name", "Capacity", "Access Modes", "Reclaim Policy", "Status", "Claim", "Storage Class", "Reason", "Age")
 	ot := NewObjectTable("Persistent Volumes", "We couldn't find any persistent volumes!", cols, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, pv := range list.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&pv, pv.Name)

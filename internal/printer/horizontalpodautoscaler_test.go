@@ -73,6 +73,7 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, object)
 	got, err := HorizontalPodAutoscalerListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 

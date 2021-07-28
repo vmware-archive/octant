@@ -39,7 +39,7 @@ func Test_apiService(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("API Service is OK")},
 			},
 		},
@@ -51,7 +51,7 @@ func Test_apiService(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
+				NodeStatus: component.NodeStatusError,
 				Details:    []component.Component{component.NewText("Not available: (ServiceNotFound) service/metrics-server in \"kube-system\" is not present")},
 			},
 		},
@@ -63,7 +63,7 @@ func Test_apiService(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("No available condition for this apiservice")},
 			},
 		},

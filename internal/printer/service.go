@@ -31,7 +31,7 @@ func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, options O
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
 	ot := NewObjectTable("Services", "We couldn't find any services!", cols, options.DashConfig.ObjectStore())
-
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 	for _, s := range list.Items {
 		row := component.TableRow{}
 		nameLink, err := options.Link.ForObject(&s, s.Name)

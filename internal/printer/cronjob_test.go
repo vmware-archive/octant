@@ -65,6 +65,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, cronJob)
 	got, err := CronJobListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
@@ -229,6 +230,7 @@ func Test_createJobListView(t *testing.T) {
 	}
 
 	tpo.PathForObject(job, job.Name, "/job")
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, job)
 
 	jobList := &unstructured.UnstructuredList{}
 	for _, j := range jobs.Items {

@@ -37,13 +37,13 @@ func cronJob(_ context.Context, object runtime.Object, _ store.Store, _ link.Int
 	if cronjob.Spec.Suspend != nil && *cronjob.Spec.Suspend {
 		properties = append(properties, component.Property{Label: "Suspend", Value: component.NewText(strconv.FormatBool(*cronjob.Spec.Suspend))})
 		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
+			NodeStatus: component.NodeStatusWarning,
 			Details:    []component.Component{component.NewText("Cronjob is suspended")},
 			Properties: properties,
 		}, nil
 	}
 	return ObjectStatus{
-		nodeStatus: component.NodeStatusOK,
+		NodeStatus: component.NodeStatusOK,
 		Details:    []component.Component{component.NewText("batch/v1beta1 CronJob is OK")},
 		Properties: properties,
 	}, nil

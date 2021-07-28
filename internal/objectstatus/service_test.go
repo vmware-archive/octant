@@ -50,7 +50,7 @@ func Test_service(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Service is OK")},
 				Properties: []component.Property{{Label: "Type", Value: component.NewText("ClusterIP")},
 					{Label: "Session Affinity", Value: component.NewText("None")}},
@@ -63,7 +63,7 @@ func Test_service(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Service is OK")},
 				Properties: []component.Property{{Label: "Type", Value: component.NewText("ExternalName")},
 					{Label: "Session Affinity", Value: component.NewText("")}},
@@ -89,7 +89,7 @@ func Test_service(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
 			},
 		},

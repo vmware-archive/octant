@@ -129,8 +129,19 @@ _%s_
 		return objects[i].GetName() < objects[j].GetName()
 	})
 
-	selection := objects[0].GetOwnerReferences()[0]
-	rv, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, fmt.Sprintf("%s pods", selection.Name), objects...)
+	var selection string
+	for _, obj := range objects {
+		if len(obj.GetOwnerReferences()) > 0 {
+			for _, ref := range obj.GetOwnerReferences() {
+				selection = fmt.Sprintf("%s pods", ref.Name)
+				continue
+			}
+		} else {
+			selection = string(obj.GetUID())
+		}
+	}
+
+	rv, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, selection, objects...)
 	if err != nil {
 		cr := d.createResponse(
 			component.NewError(component.TitleFromString("Unable to create resource viewer"), err),

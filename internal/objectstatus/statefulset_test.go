@@ -37,7 +37,7 @@ func Test_statefulSet(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusOK,
+				NodeStatus: component.NodeStatusOK,
 				Details:    []component.Component{component.NewText("Stateful Set is OK")},
 				Properties: []component.Property{{Label: "Replicas", Value: component.NewText("3 Desired / 3 Total")},
 					{Label: "Pod Management Policy", Value: component.NewText("OrderedReady")}},
@@ -51,7 +51,7 @@ func Test_statefulSet(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
+				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
 				Properties: []component.Property{{Label: "Replicas", Value: component.NewText("3 Desired / 3 Total")},
 					{Label: "Pod Management Policy", Value: component.NewText("OrderedReady")}},
