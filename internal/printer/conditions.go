@@ -34,6 +34,14 @@ var (
 		{conditionLastUpdate, "lastUpdateTime"},
 		{conditionLastTransition, "lastTransitionTime"},
 	}
+
+	placeHolderColumns = []component.TableCol{
+		{Name: "Type", Accessor: "Type"},
+		{Name: "Reason", Accessor: "Reason"},
+		{Name: "Status", Accessor: "Status"},
+		{Name: "Message", Accessor: "Message"},
+		{Name: "Last Transition", Accessor: "Last Transition"},
+	}
 )
 
 // parseConditions returns an error if no status is found or conditions fail to parse in
@@ -98,6 +106,11 @@ func createConditionsTable(conditions []interface{}, sortKey string, customCondi
 			}
 		}
 		table.Add(row)
+	}
+
+	if len(table.Columns()) == 0 {
+		table.Config.Columns = placeHolderColumns
+		sortKey = conditionType
 	}
 
 	table.Sort(sortKey)
