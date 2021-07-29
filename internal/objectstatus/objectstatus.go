@@ -40,6 +40,7 @@ var (
 		{apiVersion: "v1", kind: "ReplicationController"}:             replicationController,
 		{apiVersion: "v1", kind: "Service"}:                           service,
 		{apiVersion: "v1", kind: "PersistentVolume"}:                  persistentVolume,
+		{apiVersion: "v1", kind: "PersistentVolumeClaim"}:             persistentVolumeClaim,
 		{apiVersion: "networking.k8s.io/v1", kind: "Ingress"}:         runIngressStatus,
 		{apiVersion: "apiregistration.k8s.io/v1", kind: "APIService"}: apiService,
 	}
