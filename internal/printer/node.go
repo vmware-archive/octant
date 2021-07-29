@@ -39,7 +39,8 @@ func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options
 		return nil, errors.New("node list is nil")
 	}
 
-	table := component.NewTable("Nodes", "We couldn't find any nodes!", nodeListColumns)
+	ot := NewObjectTable("Nodes", "We couldn't find any nodes!", nodeListColumns, options.DashConfig.ObjectStore())
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
 
 	for _, node := range list.Items {
 		row := component.TableRow{}
@@ -55,10 +56,13 @@ func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options
 		row["Age"] = component.NewTimestamp(node.CreationTimestamp.Time)
 		row["Version"] = component.NewText(node.Status.NodeInfo.KubeletVersion)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(ctx, &node, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
+	ot.SetSortOrder("Name", false)
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // NodeHandler is a printFunc that prints nodes
