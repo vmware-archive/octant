@@ -273,7 +273,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-tags", "embedded", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", "embedded exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 // buildElectron builds an Octant binary without web assets

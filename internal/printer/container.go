@@ -122,6 +122,14 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.AddText("Image ID", containerStatus.ImageID)
 	}
 
+	manifest, configuration, err := ManifestManager.GetImageManifest(cc.context, c.Image)
+	if err == nil {
+		sections.Add("Image Manifest", component.NewJSONEditor(manifest, true))
+		sections.Add("Image Configuration", component.NewJSONEditor(configuration, true))
+	} else {
+		sections.Add("Image Manifest", component.NewText(fmt.Sprintf("Unable to load image manifest %s", err)))
+	}
+
 	hostPorts := describeContainerHostPorts(c.Ports)
 	if hostPorts != "" {
 		sections.AddText("Host Ports", hostPorts)

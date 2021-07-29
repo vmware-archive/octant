@@ -10,44 +10,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockInfoInterface is a mock of InfoInterface interface.
+// MockInfoInterface is a mock of InfoInterface interface
 type MockInfoInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockInfoInterfaceMockRecorder
 }
 
-// MockInfoInterfaceMockRecorder is the mock recorder for MockInfoInterface.
+// MockInfoInterfaceMockRecorder is the mock recorder for MockInfoInterface
 type MockInfoInterfaceMockRecorder struct {
 	mock *MockInfoInterface
 }
 
-// NewMockInfoInterface creates a new mock instance.
+// NewMockInfoInterface creates a new mock instance
 func NewMockInfoInterface(ctrl *gomock.Controller) *MockInfoInterface {
 	mock := &MockInfoInterface{ctrl: ctrl}
 	mock.recorder = &MockInfoInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockInfoInterface) EXPECT() *MockInfoInterfaceMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
-func (m *MockInfoInterface) Cluster() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Cluster")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Cluster indicates an expected call of Cluster.
-func (mr *MockInfoInterfaceMockRecorder) Cluster() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockInfoInterface)(nil).Cluster))
-}
-
-// Context mocks base method.
+// Context mocks base method
 func (m *MockInfoInterface) Context() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Context")
@@ -55,13 +41,27 @@ func (m *MockInfoInterface) Context() string {
 	return ret0
 }
 
-// Context indicates an expected call of Context.
+// Context indicates an expected call of Context
 func (mr *MockInfoInterfaceMockRecorder) Context() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Context", reflect.TypeOf((*MockInfoInterface)(nil).Context))
 }
 
-// Server mocks base method.
+// Cluster mocks base method
+func (m *MockInfoInterface) Cluster() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Cluster indicates an expected call of Cluster
+func (mr *MockInfoInterfaceMockRecorder) Cluster() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockInfoInterface)(nil).Cluster))
+}
+
+// Server mocks base method
 func (m *MockInfoInterface) Server() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Server")
@@ -69,13 +69,13 @@ func (m *MockInfoInterface) Server() string {
 	return ret0
 }
 
-// Server indicates an expected call of Server.
+// Server indicates an expected call of Server
 func (mr *MockInfoInterfaceMockRecorder) Server() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Server", reflect.TypeOf((*MockInfoInterface)(nil).Server))
 }
 
-// User mocks base method.
+// User mocks base method
 func (m *MockInfoInterface) User() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "User")
@@ -83,7 +83,7 @@ func (m *MockInfoInterface) User() string {
 	return ret0
 }
 
-// User indicates an expected call of User.
+// User indicates an expected call of User
 func (mr *MockInfoInterfaceMockRecorder) User() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*MockInfoInterface)(nil).User))

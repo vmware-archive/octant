@@ -12,30 +12,30 @@ import (
 	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
-// MockWSClientGetter is a mock of WSClientGetter interface.
+// MockWSClientGetter is a mock of WSClientGetter interface
 type MockWSClientGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockWSClientGetterMockRecorder
 }
 
-// MockWSClientGetterMockRecorder is the mock recorder for MockWSClientGetter.
+// MockWSClientGetterMockRecorder is the mock recorder for MockWSClientGetter
 type MockWSClientGetterMockRecorder struct {
 	mock *MockWSClientGetter
 }
 
-// NewMockWSClientGetter creates a new mock instance.
+// NewMockWSClientGetter creates a new mock instance
 func NewMockWSClientGetter(ctrl *gomock.Controller) *MockWSClientGetter {
 	mock := &MockWSClientGetter{ctrl: ctrl}
 	mock.recorder = &MockWSClientGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWSClientGetter) EXPECT() *MockWSClientGetterMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method.
+// Get mocks base method
 func (m *MockWSClientGetter) Get(arg0 string) event.WSEventSender {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
@@ -43,42 +43,42 @@ func (m *MockWSClientGetter) Get(arg0 string) event.WSEventSender {
 	return ret0
 }
 
-// Get indicates an expected call of Get.
+// Get indicates an expected call of Get
 func (mr *MockWSClientGetterMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockWSClientGetter)(nil).Get), arg0)
 }
 
-// MockWSEventSender is a mock of WSEventSender interface.
+// MockWSEventSender is a mock of WSEventSender interface
 type MockWSEventSender struct {
 	ctrl     *gomock.Controller
 	recorder *MockWSEventSenderMockRecorder
 }
 
-// MockWSEventSenderMockRecorder is the mock recorder for MockWSEventSender.
+// MockWSEventSenderMockRecorder is the mock recorder for MockWSEventSender
 type MockWSEventSenderMockRecorder struct {
 	mock *MockWSEventSender
 }
 
-// NewMockWSEventSender creates a new mock instance.
+// NewMockWSEventSender creates a new mock instance
 func NewMockWSEventSender(ctrl *gomock.Controller) *MockWSEventSender {
 	mock := &MockWSEventSender{ctrl: ctrl}
 	mock.recorder = &MockWSEventSenderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWSEventSender) EXPECT() *MockWSEventSenderMockRecorder {
 	return m.recorder
 }
 
-// Send mocks base method.
+// Send mocks base method
 func (m *MockWSEventSender) Send(arg0 event.Event) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Send", arg0)
 }
 
-// Send indicates an expected call of Send.
+// Send indicates an expected call of Send
 func (mr *MockWSEventSenderMockRecorder) Send(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockWSEventSender)(nil).Send), arg0)

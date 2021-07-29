@@ -13,30 +13,30 @@ import (
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// MockDetails is a mock of Details interface.
+// MockDetails is a mock of Details interface
 type MockDetails struct {
 	ctrl     *gomock.Controller
 	recorder *MockDetailsMockRecorder
 }
 
-// MockDetailsMockRecorder is the mock recorder for MockDetails.
+// MockDetailsMockRecorder is the mock recorder for MockDetails
 type MockDetailsMockRecorder struct {
 	mock *MockDetails
 }
 
-// NewMockDetails creates a new mock instance.
+// NewMockDetails creates a new mock instance
 func NewMockDetails(ctrl *gomock.Controller) *MockDetails {
 	mock := &MockDetails{ctrl: ctrl}
 	mock.recorder = &MockDetailsMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDetails) EXPECT() *MockDetailsMockRecorder {
 	return m.recorder
 }
 
-// AdjacencyList mocks base method.
+// AdjacencyList mocks base method
 func (m *MockDetails) AdjacencyList() (*component.AdjList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AdjacencyList")
@@ -45,13 +45,13 @@ func (m *MockDetails) AdjacencyList() (*component.AdjList, error) {
 	return ret0, ret1
 }
 
-// AdjacencyList indicates an expected call of AdjacencyList.
+// AdjacencyList indicates an expected call of AdjacencyList
 func (mr *MockDetailsMockRecorder) AdjacencyList() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdjacencyList", reflect.TypeOf((*MockDetails)(nil).AdjacencyList))
 }
 
-// Nodes mocks base method.
+// Nodes mocks base method
 func (m *MockDetails) Nodes(arg0 context.Context) (component.Nodes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Nodes", arg0)
@@ -60,7 +60,7 @@ func (m *MockDetails) Nodes(arg0 context.Context) (component.Nodes, error) {
 	return ret0, ret1
 }
 
-// Nodes indicates an expected call of Nodes.
+// Nodes indicates an expected call of Nodes
 func (mr *MockDetailsMockRecorder) Nodes(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Nodes", reflect.TypeOf((*MockDetails)(nil).Nodes), arg0)
