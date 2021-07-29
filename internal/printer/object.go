@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -296,7 +297,10 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 
 	if o.isConditionsEnabled {
 		if err := o.ConditionsGen(ctx, o.object, o.flexLayout); err != nil {
-			return nil, fmt.Errorf("add conditions to layout: %w", err)
+			// Only error if the it is an error other than no status found.
+			if !strings.Contains(err.Error(), "no status found") {
+				return nil, fmt.Errorf("add conditions to layout: %w", err)
+			}
 		}
 	}
 
