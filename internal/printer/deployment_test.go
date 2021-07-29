@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 
@@ -246,39 +245,6 @@ func Test_createDeploymentSummaryStatus(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_createDeploymentConditionsView(t *testing.T) {
-	now := metav1.Time{Time: time.Now()}
-
-	deployment := testutil.CreateDeployment("deployment")
-	deployment.Status.Conditions = []appsv1.DeploymentCondition{
-		{
-			Type:               appsv1.DeploymentAvailable,
-			Reason:             "reason",
-			Status:             corev1.ConditionTrue,
-			Message:            "message",
-			LastUpdateTime:     now,
-			LastTransitionTime: now,
-		},
-	}
-
-	got, err := createDeploymentConditionsView(deployment)
-	require.NoError(t, err)
-
-	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
-	expected := component.NewTable("Conditions", "There are no deployment conditions!", cols)
-	expected.Add([]component.TableRow{
-		{
-			"Type":            component.NewText("Available"),
-			"Reason":          component.NewText("reason"),
-			"Status":          component.NewText("True"),
-			"Message":         component.NewText("message"),
-			"Last Update":     component.NewTimestamp(now.Time),
-			"Last Transition": component.NewTimestamp(now.Time),
-		},
-	}...)
-
-	component.AssertEqual(t, expected, got)
-}
 func Test_DeploymentPods(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()

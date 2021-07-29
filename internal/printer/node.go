@@ -65,10 +65,19 @@ func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options
 	return ot.ToComponent()
 }
 
+var nodeConditionColumns = [][]string{
+	{"Type", "type"},
+	{"Reason", "reason"},
+	{"Status", "status"},
+	{"Message", "message"},
+	{"Last Heartbeat", "lastHeartbeatTime"},
+	{"Last Transition", "lastTransitionTime"},
+}
+
 // NodeHandler is a printFunc that prints nodes
 func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (component.Component, error) {
 	o := NewObject(node)
-
+	o.ConditionsGen = conditionsGenFactory("", nodeConditionColumns, nil)
 	nh, err := newNodeHandler(node, o)
 	if err != nil {
 		return nil, err
@@ -82,9 +91,6 @@ func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (compo
 	}
 	if err := nh.Resources(options); err != nil {
 		return nil, errors.Wrap(err, "print node resources")
-	}
-	if err := nh.Conditions(options); err != nil {
-		return nil, errors.Wrap(err, "print node conditions")
 	}
 	if err := nh.Images(options); err != nil {
 		return nil, errors.Wrap(err, "print node images")
@@ -306,35 +312,6 @@ func (n *NodeConfiguration) Create(options Options) (*component.Summary, error) 
 	return summary, nil
 }
 
-var (
-	nodeConditionsColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Heartbeat", "Last Transition")
-)
-
-func createNodeConditionsView(node *corev1.Node) (*component.Table, error) {
-	if node == nil {
-		return nil, errors.New("cannot generate conditions for nil node")
-	}
-
-	table := component.NewTable("Conditions", "There are no node conditions!", nodeConditionsColumns)
-
-	for _, condition := range node.Status.Conditions {
-		row := component.TableRow{
-			"Type":            component.NewText(string(condition.Type)),
-			"Reason":          component.NewText(condition.Reason),
-			"Status":          component.NewText(string(condition.Status)),
-			"Message":         component.NewText(condition.Message),
-			"Last Heartbeat":  component.NewTimestamp(condition.LastHeartbeatTime.Time),
-			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
-		}
-
-		table.Add(row)
-	}
-
-	table.Sort("Type")
-
-	return table, nil
-}
-
 const GB = float64(1073741824)
 
 var (
@@ -414,19 +391,17 @@ type nodeObject interface {
 	Config(options Options) error
 	Addresses(options Options) error
 	Resources(options Options) error
-	Conditions(options Options) error
 	Images(options Options) error
 }
 
 type nodeHandler struct {
-	node           *corev1.Node
-	configFunc     func(*corev1.Node, Options) (*component.Summary, error)
-	addressesFunc  func(*corev1.Node, Options) (*component.Table, error)
-	resourcesFunc  func(*corev1.Node, Options) (*component.Table, error)
-	conditionsFunc func(*corev1.Node, Options) (*component.Table, error)
-	imagesFunc     func(*corev1.Node, Options) (*component.Table, error)
-	podsFunc       func(context.Context, *corev1.Node, Options) (*component.Table, error)
-	object         *Object
+	node          *corev1.Node
+	configFunc    func(*corev1.Node, Options) (*component.Summary, error)
+	addressesFunc func(*corev1.Node, Options) (*component.Table, error)
+	resourcesFunc func(*corev1.Node, Options) (*component.Table, error)
+	imagesFunc    func(*corev1.Node, Options) (*component.Table, error)
+	podsFunc      func(context.Context, *corev1.Node, Options) (*component.Table, error)
+	object        *Object
 }
 
 var _ nodeObject = (*nodeHandler)(nil)
@@ -441,14 +416,13 @@ func newNodeHandler(node *corev1.Node, object *Object) (*nodeHandler, error) {
 	}
 
 	nh := &nodeHandler{
-		node:           node,
-		configFunc:     defaultNodeConfig,
-		addressesFunc:  defaultNodeAddresses,
-		resourcesFunc:  defaultNodeResources,
-		conditionsFunc: defaultNodeConditions,
-		imagesFunc:     defaultNodeImages,
-		podsFunc:       defaultNodePods,
-		object:         object,
+		node:          node,
+		configFunc:    defaultNodeConfig,
+		addressesFunc: defaultNodeAddresses,
+		resourcesFunc: defaultNodeResources,
+		imagesFunc:    defaultNodeImages,
+		podsFunc:      defaultNodePods,
+		object:        object,
 	}
 	return nh, nil
 }
@@ -500,24 +474,6 @@ func (n *nodeHandler) Resources(options Options) error {
 
 func defaultNodeResources(node *corev1.Node, options Options) (*component.Table, error) {
 	return createNodeResourcesView(node)
-}
-
-func (n *nodeHandler) Conditions(options Options) error {
-	if n.node == nil {
-		return errors.New("can't display resources for nil node")
-	}
-
-	n.object.RegisterItems(ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return n.conditionsFunc(n.node, options)
-		},
-	})
-	return nil
-}
-
-func defaultNodeConditions(node *corev1.Node, options Options) (*component.Table, error) {
-	return createNodeConditionsView(node)
 }
 
 func (n *nodeHandler) Images(options Options) error {

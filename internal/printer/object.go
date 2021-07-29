@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -64,6 +65,20 @@ func defaultEventsGen(ctx context.Context, object runtime.Object, fl *flexlayout
 	return nil
 }
 
+type conditionsGenFn func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error
+type conditionsFilterFn func(*component.Table)
+type mapGenFn func(runtime.Object) (map[string]interface{}, error)
+
+func conditionsGenFactory(sortKey string, columns [][]string, mapFn mapGenFn) conditionsGenFn {
+	return func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error {
+		if err := createConditionsForObject(ctx, fl, object, sortKey, columns, mapFn); err != nil {
+			return fmt.Errorf("add conditions to layout: %w", err)
+		}
+
+		return nil
+	}
+}
+
 // ObjectPrinterFunc is a func that create a view.
 type ObjectPrinterFunc func() (component.Component, error)
 
@@ -90,9 +105,10 @@ type ObjectOpts func(o *Object)
 
 // Object prints an object.
 type Object struct {
-	config          *component.Summary
-	summary         *component.Summary
-	isEventsEnabled bool
+	config              *component.Summary
+	summary             *component.Summary
+	isEventsEnabled     bool
+	isConditionsEnabled bool
 
 	itemsLists [][]ItemDescriptor
 
@@ -109,6 +125,7 @@ type Object struct {
 	PodTemplateGen func(context.Context, runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
 	JobTemplateGen func(context.Context, runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
+	ConditionsGen  func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error
 }
 
 // NewObject creates an instance of Object.
@@ -120,11 +137,14 @@ func NewObject(object runtime.Object, options ...ObjectOpts) *Object {
 		PodTemplateGen: defaultPodTemplateGen,
 		JobTemplateGen: defaultJobTemplateGen,
 		EventsGen:      defaultEventsGen,
+		ConditionsGen:  conditionsGenFactory("", nil, nil),
 	}
 
 	for _, option := range options {
 		option(o)
 	}
+
+	o.isConditionsEnabled = true
 
 	return o
 }
@@ -156,6 +176,11 @@ func (o *Object) EnableJobTemplate(templateSpec batchv1beta1.JobTemplateSpec) {
 // EnableEvents enables the event view for the object.
 func (o *Object) EnableEvents() {
 	o.isEventsEnabled = true
+}
+
+// EnableConditions enables the conditions view for the object.
+func (o *Object) DisableConditions() {
+	o.isConditionsEnabled = false
 }
 
 // RegisterItems registers one or more items to be printed in a section.
@@ -267,6 +292,15 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 	if o.isEventsEnabled {
 		if err := o.EventsGen(ctx, o.object, o.flexLayout, options); err != nil {
 			return nil, fmt.Errorf("add events to layout: %w", err)
+		}
+	}
+
+	if o.isConditionsEnabled {
+		if err := o.ConditionsGen(ctx, o.object, o.flexLayout); err != nil {
+			// Only error if the it is an error other than no status found.
+			if !strings.Contains(err.Error(), "no status found") {
+				return nil, fmt.Errorf("add conditions to layout: %w", err)
+			}
 		}
 	}
 

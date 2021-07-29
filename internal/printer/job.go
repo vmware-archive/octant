@@ -55,9 +55,19 @@ func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (c
 	return ot.ToComponent()
 }
 
+var jobConditionColumns = [][]string{
+	{"Type", "type"},
+	{"Last Probe", "lastProbeTime"},
+	{"Last Transition", "lastTransitionTime"},
+	{"Status", "status"},
+	{"Message", "message"},
+	{"Reason", "reason"},
+}
+
 // JobHandler printers a job.
 func JobHandler(ctx context.Context, job *batchv1.Job, options Options) (component.Component, error) {
 	o := NewObject(job)
+	o.ConditionsGen = conditionsGenFactory("", jobConditionColumns, nil)
 	o.EnableEvents()
 
 	jh, err := newJobHandler(job, o)
@@ -75,10 +85,6 @@ func JobHandler(ctx context.Context, job *batchv1.Job, options Options) (compone
 
 	if err := jh.Pods(ctx, job, options); err != nil {
 		return nil, errors.Wrap(err, "print job pods")
-	}
-
-	if err := jh.Conditions(options); err != nil {
-		return nil, errors.Wrap(err, "print job conditions")
 	}
 
 	return o.ToComponent(ctx, options)
@@ -129,27 +135,6 @@ func createJobStatus(job batchv1.Job) (*component.Summary, error) {
 
 	summary := component.NewSummary("Status", sections...)
 	return summary, nil
-}
-
-func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, error) {
-	cols := component.NewTableCols("Type", "Last Probe", "Last Transition",
-		"Status", "Message", "Reason")
-	table := component.NewTable("Conditions", "There are no job conditions!", cols)
-
-	for _, condition := range conditions {
-		row := component.TableRow{}
-
-		row["Type"] = component.NewText(string(condition.Type))
-		row["Last Probe"] = component.NewTimestamp(condition.LastProbeTime.Time)
-		row["Last Transition"] = component.NewTimestamp(condition.LastTransitionTime.Time)
-		row["Status"] = component.NewText(string(condition.Status))
-		row["Message"] = component.NewText(condition.Message)
-		row["Reason"] = component.NewText(condition.Reason)
-
-		table.Add(row)
-	}
-
-	return table, nil
 }
 
 func createJobListView(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
@@ -214,16 +199,14 @@ type jobObject interface {
 	Config(options Options) error
 	Status(options Options) error
 	Pods(ctx context.Context, object runtime.Object, options Options) error
-	Conditions(options Options) error
 }
 
 type jobHandler struct {
-	job            *batchv1.Job
-	configFunc     func(*batchv1.Job, Options) (*component.Summary, error)
-	statusFunc     func(*batchv1.Job, Options) (*component.Summary, error)
-	podFunc        func(context.Context, runtime.Object, Options) (component.Component, error)
-	conditionsFunc func(*batchv1.Job, Options) (*component.Table, error)
-	object         *Object
+	job        *batchv1.Job
+	configFunc func(*batchv1.Job, Options) (*component.Summary, error)
+	statusFunc func(*batchv1.Job, Options) (*component.Summary, error)
+	podFunc    func(context.Context, runtime.Object, Options) (component.Component, error)
+	object     *Object
 }
 
 var _ jobObject = (*jobHandler)(nil)
@@ -238,12 +221,11 @@ func newJobHandler(job *batchv1.Job, object *Object) (*jobHandler, error) {
 	}
 
 	jh := &jobHandler{
-		job:            job,
-		configFunc:     defaultJobConfig,
-		statusFunc:     defaultJobStatus,
-		podFunc:        defaultJobPods,
-		conditionsFunc: defaultJobConditions,
-		object:         object,
+		job:        job,
+		configFunc: defaultJobConfig,
+		statusFunc: defaultJobStatus,
+		podFunc:    defaultJobPods,
+		object:     object,
 	}
 
 	return jh, nil
@@ -289,23 +271,4 @@ func (j *jobHandler) Pods(ctx context.Context, object runtime.Object, options Op
 
 func defaultJobPods(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
 	return createPodListView(ctx, object, options)
-}
-
-func (j *jobHandler) Conditions(options Options) error {
-	if j.job == nil {
-		return errors.New("can;t display conditions for nil job")
-	}
-
-	j.object.RegisterItems(ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return j.conditionsFunc(j.job, options)
-		},
-	})
-
-	return nil
-}
-
-func defaultJobConditions(job *batchv1.Job, options Options) (*component.Table, error) {
-	return createJobConditions(job.Status.Conditions)
 }
