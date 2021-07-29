@@ -12,6 +12,7 @@ import (
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	action "github.com/vmware-tanzu/octant/pkg/action"
+	event "github.com/vmware-tanzu/octant/pkg/event"
 	api "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	store "github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -180,6 +181,20 @@ func (m *MockService) SendAlert(arg0 context.Context, arg1 string, arg2 action.A
 func (mr *MockServiceMockRecorder) SendAlert(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockService)(nil).SendAlert), arg0, arg1, arg2)
+}
+
+// SendEvent mocks base method.
+func (m *MockService) SendEvent(arg0 context.Context, arg1 string, arg2 event.EventType, arg3 action.Payload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendEvent", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendEvent indicates an expected call of SendEvent.
+func (mr *MockServiceMockRecorder) SendEvent(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEvent", reflect.TypeOf((*MockService)(nil).SendEvent), arg0, arg1, arg2, arg3)
 }
 
 // Update mocks base method.

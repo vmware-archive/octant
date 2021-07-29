@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -26,6 +28,7 @@ type Dashboard interface {
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
 	CreateLink(ctx context.Context, key store.Key) (api.LinkResponse, error)
+	SendEvent(ctx context.Context, clientID string, eventName event.EventType, payload action.Payload) error
 }
 
 // NewDashboardClient creates a dashboard client.
