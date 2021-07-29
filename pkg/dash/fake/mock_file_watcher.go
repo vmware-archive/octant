@@ -11,30 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockFileWatcher is a mock of FileWatcher interface.
+// MockFileWatcher is a mock of FileWatcher interface
 type MockFileWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockFileWatcherMockRecorder
 }
 
-// MockFileWatcherMockRecorder is the mock recorder for MockFileWatcher.
+// MockFileWatcherMockRecorder is the mock recorder for MockFileWatcher
 type MockFileWatcherMockRecorder struct {
 	mock *MockFileWatcher
 }
 
-// NewMockFileWatcher creates a new mock instance.
+// NewMockFileWatcher creates a new mock instance
 func NewMockFileWatcher(ctrl *gomock.Controller) *MockFileWatcher {
 	mock := &MockFileWatcher{ctrl: ctrl}
 	mock.recorder = &MockFileWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockFileWatcher) EXPECT() *MockFileWatcherMockRecorder {
 	return m.recorder
 }
 
-// Add mocks base method.
+// Add mocks base method
 func (m *MockFileWatcher) Add(arg0 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", arg0)
@@ -42,13 +42,13 @@ func (m *MockFileWatcher) Add(arg0 string) error {
 	return ret0
 }
 
-// Add indicates an expected call of Add.
+// Add indicates an expected call of Add
 func (mr *MockFileWatcherMockRecorder) Add(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockFileWatcher)(nil).Add), arg0)
 }
 
-// Errors mocks base method.
+// Errors mocks base method
 func (m *MockFileWatcher) Errors() chan error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Errors")
@@ -56,13 +56,13 @@ func (m *MockFileWatcher) Errors() chan error {
 	return ret0
 }
 
-// Errors indicates an expected call of Errors.
+// Errors indicates an expected call of Errors
 func (mr *MockFileWatcherMockRecorder) Errors() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errors", reflect.TypeOf((*MockFileWatcher)(nil).Errors))
 }
 
-// Events mocks base method.
+// Events mocks base method
 func (m *MockFileWatcher) Events() chan fsnotify.Event {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Events")
@@ -70,7 +70,7 @@ func (m *MockFileWatcher) Events() chan fsnotify.Event {
 	return ret0
 }
 
-// Events indicates an expected call of Events.
+// Events indicates an expected call of Events
 func (mr *MockFileWatcherMockRecorder) Events() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockFileWatcher)(nil).Events))

@@ -11,44 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockServerProtocol is a mock of ServerProtocol interface.
+// MockServerProtocol is a mock of ServerProtocol interface
 type MockServerProtocol struct {
 	ctrl     *gomock.Controller
 	recorder *MockServerProtocolMockRecorder
 }
 
-// MockServerProtocolMockRecorder is the mock recorder for MockServerProtocol.
+// MockServerProtocolMockRecorder is the mock recorder for MockServerProtocol
 type MockServerProtocolMockRecorder struct {
 	mock *MockServerProtocol
 }
 
-// NewMockServerProtocol creates a new mock instance.
+// NewMockServerProtocol creates a new mock instance
 func NewMockServerProtocol(ctrl *gomock.Controller) *MockServerProtocol {
 	mock := &MockServerProtocol{ctrl: ctrl}
 	mock.recorder = &MockServerProtocolMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServerProtocol) EXPECT() *MockServerProtocolMockRecorder {
 	return m.recorder
 }
 
-// Config mocks base method.
-func (m *MockServerProtocol) Config() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Config")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Config indicates an expected call of Config.
-func (mr *MockServerProtocolMockRecorder) Config() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Config", reflect.TypeOf((*MockServerProtocol)(nil).Config))
-}
-
-// Init mocks base method.
+// Init mocks base method
 func (m *MockServerProtocol) Init() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Init")
@@ -56,48 +42,62 @@ func (m *MockServerProtocol) Init() error {
 	return ret0
 }
 
-// Init indicates an expected call of Init.
+// Init indicates an expected call of Init
 func (mr *MockServerProtocolMockRecorder) Init() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockServerProtocol)(nil).Init))
 }
 
-// Serve mocks base method.
+// Config mocks base method
+func (m *MockServerProtocol) Config() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Config")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Config indicates an expected call of Config
+func (mr *MockServerProtocolMockRecorder) Config() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Config", reflect.TypeOf((*MockServerProtocol)(nil).Config))
+}
+
+// Serve mocks base method
 func (m *MockServerProtocol) Serve(arg0 net.Listener) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Serve", arg0)
 }
 
-// Serve indicates an expected call of Serve.
+// Serve indicates an expected call of Serve
 func (mr *MockServerProtocolMockRecorder) Serve(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Serve", reflect.TypeOf((*MockServerProtocol)(nil).Serve), arg0)
 }
 
-// MockClientProtocol is a mock of ClientProtocol interface.
+// MockClientProtocol is a mock of ClientProtocol interface
 type MockClientProtocol struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientProtocolMockRecorder
 }
 
-// MockClientProtocolMockRecorder is the mock recorder for MockClientProtocol.
+// MockClientProtocolMockRecorder is the mock recorder for MockClientProtocol
 type MockClientProtocolMockRecorder struct {
 	mock *MockClientProtocol
 }
 
-// NewMockClientProtocol creates a new mock instance.
+// NewMockClientProtocol creates a new mock instance
 func NewMockClientProtocol(ctrl *gomock.Controller) *MockClientProtocol {
 	mock := &MockClientProtocol{ctrl: ctrl}
 	mock.recorder = &MockClientProtocolMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClientProtocol) EXPECT() *MockClientProtocolMockRecorder {
 	return m.recorder
 }
 
-// Close mocks base method.
+// Close mocks base method
 func (m *MockClientProtocol) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
@@ -105,13 +105,13 @@ func (m *MockClientProtocol) Close() error {
 	return ret0
 }
 
-// Close indicates an expected call of Close.
+// Close indicates an expected call of Close
 func (mr *MockClientProtocolMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockClientProtocol)(nil).Close))
 }
 
-// Dispense mocks base method.
+// Dispense mocks base method
 func (m *MockClientProtocol) Dispense(arg0 string) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Dispense", arg0)
@@ -120,13 +120,13 @@ func (m *MockClientProtocol) Dispense(arg0 string) (interface{}, error) {
 	return ret0, ret1
 }
 
-// Dispense indicates an expected call of Dispense.
+// Dispense indicates an expected call of Dispense
 func (mr *MockClientProtocolMockRecorder) Dispense(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dispense", reflect.TypeOf((*MockClientProtocol)(nil).Dispense), arg0)
 }
 
-// Ping mocks base method.
+// Ping mocks base method
 func (m *MockClientProtocol) Ping() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Ping")
@@ -134,7 +134,7 @@ func (m *MockClientProtocol) Ping() error {
 	return ret0
 }
 
-// Ping indicates an expected call of Ping.
+// Ping indicates an expected call of Ping
 func (mr *MockClientProtocolMockRecorder) Ping() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockClientProtocol)(nil).Ping))

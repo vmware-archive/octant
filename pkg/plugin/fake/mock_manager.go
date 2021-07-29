@@ -16,30 +16,30 @@ import (
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// MockManagerInterface is a mock of ManagerInterface interface.
+// MockManagerInterface is a mock of ManagerInterface interface
 type MockManagerInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockManagerInterfaceMockRecorder
 }
 
-// MockManagerInterfaceMockRecorder is the mock recorder for MockManagerInterface.
+// MockManagerInterfaceMockRecorder is the mock recorder for MockManagerInterface
 type MockManagerInterfaceMockRecorder struct {
 	mock *MockManagerInterface
 }
 
-// NewMockManagerInterface creates a new mock instance.
+// NewMockManagerInterface creates a new mock instance
 func NewMockManagerInterface(ctrl *gomock.Controller) *MockManagerInterface {
 	mock := &MockManagerInterface{ctrl: ctrl}
 	mock.recorder = &MockManagerInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockManagerInterface) EXPECT() *MockManagerInterfaceMockRecorder {
 	return m.recorder
 }
 
-// ObjectStatus mocks base method.
+// ObjectStatus mocks base method
 func (m *MockManagerInterface) ObjectStatus(arg0 context.Context, arg1 runtime.Object) (*plugin.ObjectStatusResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ObjectStatus", arg0, arg1)
@@ -48,13 +48,13 @@ func (m *MockManagerInterface) ObjectStatus(arg0 context.Context, arg1 runtime.O
 	return ret0, ret1
 }
 
-// ObjectStatus indicates an expected call of ObjectStatus.
+// ObjectStatus indicates an expected call of ObjectStatus
 func (mr *MockManagerInterfaceMockRecorder) ObjectStatus(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectStatus", reflect.TypeOf((*MockManagerInterface)(nil).ObjectStatus), arg0, arg1)
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockManagerInterface) Print(arg0 context.Context, arg1 runtime.Object) (*plugin.PrintResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", arg0, arg1)
@@ -63,25 +63,25 @@ func (m *MockManagerInterface) Print(arg0 context.Context, arg1 runtime.Object) 
 	return ret0, ret1
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockManagerInterfaceMockRecorder) Print(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockManagerInterface)(nil).Print), arg0, arg1)
 }
 
-// SetOctantClient mocks base method.
+// SetOctantClient mocks base method
 func (m *MockManagerInterface) SetOctantClient(arg0 javascript.OctantClient) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetOctantClient", arg0)
 }
 
-// SetOctantClient indicates an expected call of SetOctantClient.
+// SetOctantClient indicates an expected call of SetOctantClient
 func (mr *MockManagerInterfaceMockRecorder) SetOctantClient(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOctantClient", reflect.TypeOf((*MockManagerInterface)(nil).SetOctantClient), arg0)
 }
 
-// Store mocks base method.
+// Store mocks base method
 func (m *MockManagerInterface) Store() plugin.ManagerStore {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Store")
@@ -89,13 +89,13 @@ func (m *MockManagerInterface) Store() plugin.ManagerStore {
 	return ret0
 }
 
-// Store indicates an expected call of Store.
+// Store indicates an expected call of Store
 func (mr *MockManagerInterfaceMockRecorder) Store() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockManagerInterface)(nil).Store))
 }
 
-// Tabs mocks base method.
+// Tabs mocks base method
 func (m *MockManagerInterface) Tabs(arg0 context.Context, arg1 runtime.Object) ([]component.Tab, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tabs", arg0, arg1)
@@ -104,7 +104,7 @@ func (m *MockManagerInterface) Tabs(arg0 context.Context, arg1 runtime.Object) (
 	return ret0, ret1
 }
 
-// Tabs indicates an expected call of Tabs.
+// Tabs indicates an expected call of Tabs
 func (mr *MockManagerInterfaceMockRecorder) Tabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tabs", reflect.TypeOf((*MockManagerInterface)(nil).Tabs), arg0, arg1)

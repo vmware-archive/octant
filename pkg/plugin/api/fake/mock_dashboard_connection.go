@@ -12,30 +12,30 @@ import (
 	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
-// MockDashboardConnection is a mock of DashboardConnection interface.
+// MockDashboardConnection is a mock of DashboardConnection interface
 type MockDashboardConnection struct {
 	ctrl     *gomock.Controller
 	recorder *MockDashboardConnectionMockRecorder
 }
 
-// MockDashboardConnectionMockRecorder is the mock recorder for MockDashboardConnection.
+// MockDashboardConnectionMockRecorder is the mock recorder for MockDashboardConnection
 type MockDashboardConnectionMockRecorder struct {
 	mock *MockDashboardConnection
 }
 
-// NewMockDashboardConnection creates a new mock instance.
+// NewMockDashboardConnection creates a new mock instance
 func NewMockDashboardConnection(ctrl *gomock.Controller) *MockDashboardConnection {
 	mock := &MockDashboardConnection{ctrl: ctrl}
 	mock.recorder = &MockDashboardConnectionMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDashboardConnection) EXPECT() *MockDashboardConnectionMockRecorder {
 	return m.recorder
 }
 
-// Client mocks base method.
+// Client mocks base method
 func (m *MockDashboardConnection) Client() proto.DashboardClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Client")
@@ -43,13 +43,13 @@ func (m *MockDashboardConnection) Client() proto.DashboardClient {
 	return ret0
 }
 
-// Client indicates an expected call of Client.
+// Client indicates an expected call of Client
 func (mr *MockDashboardConnectionMockRecorder) Client() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Client", reflect.TypeOf((*MockDashboardConnection)(nil).Client))
 }
 
-// Close mocks base method.
+// Close mocks base method
 func (m *MockDashboardConnection) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
@@ -57,7 +57,7 @@ func (m *MockDashboardConnection) Close() error {
 	return ret0
 }
 
-// Close indicates an expected call of Close.
+// Close indicates an expected call of Close
 func (mr *MockDashboardConnectionMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDashboardConnection)(nil).Close))

@@ -11,30 +11,30 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// MockGenericInformer is a mock of GenericInformer interface.
+// MockGenericInformer is a mock of GenericInformer interface
 type MockGenericInformer struct {
 	ctrl     *gomock.Controller
 	recorder *MockGenericInformerMockRecorder
 }
 
-// MockGenericInformerMockRecorder is the mock recorder for MockGenericInformer.
+// MockGenericInformerMockRecorder is the mock recorder for MockGenericInformer
 type MockGenericInformerMockRecorder struct {
 	mock *MockGenericInformer
 }
 
-// NewMockGenericInformer creates a new mock instance.
+// NewMockGenericInformer creates a new mock instance
 func NewMockGenericInformer(ctrl *gomock.Controller) *MockGenericInformer {
 	mock := &MockGenericInformer{ctrl: ctrl}
 	mock.recorder = &MockGenericInformerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockGenericInformer) EXPECT() *MockGenericInformerMockRecorder {
 	return m.recorder
 }
 
-// Informer mocks base method.
+// Informer mocks base method
 func (m *MockGenericInformer) Informer() cache.SharedIndexInformer {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Informer")
@@ -42,13 +42,13 @@ func (m *MockGenericInformer) Informer() cache.SharedIndexInformer {
 	return ret0
 }
 
-// Informer indicates an expected call of Informer.
+// Informer indicates an expected call of Informer
 func (mr *MockGenericInformerMockRecorder) Informer() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Informer", reflect.TypeOf((*MockGenericInformer)(nil).Informer))
 }
 
-// Lister mocks base method.
+// Lister mocks base method
 func (m *MockGenericInformer) Lister() cache.GenericLister {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Lister")
@@ -56,7 +56,7 @@ func (m *MockGenericInformer) Lister() cache.GenericLister {
 	return ret0
 }
 
-// Lister indicates an expected call of Lister.
+// Lister indicates an expected call of Lister
 func (mr *MockGenericInformerMockRecorder) Lister() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Lister", reflect.TypeOf((*MockGenericInformer)(nil).Lister))

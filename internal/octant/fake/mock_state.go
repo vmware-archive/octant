@@ -14,42 +14,42 @@ import (
 	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
-// MockState is a mock of State interface.
+// MockState is a mock of State interface
 type MockState struct {
 	ctrl     *gomock.Controller
 	recorder *MockStateMockRecorder
 }
 
-// MockStateMockRecorder is the mock recorder for MockState.
+// MockStateMockRecorder is the mock recorder for MockState
 type MockStateMockRecorder struct {
 	mock *MockState
 }
 
-// NewMockState creates a new mock instance.
+// NewMockState creates a new mock instance
 func NewMockState(ctrl *gomock.Controller) *MockState {
 	mock := &MockState{ctrl: ctrl}
 	mock.recorder = &MockStateMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockState) EXPECT() *MockStateMockRecorder {
 	return m.recorder
 }
 
-// AddFilter mocks base method.
+// AddFilter mocks base method
 func (m *MockState) AddFilter(arg0 octant.Filter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddFilter", arg0)
 }
 
-// AddFilter indicates an expected call of AddFilter.
+// AddFilter indicates an expected call of AddFilter
 func (mr *MockStateMockRecorder) AddFilter(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFilter", reflect.TypeOf((*MockState)(nil).AddFilter), arg0)
 }
 
-// Dispatch mocks base method.
+// Dispatch mocks base method
 func (m *MockState) Dispatch(arg0 context.Context, arg1 string, arg2 action.Payload) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Dispatch", arg0, arg1, arg2)
@@ -57,13 +57,13 @@ func (m *MockState) Dispatch(arg0 context.Context, arg1 string, arg2 action.Payl
 	return ret0
 }
 
-// Dispatch indicates an expected call of Dispatch.
+// Dispatch indicates an expected call of Dispatch
 func (mr *MockStateMockRecorder) Dispatch(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dispatch", reflect.TypeOf((*MockState)(nil).Dispatch), arg0, arg1, arg2)
 }
 
-// GetClientID mocks base method.
+// GetClientID mocks base method
 func (m *MockState) GetClientID() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClientID")
@@ -71,13 +71,13 @@ func (m *MockState) GetClientID() string {
 	return ret0
 }
 
-// GetClientID indicates an expected call of GetClientID.
+// GetClientID indicates an expected call of GetClientID
 func (mr *MockStateMockRecorder) GetClientID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientID", reflect.TypeOf((*MockState)(nil).GetClientID))
 }
 
-// GetContentPath mocks base method.
+// GetContentPath mocks base method
 func (m *MockState) GetContentPath() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetContentPath")
@@ -85,13 +85,13 @@ func (m *MockState) GetContentPath() string {
 	return ret0
 }
 
-// GetContentPath indicates an expected call of GetContentPath.
+// GetContentPath indicates an expected call of GetContentPath
 func (mr *MockStateMockRecorder) GetContentPath() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContentPath", reflect.TypeOf((*MockState)(nil).GetContentPath))
 }
 
-// GetFilters mocks base method.
+// GetFilters mocks base method
 func (m *MockState) GetFilters() []octant.Filter {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFilters")
@@ -99,13 +99,13 @@ func (m *MockState) GetFilters() []octant.Filter {
 	return ret0
 }
 
-// GetFilters indicates an expected call of GetFilters.
+// GetFilters indicates an expected call of GetFilters
 func (mr *MockStateMockRecorder) GetFilters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockState)(nil).GetFilters))
 }
 
-// GetNamespace mocks base method.
+// GetNamespace mocks base method
 func (m *MockState) GetNamespace() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNamespace")
@@ -113,13 +113,13 @@ func (m *MockState) GetNamespace() string {
 	return ret0
 }
 
-// GetNamespace indicates an expected call of GetNamespace.
+// GetNamespace indicates an expected call of GetNamespace
 func (mr *MockStateMockRecorder) GetNamespace() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockState)(nil).GetNamespace))
 }
 
-// GetQueryParams mocks base method.
+// GetQueryParams mocks base method
 func (m *MockState) GetQueryParams() map[string][]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetQueryParams")
@@ -127,13 +127,13 @@ func (m *MockState) GetQueryParams() map[string][]string {
 	return ret0
 }
 
-// GetQueryParams indicates an expected call of GetQueryParams.
+// GetQueryParams indicates an expected call of GetQueryParams
 func (mr *MockStateMockRecorder) GetQueryParams() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQueryParams", reflect.TypeOf((*MockState)(nil).GetQueryParams))
 }
 
-// OnContentPathUpdate mocks base method.
+// OnContentPathUpdate mocks base method
 func (m *MockState) OnContentPathUpdate(arg0 octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnContentPathUpdate", arg0)
@@ -141,13 +141,13 @@ func (m *MockState) OnContentPathUpdate(arg0 octant.ContentPathUpdateFunc) octan
 	return ret0
 }
 
-// OnContentPathUpdate indicates an expected call of OnContentPathUpdate.
+// OnContentPathUpdate indicates an expected call of OnContentPathUpdate
 func (mr *MockStateMockRecorder) OnContentPathUpdate(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnContentPathUpdate", reflect.TypeOf((*MockState)(nil).OnContentPathUpdate), arg0)
 }
 
-// OnNamespaceUpdate mocks base method.
+// OnNamespaceUpdate mocks base method
 func (m *MockState) OnNamespaceUpdate(arg0 octant.NamespaceUpdateFunc) octant.UpdateCancelFunc {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnNamespaceUpdate", arg0)
@@ -155,79 +155,79 @@ func (m *MockState) OnNamespaceUpdate(arg0 octant.NamespaceUpdateFunc) octant.Up
 	return ret0
 }
 
-// OnNamespaceUpdate indicates an expected call of OnNamespaceUpdate.
+// OnNamespaceUpdate indicates an expected call of OnNamespaceUpdate
 func (mr *MockStateMockRecorder) OnNamespaceUpdate(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnNamespaceUpdate", reflect.TypeOf((*MockState)(nil).OnNamespaceUpdate), arg0)
 }
 
-// RemoveFilter mocks base method.
+// RemoveFilter mocks base method
 func (m *MockState) RemoveFilter(arg0 octant.Filter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "RemoveFilter", arg0)
 }
 
-// RemoveFilter indicates an expected call of RemoveFilter.
+// RemoveFilter indicates an expected call of RemoveFilter
 func (mr *MockStateMockRecorder) RemoveFilter(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFilter", reflect.TypeOf((*MockState)(nil).RemoveFilter), arg0)
 }
 
-// SendAlert mocks base method.
+// SendAlert mocks base method
 func (m *MockState) SendAlert(arg0 action.Alert) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SendAlert", arg0)
 }
 
-// SendAlert indicates an expected call of SendAlert.
+// SendAlert indicates an expected call of SendAlert
 func (mr *MockStateMockRecorder) SendAlert(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockState)(nil).SendAlert), arg0)
 }
 
-// SetContentPath mocks base method.
+// SetContentPath mocks base method
 func (m *MockState) SetContentPath(arg0 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetContentPath", arg0)
 }
 
-// SetContentPath indicates an expected call of SetContentPath.
+// SetContentPath indicates an expected call of SetContentPath
 func (mr *MockStateMockRecorder) SetContentPath(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetContentPath", reflect.TypeOf((*MockState)(nil).SetContentPath), arg0)
 }
 
-// SetContext mocks base method.
+// SetContext mocks base method
 func (m *MockState) SetContext(arg0 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetContext", arg0)
 }
 
-// SetContext indicates an expected call of SetContext.
+// SetContext indicates an expected call of SetContext
 func (mr *MockStateMockRecorder) SetContext(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetContext", reflect.TypeOf((*MockState)(nil).SetContext), arg0)
 }
 
-// SetFilters mocks base method.
+// SetFilters mocks base method
 func (m *MockState) SetFilters(arg0 []octant.Filter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetFilters", arg0)
 }
 
-// SetFilters indicates an expected call of SetFilters.
+// SetFilters indicates an expected call of SetFilters
 func (mr *MockStateMockRecorder) SetFilters(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFilters", reflect.TypeOf((*MockState)(nil).SetFilters), arg0)
 }
 
-// SetNamespace mocks base method.
+// SetNamespace mocks base method
 func (m *MockState) SetNamespace(arg0 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetNamespace", arg0)
 }
 
-// SetNamespace indicates an expected call of SetNamespace.
+// SetNamespace indicates an expected call of SetNamespace
 func (mr *MockStateMockRecorder) SetNamespace(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNamespace", reflect.TypeOf((*MockState)(nil).SetNamespace), arg0)

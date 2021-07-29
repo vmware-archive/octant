@@ -15,30 +15,30 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// MockAuthorizationV1Interface is a mock of AuthorizationV1Interface interface.
+// MockAuthorizationV1Interface is a mock of AuthorizationV1Interface interface
 type MockAuthorizationV1Interface struct {
 	ctrl     *gomock.Controller
 	recorder *MockAuthorizationV1InterfaceMockRecorder
 }
 
-// MockAuthorizationV1InterfaceMockRecorder is the mock recorder for MockAuthorizationV1Interface.
+// MockAuthorizationV1InterfaceMockRecorder is the mock recorder for MockAuthorizationV1Interface
 type MockAuthorizationV1InterfaceMockRecorder struct {
 	mock *MockAuthorizationV1Interface
 }
 
-// NewMockAuthorizationV1Interface creates a new mock instance.
+// NewMockAuthorizationV1Interface creates a new mock instance
 func NewMockAuthorizationV1Interface(ctrl *gomock.Controller) *MockAuthorizationV1Interface {
 	mock := &MockAuthorizationV1Interface{ctrl: ctrl}
 	mock.recorder = &MockAuthorizationV1InterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAuthorizationV1Interface) EXPECT() *MockAuthorizationV1InterfaceMockRecorder {
 	return m.recorder
 }
 
-// LocalSubjectAccessReviews mocks base method.
+// LocalSubjectAccessReviews mocks base method
 func (m *MockAuthorizationV1Interface) LocalSubjectAccessReviews(arg0 string) v11.LocalSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LocalSubjectAccessReviews", arg0)
@@ -46,13 +46,13 @@ func (m *MockAuthorizationV1Interface) LocalSubjectAccessReviews(arg0 string) v1
 	return ret0
 }
 
-// LocalSubjectAccessReviews indicates an expected call of LocalSubjectAccessReviews.
+// LocalSubjectAccessReviews indicates an expected call of LocalSubjectAccessReviews
 func (mr *MockAuthorizationV1InterfaceMockRecorder) LocalSubjectAccessReviews(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LocalSubjectAccessReviews", reflect.TypeOf((*MockAuthorizationV1Interface)(nil).LocalSubjectAccessReviews), arg0)
 }
 
-// RESTClient mocks base method.
+// RESTClient mocks base method
 func (m *MockAuthorizationV1Interface) RESTClient() rest.Interface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RESTClient")
@@ -60,13 +60,13 @@ func (m *MockAuthorizationV1Interface) RESTClient() rest.Interface {
 	return ret0
 }
 
-// RESTClient indicates an expected call of RESTClient.
+// RESTClient indicates an expected call of RESTClient
 func (mr *MockAuthorizationV1InterfaceMockRecorder) RESTClient() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTClient", reflect.TypeOf((*MockAuthorizationV1Interface)(nil).RESTClient))
 }
 
-// SelfSubjectAccessReviews mocks base method.
+// SelfSubjectAccessReviews mocks base method
 func (m *MockAuthorizationV1Interface) SelfSubjectAccessReviews() v11.SelfSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectAccessReviews")
@@ -74,13 +74,13 @@ func (m *MockAuthorizationV1Interface) SelfSubjectAccessReviews() v11.SelfSubjec
 	return ret0
 }
 
-// SelfSubjectAccessReviews indicates an expected call of SelfSubjectAccessReviews.
+// SelfSubjectAccessReviews indicates an expected call of SelfSubjectAccessReviews
 func (mr *MockAuthorizationV1InterfaceMockRecorder) SelfSubjectAccessReviews() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelfSubjectAccessReviews", reflect.TypeOf((*MockAuthorizationV1Interface)(nil).SelfSubjectAccessReviews))
 }
 
-// SelfSubjectRulesReviews mocks base method.
+// SelfSubjectRulesReviews mocks base method
 func (m *MockAuthorizationV1Interface) SelfSubjectRulesReviews() v11.SelfSubjectRulesReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectRulesReviews")
@@ -88,13 +88,13 @@ func (m *MockAuthorizationV1Interface) SelfSubjectRulesReviews() v11.SelfSubject
 	return ret0
 }
 
-// SelfSubjectRulesReviews indicates an expected call of SelfSubjectRulesReviews.
+// SelfSubjectRulesReviews indicates an expected call of SelfSubjectRulesReviews
 func (mr *MockAuthorizationV1InterfaceMockRecorder) SelfSubjectRulesReviews() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelfSubjectRulesReviews", reflect.TypeOf((*MockAuthorizationV1Interface)(nil).SelfSubjectRulesReviews))
 }
 
-// SubjectAccessReviews mocks base method.
+// SubjectAccessReviews mocks base method
 func (m *MockAuthorizationV1Interface) SubjectAccessReviews() v11.SubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SubjectAccessReviews")
@@ -102,36 +102,36 @@ func (m *MockAuthorizationV1Interface) SubjectAccessReviews() v11.SubjectAccessR
 	return ret0
 }
 
-// SubjectAccessReviews indicates an expected call of SubjectAccessReviews.
+// SubjectAccessReviews indicates an expected call of SubjectAccessReviews
 func (mr *MockAuthorizationV1InterfaceMockRecorder) SubjectAccessReviews() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubjectAccessReviews", reflect.TypeOf((*MockAuthorizationV1Interface)(nil).SubjectAccessReviews))
 }
 
-// MockSelfSubjectAccessReviewInterface is a mock of SelfSubjectAccessReviewInterface interface.
+// MockSelfSubjectAccessReviewInterface is a mock of SelfSubjectAccessReviewInterface interface
 type MockSelfSubjectAccessReviewInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockSelfSubjectAccessReviewInterfaceMockRecorder
 }
 
-// MockSelfSubjectAccessReviewInterfaceMockRecorder is the mock recorder for MockSelfSubjectAccessReviewInterface.
+// MockSelfSubjectAccessReviewInterfaceMockRecorder is the mock recorder for MockSelfSubjectAccessReviewInterface
 type MockSelfSubjectAccessReviewInterfaceMockRecorder struct {
 	mock *MockSelfSubjectAccessReviewInterface
 }
 
-// NewMockSelfSubjectAccessReviewInterface creates a new mock instance.
+// NewMockSelfSubjectAccessReviewInterface creates a new mock instance
 func NewMockSelfSubjectAccessReviewInterface(ctrl *gomock.Controller) *MockSelfSubjectAccessReviewInterface {
 	mock := &MockSelfSubjectAccessReviewInterface{ctrl: ctrl}
 	mock.recorder = &MockSelfSubjectAccessReviewInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSelfSubjectAccessReviewInterface) EXPECT() *MockSelfSubjectAccessReviewInterfaceMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
+// Create mocks base method
 func (m *MockSelfSubjectAccessReviewInterface) Create(arg0 context.Context, arg1 *v1.SelfSubjectAccessReview, arg2 v10.CreateOptions) (*v1.SelfSubjectAccessReview, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
@@ -140,36 +140,36 @@ func (m *MockSelfSubjectAccessReviewInterface) Create(arg0 context.Context, arg1
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create.
+// Create indicates an expected call of Create
 func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).Create), arg0, arg1, arg2)
 }
 
-// MockSelfSubjectAccessReviewsGetter is a mock of SelfSubjectAccessReviewsGetter interface.
+// MockSelfSubjectAccessReviewsGetter is a mock of SelfSubjectAccessReviewsGetter interface
 type MockSelfSubjectAccessReviewsGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockSelfSubjectAccessReviewsGetterMockRecorder
 }
 
-// MockSelfSubjectAccessReviewsGetterMockRecorder is the mock recorder for MockSelfSubjectAccessReviewsGetter.
+// MockSelfSubjectAccessReviewsGetterMockRecorder is the mock recorder for MockSelfSubjectAccessReviewsGetter
 type MockSelfSubjectAccessReviewsGetterMockRecorder struct {
 	mock *MockSelfSubjectAccessReviewsGetter
 }
 
-// NewMockSelfSubjectAccessReviewsGetter creates a new mock instance.
+// NewMockSelfSubjectAccessReviewsGetter creates a new mock instance
 func NewMockSelfSubjectAccessReviewsGetter(ctrl *gomock.Controller) *MockSelfSubjectAccessReviewsGetter {
 	mock := &MockSelfSubjectAccessReviewsGetter{ctrl: ctrl}
 	mock.recorder = &MockSelfSubjectAccessReviewsGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSelfSubjectAccessReviewsGetter) EXPECT() *MockSelfSubjectAccessReviewsGetterMockRecorder {
 	return m.recorder
 }
 
-// SelfSubjectAccessReviews mocks base method.
+// SelfSubjectAccessReviews mocks base method
 func (m *MockSelfSubjectAccessReviewsGetter) SelfSubjectAccessReviews() v11.SelfSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectAccessReviews")
@@ -177,36 +177,36 @@ func (m *MockSelfSubjectAccessReviewsGetter) SelfSubjectAccessReviews() v11.Self
 	return ret0
 }
 
-// SelfSubjectAccessReviews indicates an expected call of SelfSubjectAccessReviews.
+// SelfSubjectAccessReviews indicates an expected call of SelfSubjectAccessReviews
 func (mr *MockSelfSubjectAccessReviewsGetterMockRecorder) SelfSubjectAccessReviews() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelfSubjectAccessReviews", reflect.TypeOf((*MockSelfSubjectAccessReviewsGetter)(nil).SelfSubjectAccessReviews))
 }
 
-// MockSelfSubjectRulesReviewInterface is a mock of SelfSubjectRulesReviewInterface interface.
+// MockSelfSubjectRulesReviewInterface is a mock of SelfSubjectRulesReviewInterface interface
 type MockSelfSubjectRulesReviewInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockSelfSubjectRulesReviewInterfaceMockRecorder
 }
 
-// MockSelfSubjectRulesReviewInterfaceMockRecorder is the mock recorder for MockSelfSubjectRulesReviewInterface.
+// MockSelfSubjectRulesReviewInterfaceMockRecorder is the mock recorder for MockSelfSubjectRulesReviewInterface
 type MockSelfSubjectRulesReviewInterfaceMockRecorder struct {
 	mock *MockSelfSubjectRulesReviewInterface
 }
 
-// NewMockSelfSubjectRulesReviewInterface creates a new mock instance.
+// NewMockSelfSubjectRulesReviewInterface creates a new mock instance
 func NewMockSelfSubjectRulesReviewInterface(ctrl *gomock.Controller) *MockSelfSubjectRulesReviewInterface {
 	mock := &MockSelfSubjectRulesReviewInterface{ctrl: ctrl}
 	mock.recorder = &MockSelfSubjectRulesReviewInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSelfSubjectRulesReviewInterface) EXPECT() *MockSelfSubjectRulesReviewInterfaceMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
+// Create mocks base method
 func (m *MockSelfSubjectRulesReviewInterface) Create(arg0 context.Context, arg1 *v1.SelfSubjectRulesReview, arg2 v10.CreateOptions) (*v1.SelfSubjectRulesReview, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
@@ -215,36 +215,36 @@ func (m *MockSelfSubjectRulesReviewInterface) Create(arg0 context.Context, arg1 
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create.
+// Create indicates an expected call of Create
 func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).Create), arg0, arg1, arg2)
 }
 
-// MockSelfSubjectRulesReviewsGetter is a mock of SelfSubjectRulesReviewsGetter interface.
+// MockSelfSubjectRulesReviewsGetter is a mock of SelfSubjectRulesReviewsGetter interface
 type MockSelfSubjectRulesReviewsGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockSelfSubjectRulesReviewsGetterMockRecorder
 }
 
-// MockSelfSubjectRulesReviewsGetterMockRecorder is the mock recorder for MockSelfSubjectRulesReviewsGetter.
+// MockSelfSubjectRulesReviewsGetterMockRecorder is the mock recorder for MockSelfSubjectRulesReviewsGetter
 type MockSelfSubjectRulesReviewsGetterMockRecorder struct {
 	mock *MockSelfSubjectRulesReviewsGetter
 }
 
-// NewMockSelfSubjectRulesReviewsGetter creates a new mock instance.
+// NewMockSelfSubjectRulesReviewsGetter creates a new mock instance
 func NewMockSelfSubjectRulesReviewsGetter(ctrl *gomock.Controller) *MockSelfSubjectRulesReviewsGetter {
 	mock := &MockSelfSubjectRulesReviewsGetter{ctrl: ctrl}
 	mock.recorder = &MockSelfSubjectRulesReviewsGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSelfSubjectRulesReviewsGetter) EXPECT() *MockSelfSubjectRulesReviewsGetterMockRecorder {
 	return m.recorder
 }
 
-// SelfSubjectRulesReviews mocks base method.
+// SelfSubjectRulesReviews mocks base method
 func (m *MockSelfSubjectRulesReviewsGetter) SelfSubjectRulesReviews() v11.SelfSubjectRulesReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectRulesReviews")
@@ -252,7 +252,7 @@ func (m *MockSelfSubjectRulesReviewsGetter) SelfSubjectRulesReviews() v11.SelfSu
 	return ret0
 }
 
-// SelfSubjectRulesReviews indicates an expected call of SelfSubjectRulesReviews.
+// SelfSubjectRulesReviews indicates an expected call of SelfSubjectRulesReviews
 func (mr *MockSelfSubjectRulesReviewsGetterMockRecorder) SelfSubjectRulesReviews() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelfSubjectRulesReviews", reflect.TypeOf((*MockSelfSubjectRulesReviewsGetter)(nil).SelfSubjectRulesReviews))
