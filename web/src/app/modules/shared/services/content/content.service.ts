@@ -7,7 +7,12 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Content, ContentResponse } from '../../models/content';
+import {
+  Content,
+  ContentResponse,
+  LinkView,
+  NamespacedTitle,
+} from '../../models/content';
 import { Params, Router } from '@angular/router';
 import {
   Filter,
@@ -16,6 +21,7 @@ import {
 import { NamespaceService } from '../namespace/namespace.service';
 import { LoadingService } from '../loading/loading.service';
 import { debounceTime, delay, distinctUntilChanged } from 'rxjs/operators';
+import { Title } from '@angular/platform-browser';
 
 export const ContentUpdateMessage = 'event.octant.dev/content';
 
@@ -31,11 +37,18 @@ const emptyContentResponse: ContentResponse = {
   currentPath: '',
 };
 
+const emptyTitle: NamespacedTitle = {
+  namespace: '',
+  title: '',
+  path: '',
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class ContentService {
   current = new BehaviorSubject<ContentResponse>(emptyContentResponse);
+  title = new BehaviorSubject<NamespacedTitle>(emptyTitle);
   viewScrollPos = new BehaviorSubject<number>(0);
   debouncedScrollPos = new BehaviorSubject<number>(0);
 
@@ -53,7 +66,8 @@ export class ContentService {
     private websocketService: WebsocketService,
     private labelFilterService: LabelFilterService,
     private namespaceService: NamespaceService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private titleService: Title
   ) {
     websocketService.registerHandler(ContentUpdateMessage, data => {
       const response = data as ContentUpdate;
@@ -66,8 +80,8 @@ export class ContentService {
       this.lastReceived = s;
 
       this.setContent(response);
+      this.setTitle(response);
       namespaceService.setNamespace(response.namespace);
-
       if (response.contentPath) {
         if (this.previousContentPath.length > 0) {
           if (response.contentPath !== this.previousContentPath) {
@@ -139,6 +153,27 @@ export class ContentService {
       currentPath: contentUpdate.contentPath,
     };
     this.current.next(contentResponse);
+  }
+
+  private setTitle(response: ContentUpdate) {
+    const title = response?.content?.title;
+
+    if (!title || title.length === 0) {
+      return;
+    }
+    const titleView = title[title.length - 1] as LinkView;
+    const titleVal = titleView.config.value;
+
+    const pageTitle =
+      response.namespace.length === 0
+        ? `Octant | ${titleVal}`
+        : `Octant | ${titleVal} | ${response.namespace}`;
+    this.titleService.setTitle(pageTitle);
+    this.title.next({
+      namespace: response.namespace,
+      title: titleVal,
+      path: response.contentPath,
+    });
   }
 
   setScrollPos(pos: number) {

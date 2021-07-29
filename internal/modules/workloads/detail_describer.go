@@ -90,9 +90,8 @@ func (d *DetailDescriber) Describe(ctx context.Context, namespace string, option
 	}
 
 	workloadName := fmt.Sprintf(`
-### %s
 _%s_
-`, cur.Name, cur.Owner.GroupVersionKind())
+`, cur.Owner.GroupVersionKind())
 
 	headerSection := component.FlexLayoutSection{
 		{

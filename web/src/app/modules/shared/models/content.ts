@@ -7,6 +7,12 @@ export interface ContentResponse {
   currentPath: string;
 }
 
+export interface NamespacedTitle {
+  namespace: string;
+  title: string;
+  path: string;
+}
+
 export interface Content {
   extensionComponent: ExtensionView;
   viewComponents: View[];
@@ -106,6 +112,7 @@ export interface DropdownView extends View {
     action: string;
     selection?: string;
     useSelection: boolean;
+    showToggleIcon: boolean;
     items: DropdownItem[];
   };
 }
