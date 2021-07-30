@@ -13,6 +13,7 @@ import {
   Filter,
   LabelFilterService,
 } from '../../../../shared/services/label-filter/label-filter.service';
+import { ClarityIcons, angleIcon, timesIcon } from '@cds/core/icon';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -30,7 +31,10 @@ export class InputFilterComponent implements OnInit, OnDestroy {
   constructor(
     private eRef: ElementRef,
     private labelFilterService: LabelFilterService
-  ) {}
+  ) {
+    ClarityIcons.addIcons(angleIcon);
+    ClarityIcons.addIcons(timesIcon);
+  }
 
   ngOnInit() {
     this.labelFilterSubscription = this.labelFilterService.filters.subscribe(
