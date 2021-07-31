@@ -8,18 +8,18 @@ package objectstatus
 import (
 	"context"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/link"
 	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
-
-	"github.com/golang/mock/gomock"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	storefake "github.com/vmware-tanzu/octant/pkg/store/fake"
@@ -67,7 +67,6 @@ func Test_status(t *testing.T) {
 			isErr:  true,
 		},
 	}
-
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
@@ -128,4 +127,48 @@ func Test_ObjectStatus_Default(t *testing.T) {
 
 	expected := component.NodeStatusOK
 	assert.Equal(t, expected, os.Status())
+}
+
+func Test_getDeletedObjectStatus_StatusError(t *testing.T) {
+	now := time.Now()
+	timeDeletion := &metav1.Time{Time: now.Add(-6 * time.Minute)}
+
+	deployment := testutil.CreateDeployment("test-status-error-deployment")
+	deployment.DeletionTimestamp = timeDeletion
+
+	actual, err := Status(context.TODO(), deployment, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedDetail := component.NewText("Deployment has been deleting for longer than 5 minutes due to finalizers")
+	component.AssertEqual(t, expectedDetail, actual.Details[0])
+
+	expectedProperty := component.Property{Label: "Deleted Date", Value: component.NewTimestamp(timeDeletion.Time)}
+	assert.Equal(t, expectedProperty, actual.Properties[0])
+
+	expectedStatus := component.NodeStatusError
+	assert.Equal(t, expectedStatus, actual.NodeStatus)
+}
+
+func Test_getDeletedObjectStatus_StatusWarning(t *testing.T) {
+	now := time.Now()
+	timeDeletion := &metav1.Time{Time: now.Add(-2 * time.Minute)}
+
+	deployment := testutil.CreateDeployment("test-status-warning-deployment")
+	deployment.DeletionTimestamp = timeDeletion
+
+	actual, err := Status(context.TODO(), deployment, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedDetail := component.NewText("Deployment is being deleted")
+	component.AssertEqual(t, expectedDetail, actual.Details[0])
+
+	expectedProperty := component.Property{Label: "Deleted Date", Value: component.NewTimestamp(timeDeletion.Time)}
+	assert.Equal(t, expectedProperty, actual.Properties[0])
+
+	expectedStatus := component.NodeStatusWarning
+	assert.Equal(t, expectedStatus, actual.NodeStatus)
 }

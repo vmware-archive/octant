@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -202,14 +203,13 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 		Return(nodeLink, nil)
 	printOptions := tpo.ToOptions()
 
-	now := testutil.Time()
-
 	labels := map[string]string{
 		"app": "testing",
 	}
 
+	creationNow := time.Now()
 	pod := testutil.CreatePod("pi-7xpxr")
-	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.CreationTimestamp = metav1.Time{Time: creationNow}
 	pod.Labels = labels
 	pod.Spec.Containers = []corev1.Container{
 		{
@@ -234,7 +234,8 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 			},
 		},
 	}
-	pod.DeletionTimestamp = &metav1.Time{Time: now}
+	deletionNow := time.Now().Add(time.Minute * -1)
+	pod.DeletionTimestamp = &metav1.Time{Time: deletionNow}
 
 	object := &corev1.PodList{
 		Items: []corev1.Pod{*pod},
@@ -260,7 +261,7 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 		"Phase":      component.NewText("Running"),
 		"Status":     component.NewText("Terminating"),
 		"Restarts":   component.NewText("0"),
-		"Age":        component.NewTimestamp(now),
+		"Age":        component.NewTimestamp(creationNow),
 		"_isDeleted": component.NewText("deleted"),
 		"Node":       nodeLink,
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
