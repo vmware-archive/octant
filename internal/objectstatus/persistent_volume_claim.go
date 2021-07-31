@@ -21,7 +21,7 @@ import (
 
 func persistentVolumeClaim(_ context.Context, object runtime.Object, _ store.Store, _ link.Interface) (ObjectStatus, error) {
 	if object == nil {
-		return ObjectStatus{}, errors.New("cronjob is nil")
+		return ObjectStatus{}, errors.New("persistent volume claim is nil")
 	}
 
 	pvc := &corev1.PersistentVolumeClaim{}
