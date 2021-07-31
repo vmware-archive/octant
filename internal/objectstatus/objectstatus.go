@@ -10,6 +10,9 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,7 +32,9 @@ type statusFunc func(context.Context, runtime.Object, store.Store, link.Interfac
 type statusLookup map[statusKey]statusFunc
 
 var (
-	defaultStatusLookup = statusLookup{
+	// TODO: expose this as a setting via preferences - https://github.com/vmware-tanzu/octant/discussions/2694
+	terminatingThreshold = time.Minute * 5
+	defaultStatusLookup  = statusLookup{
 		{apiVersion: "batch/v1beta1", kind: "CronJob"}:                cronJob,
 		{apiVersion: "apps/v1", kind: "DaemonSet"}:                    daemonSet,
 		{apiVersion: "apps/v1", kind: "Deployment"}:                   deploymentAppsV1,
@@ -114,12 +119,7 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 	}
 
 	if accessor.GetDeletionTimestamp() != nil {
-		return ObjectStatus{
-			NodeStatus: component.NodeStatusWarning,
-			Details: []component.Component{
-				component.NewTextf("%s is being deleted", kind),
-			},
-		}, nil
+		return getDeletedObjectStatus(accessor.GetDeletionTimestamp(), kind)
 	}
 
 	if lookup == nil {
@@ -164,4 +164,30 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 	oStatus.InsertProperty("Namespace", component.NewText(accessor.GetNamespace()))
 
 	return oStatus, nil
+}
+
+func surpassTerminationThreshold(deleteTime time.Time, threshold time.Duration) (component.NodeStatus, string) {
+	now := time.Now()
+	duration := now.Sub(deleteTime)
+	if duration > terminatingThreshold {
+		return component.NodeStatusError, "has been deleting for longer than 5 minutes due to finalizers"
+	} else {
+		return component.NodeStatusWarning, "is being deleted"
+	}
+}
+
+func getDeletedObjectStatus(timeDeletion *metav1.Time, kind string) (ObjectStatus, error) {
+	ns, message := surpassTerminationThreshold(timeDeletion.Time, terminatingThreshold)
+	return ObjectStatus{
+		NodeStatus: ns,
+		Details: []component.Component{
+			component.NewTextf("%s %s", kind, message),
+		},
+		Properties: []component.Property{
+			{
+				Label: "Deleted Date",
+				Value: component.NewTimestamp(timeDeletion.Time),
+			},
+		},
+	}, nil
 }

@@ -45,7 +45,7 @@ func NewHelperGenerator(dashConfig config.Dash, options ...HelperGeneratorOption
 	return hg
 }
 
-func (h *HelperGenerator) Events(ctx context.Context) ([]event.Event, error) {
+func (h *HelperGenerator) Events(_ context.Context) ([]event.Event, error) {
 	version, commit, time := h.DashConfig.BuildInfo()
 
 	resp := buildInfoResponse{
