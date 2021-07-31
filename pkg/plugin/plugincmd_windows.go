@@ -1,4 +1,4 @@
-// build +windows
+// +build windows
 
 /*
 Copyright (c) 2019 the Octant contributors. All Rights Reserved.
@@ -14,6 +14,6 @@ import (
 
 func pluginCmd(cmd string) *exec.Cmd {
 	pluginCmd := exec.Command(cmd)
-	pluginCmd.SysProcAttr := &syscall.SysProcAttr{HideWindow: true}
+	pluginCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	return pluginCmd
 }
