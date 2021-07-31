@@ -8,11 +8,12 @@
       [(ngModel)]="inputValue"
       (keyup.enter)="onEnter()"
     />
-    <clr-icon
+    <cds-icon
       class="down-icon"
       (click)="toggleTagList()"
-      shape="caret down"
-    ></clr-icon>
+      shape="angle"
+      direction="down"
+    ></cds-icon>
   </div>
   <ng-container *ngIf="showTagList">
     <div class="input-filter-tags">
@@ -26,11 +27,12 @@
             *ngFor="let filter of filters; trackBy: identifyFilter"
           >
             {{ filter.key }}:{{ filter.value }}
-            <clr-icon
+            <cds-icon
               class="input-filter-tag-remove"
               shape="times"
+              size="sm"
               (click)="remove(filter)"
-            ></clr-icon>
+            ></cds-icon>
           </div>
         </div>
         <div class="clear-all" (click)="clearAllFilters()">clear all</div>
