@@ -12,7 +12,6 @@ package plugin
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -60,10 +59,12 @@ func (f *DefaultClientFactory) Init(ctx context.Context, cmd string) Client {
 		dashLogger: log.From(ctx),
 	}
 
+	c := pluginCmd(cmd)
+
 	return plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: Handshake,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command(cmd),
+		Cmd:             c,
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolGRPC,
 		},
