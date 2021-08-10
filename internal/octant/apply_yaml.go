@@ -34,7 +34,7 @@ func NewApplyYaml(logger log.Logger, objectStore store.Store) *ApplyYaml {
 
 // ActionName returns the name of this action
 func (p *ApplyYaml) ActionName() string {
-	return ActionApplyYaml
+	return action.ActionApplyYaml
 }
 
 // Handle applies the requested yaml to the cluster

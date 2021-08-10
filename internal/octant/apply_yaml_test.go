@@ -98,7 +98,7 @@ data:
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
+	payload := action.CreatePayload(action.ActionApplyYaml, map[string]interface{}{
 		"update":    update,
 		"namespace": "default",
 	})
@@ -164,7 +164,7 @@ data:
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
+	payload := action.CreatePayload(action.ActionApplyYaml, map[string]interface{}{
 		"update":    update,
 		"namespace": "default",
 	})
@@ -228,7 +228,7 @@ metadata:
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
+	payload := action.CreatePayload(action.ActionApplyYaml, map[string]interface{}{
 		"update":    update,
 		"namespace": "default",
 	})
@@ -286,7 +286,7 @@ metadata:
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
+	payload := action.CreatePayload(action.ActionApplyYaml, map[string]interface{}{
 		"update":    update,
 		"namespace": "default",
 	})
@@ -326,7 +326,7 @@ data: {
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
+	payload := action.CreatePayload(action.ActionApplyYaml, map[string]interface{}{
 		"update":    update,
 		"namespace": "default",
 	})

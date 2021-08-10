@@ -62,6 +62,7 @@ type Service interface {
 	ListNamespaces(ctx context.Context) (NamespacesResponse, error)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	Create(ctx context.Context, object *unstructured.Unstructured) error
+	ApplyYAML(ctx context.Context, namespace, yaml string) ([]string, error)
 	Delete(ctx context.Context, key store.Key) error
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
@@ -130,6 +131,11 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 func (s *GRPCService) Create(ctx context.Context, object *unstructured.Unstructured) error {
 	ctx = extractObjectStoreMetadata(ctx)
 	return s.ObjectStore.Create(ctx, object)
+}
+
+func (s *GRPCService) ApplyYAML(ctx context.Context, namespace, yaml string) ([]string, error) {
+	ctx = extractObjectStoreMetadata(ctx)
+	return s.ObjectStore.CreateOrUpdateFromYAML(ctx, namespace, yaml)
 }
 
 func (s *GRPCService) Delete(ctx context.Context, key store.Key) error {
@@ -293,6 +299,20 @@ func (c *grpcServer) Update(ctx context.Context, in *proto.UpdateRequest) (*prot
 	}
 
 	return &proto.UpdateResponse{}, nil
+}
+
+// ApplyYAML updates an object.
+func (c *grpcServer) ApplyYAML(ctx context.Context, in *proto.ApplyYAMLRequest) (*proto.ApplyYAMLResponse, error) {
+	var res []string
+	var err error
+
+	if res, err = c.service.ApplyYAML(ctx, in.Namespace, in.Yaml); err != nil {
+		return nil, err
+	}
+
+	return &proto.ApplyYAMLResponse{
+		Resources: res,
+	}, nil
 }
 
 // Create creates an object in the cluster.

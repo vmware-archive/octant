@@ -100,6 +100,18 @@ Here is an example of setting up your plugin to know when the current namespace 
 	}
 ```
 
+Besides having custom actions, there are pre-exsiting octant actions which are registered by octant internal modules and they can be leveraged to perform an action.
+For example: `action.octant.dev/apply` (https://github.com/vmware-tanzu/octant/blob/master/pkg/action/actions.go) can be used to apply a yaml configuration for a resource.
+
+Example Payload:
+```
+{
+	"namespace": "default",
+	"update": "---\napiVersion: apps/v1 ..."
+}
+```
+
+
 ## Register and Serve
 
 Registering and serving your plugin is the final step to get your plugin communicating with Octant. This is also where you
