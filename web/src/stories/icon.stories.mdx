@@ -42,7 +42,7 @@ export const iconWithTooltipView=  {
     status: "",
     inverse: false,
     badge: "",
-    color: "",
+    color: "#2596be",
     badgeColor: "",
     label: "",
     tooltip: {
@@ -60,7 +60,8 @@ export const IconStoryTemplate = args => ({
 });
 
 export const iconWithTooltipDocs = {source: {code: `
-component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
+i := component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
+i.Config.Color = "#2596be"
 `}}
 
 <h1>Icon Component</h1>
