@@ -23,8 +23,6 @@ github.com/davecgh/go-spew/spew
 ## explicit
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
-# github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c
-## explicit
 # github.com/dop251/goja v0.0.0-20200629185240-bfd59704b500
 ## explicit
 github.com/dop251/goja
@@ -163,8 +161,6 @@ github.com/inconshreveable/mousetrap
 # github.com/json-iterator/go v1.1.11
 ## explicit
 github.com/json-iterator/go
-# github.com/kr/text v0.2.0
-## explicit
 # github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.1.8
@@ -182,8 +178,6 @@ github.com/moby/spdystream/spdy
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
-# github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
-## explicit
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
 # github.com/onsi/ginkgo v1.14.0
@@ -335,7 +329,7 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.39.0
+# google.golang.org/grpc v1.39.1
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -419,8 +413,6 @@ google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
-# gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
-## explicit
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.62.0
