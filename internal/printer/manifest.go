@@ -2,14 +2,13 @@ package printer
 
 import (
 	context "context"
-	"runtime"
+	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/containers/image/v5/image"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
-	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 )
@@ -19,8 +18,13 @@ type ImageManifest struct {
 	Configuration string
 }
 
+type ImageEntry struct {
+	ImageName string
+	HostOS    string
+}
+
 type ManifestConfiguration struct {
-	imageCache map[string]ImageManifest
+	imageCache map[ImageEntry]ImageManifest
 	imageLock  sync.Mutex
 }
 
@@ -33,14 +37,15 @@ func NewManifestConfiguration() *ManifestConfiguration {
 	return mc
 }
 
-func (manifest *ManifestConfiguration) GetImageManifest(ctx context.Context, imageName string) (string, string, error) {
+func (manifest *ManifestConfiguration) GetImageManifest(ctx context.Context, hostOS, imageName string) (string, string, error) {
 	parts := strings.SplitN(imageName, "://", 2) // if format not specified, assume docker
 	if len(parts) != 2 {
 		imageName = "docker://" + imageName
 	}
 
-	if _, ok := manifest.imageCache[imageName]; ok {
-		return manifest.imageCache[imageName].Manifest, manifest.imageCache[imageName].Configuration, nil
+	imageEntry := ImageEntry{ImageName: imageName, HostOS: hostOS}
+	if _, ok := manifest.imageCache[imageEntry]; ok {
+		return manifest.imageCache[imageEntry].Manifest, manifest.imageCache[imageEntry].Configuration, nil
 	}
 
 	manifest.imageLock.Lock()
@@ -48,41 +53,37 @@ func (manifest *ManifestConfiguration) GetImageManifest(ctx context.Context, ima
 
 	srcRef, err := alltransports.ParseImageName(imageName)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "error parsing image name %q", imageName)
+		return "", "", fmt.Errorf("error parsing image name for image %s: %w", imageName, err)
 	}
 
-	systemCtx := &types.SystemContext{}
-
-	if runtime.GOOS == "darwin" {
-		systemCtx.OSChoice = "linux" // For MAC OS, only linux is currently supported
-	}
+	systemCtx := &types.SystemContext{OSChoice: hostOS}
 
 	imageSrc, err := srcRef.NewImageSource(ctx, systemCtx)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "error creating image source %q", imageName)
+		return "", "", fmt.Errorf("error creating image source for image %s: %w", imageName, err)
 	}
 
 	rawManifest, _, err := imageSrc.GetManifest(ctx, nil)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "error getting manifest for %q", imageName)
+		return "", "", fmt.Errorf("error getting manifest for for image %s: %w", imageName, err)
 	}
 
 	image, err := image.FromUnparsedImage(ctx, systemCtx, image.UnparsedInstance(imageSrc, nil))
 	if err != nil {
-		return "", "", errors.Wrapf(err, "Error parsing manifest for %q", imageName)
+		return "", "", fmt.Errorf("error parsing manifest for for image %s: %w", imageName, err)
 	}
 
 	rawConfiguration, err := image.OCIConfig(ctx)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "Error getting image config blob for %q", imageName)
+		return "", "", fmt.Errorf("error getting image config blob for for image %s: %w", imageName, err)
 	}
 
 	configOutput, err := json.MarshalIndent(rawConfiguration, "", "  ")
 
 	if manifest.imageCache == nil {
-		manifest.imageCache = make(map[string]ImageManifest)
+		manifest.imageCache = make(map[ImageEntry]ImageManifest)
 	}
-	manifest.imageCache[imageName] = ImageManifest{string(rawManifest), string(configOutput)}
+	manifest.imageCache[imageEntry] = ImageManifest{string(rawManifest), string(configOutput)}
 
 	return string(rawManifest), string(configOutput), nil
 }
