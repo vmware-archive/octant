@@ -17,6 +17,7 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -70,6 +71,7 @@ func HorizontalPodAutoscalerListHandler(ctx context.Context, list *autoscalingv1
 func HorizontalPodAutoscalerHandler(ctx context.Context, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, options Options) (component.Component, error) {
 	o := NewObject(horizontalPodAutoscaler)
 	o.EnableEvents()
+	o.DisableConditions()
 
 	hh, err := newHorizontalPodAutoscalerHandler(horizontalPodAutoscaler, o)
 	if err != nil {
@@ -212,15 +214,16 @@ func createHorizontalPodAutoscalerMetricsStatusView(metricStatus *autoscalingv1.
 	return summary, nil
 }
 
+var hpaConditionColumns = [][]string{
+	{"Type", "type"},
+	{"Reason", "reason"},
+	{"Status", "status"},
+	{"Message", "message"},
+	{"Last Transition", "lastTransitionTime"},
+}
+
 func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) (*component.Table, error) {
-	if horizontalPodAutoscaler == nil {
-		return nil, errors.New("unable to generate conditions from a nil horizontalpodautoscaler")
-	}
-
-	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Transition")
-	table := component.NewTable("Conditions", "There are no horizontalpodautoscaler conditions!", cols)
-
-	horizontalPodAutoscalerConditions := make([]autoscalingv2beta2.HorizontalPodAutoscalerCondition, 0)
+	horizontalPodAutoscalerConditions := make([]interface{}, 0)
 
 	if conditions, ok := horizontalPodAutoscaler.Annotations["autoscaling.alpha.kubernetes.io/conditions"]; ok {
 		err := json.Unmarshal([]byte(conditions), &horizontalPodAutoscalerConditions)
@@ -229,20 +232,17 @@ func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autosc
 		}
 	}
 
-	for _, condition := range horizontalPodAutoscalerConditions {
-		row := component.TableRow{
-			"Type":            component.NewText(string(condition.Type)),
-			"Reason":          component.NewText(condition.Reason),
-			"Status":          component.NewText(string(condition.Status)),
-			"Message":         component.NewText(condition.Message),
-			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
-		}
-
-		table.Add(row)
+	object := map[string]interface{}{
+		"status": map[string]interface{}{
+			"conditions": horizontalPodAutoscalerConditions,
+		},
 	}
 
-	table.Sort("Type")
-
+	conditions, err := parseConditions(unstructured.Unstructured{Object: object})
+	if err != nil {
+		return nil, err
+	}
+	table := createConditionsTable(conditions, conditionType, hpaConditionColumns)
 	return table, nil
 }
 

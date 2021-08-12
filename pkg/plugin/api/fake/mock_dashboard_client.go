@@ -237,6 +237,26 @@ func (mr *MockDashboardClientMockRecorder) SendAlert(arg0, arg1 interface{}, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockDashboardClient)(nil).SendAlert), varargs...)
 }
 
+// SendEvent mocks base method.
+func (m *MockDashboardClient) SendEvent(arg0 context.Context, arg1 *proto.EventRequest, arg2 ...grpc.CallOption) (*proto.EventResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SendEvent", varargs...)
+	ret0, _ := ret[0].(*proto.EventResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendEvent indicates an expected call of SendEvent.
+func (mr *MockDashboardClientMockRecorder) SendEvent(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEvent", reflect.TypeOf((*MockDashboardClient)(nil).SendEvent), varargs...)
+}
+
 // Update mocks base method.
 func (m *MockDashboardClient) Update(arg0 context.Context, arg1 *proto.UpdateRequest, arg2 ...grpc.CallOption) (*proto.UpdateResponse, error) {
 	m.ctrl.T.Helper()

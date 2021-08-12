@@ -203,14 +203,13 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 		Return(nodeLink, nil)
 	printOptions := tpo.ToOptions()
 
-	now := testutil.Time()
-
 	labels := map[string]string{
 		"app": "testing",
 	}
 
+	creationNow := time.Now()
 	pod := testutil.CreatePod("pi-7xpxr")
-	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.CreationTimestamp = metav1.Time{Time: creationNow}
 	pod.Labels = labels
 	pod.Spec.Containers = []corev1.Container{
 		{
@@ -235,7 +234,8 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 			},
 		},
 	}
-	pod.DeletionTimestamp = &metav1.Time{Time: now}
+	deletionNow := time.Now().Add(time.Minute * -1)
+	pod.DeletionTimestamp = &metav1.Time{Time: deletionNow}
 
 	object := &corev1.PodList{
 		Items: []corev1.Pod{*pod},
@@ -261,7 +261,7 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 		"Phase":      component.NewText("Running"),
 		"Status":     component.NewText("Terminating"),
 		"Restarts":   component.NewText("0"),
-		"Age":        component.NewTimestamp(now),
+		"Age":        component.NewTimestamp(creationNow),
 		"_isDeleted": component.NewText("deleted"),
 		"Node":       nodeLink,
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
@@ -465,37 +465,6 @@ func Test_createPodSummaryStatus(t *testing.T) {
 	expected := component.NewSummary("Status", sections...)
 
 	assert.Equal(t, expected, got)
-}
-
-func Test_createPodConditionsView(t *testing.T) {
-	now := metav1.Time{Time: time.Now()}
-
-	pod := testutil.CreatePod("pod")
-	pod.Status.Conditions = []corev1.PodCondition{
-		{
-			Type:               corev1.PodInitialized,
-			Status:             corev1.ConditionTrue,
-			LastTransitionTime: now,
-			Message:            "message",
-			Reason:             "reason",
-		},
-	}
-
-	got, err := createPodConditionsView(pod)
-	require.NoError(t, err)
-
-	expected := component.NewTable("Pod Conditions", "There are no pod conditions!", podConditionsColumns)
-	expected.Add([]component.TableRow{
-		{
-			"Type":                 component.NewText("Initialized"),
-			"Status":               component.NewText("True"),
-			"Last Transition Time": component.NewTimestamp(now.Time),
-			"Message":              component.NewText("message"),
-			"Reason":               component.NewText("reason"),
-		},
-	}...)
-
-	component.AssertEqual(t, expected, got)
 }
 
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {

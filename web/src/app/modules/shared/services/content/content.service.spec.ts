@@ -20,12 +20,11 @@ import {
   Filter,
   LabelFilterService,
 } from '../label-filter/label-filter.service';
+import { Title } from '@angular/platform-browser';
 
 describe('ContentService', () => {
   let service: ContentService;
-  const mockRouter = {
-    navigate: jasmine.createSpy('navigate'),
-  };
+  const mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -39,6 +38,10 @@ describe('ContentService', () => {
         {
           provide: Router,
           useValue: mockRouter,
+        },
+        {
+          provide: Title,
+          useValue: jasmine.createSpyObj('Title', ['getTitle', 'setTitle']),
         },
       ],
     });

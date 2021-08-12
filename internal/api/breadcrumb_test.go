@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/util/json"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_NavigationFromPathNamespace(t *testing.T) {
@@ -94,8 +94,6 @@ func Test_NavigationFromPathNamespace(t *testing.T) {
 			expectedItems: 0,
 		},
 	}
-	controller := gomock.NewController(t)
-	defer controller.Finish()
 	data, err := ioutil.ReadFile(filepath.Join("testdata", "namespace_navigation.json"))
 	require.NoError(t, err)
 	var namespaceNavigation []navigation.Navigation
@@ -192,8 +190,6 @@ func Test_NavigationFromPathCluster(t *testing.T) {
 			expectedItems: 0,
 		},
 	}
-	controller := gomock.NewController(t)
-	defer controller.Finish()
 	data, err := ioutil.ReadFile(filepath.Join("testdata", "cluster_navigation.json"))
 	require.NoError(t, err)
 	var namespaceNavigation []navigation.Navigation
@@ -287,8 +283,6 @@ func Test_CreateNavigationBreadcrumbNamespace(t *testing.T) {
 			expectedItems: 0,
 		},
 	}
-	controller := gomock.NewController(t)
-	defer controller.Finish()
 	data, err := ioutil.ReadFile(filepath.Join("testdata", "namespace_navigation.json"))
 	require.NoError(t, err)
 	var namespaceNavigation []navigation.Navigation
@@ -377,8 +371,6 @@ func Test_CreateNavigationBreadcrumbCluster(t *testing.T) {
 			expectedItems: 0,
 		},
 	}
-	controller := gomock.NewController(t)
-	defer controller.Finish()
 	data, err := ioutil.ReadFile(filepath.Join("testdata", "cluster_navigation.json"))
 	require.NoError(t, err)
 	var namespaceNavigation []navigation.Navigation
@@ -396,6 +388,43 @@ func Test_CreateNavigationBreadcrumbCluster(t *testing.T) {
 				require.Equal(t, test.lastTitle, last.Title)
 				require.Equal(t, test.lastUrl, last.Url)
 			}
+		})
+	}
+}
+
+func Test_CreateNavigationBreadcrumbApplications(t *testing.T) {
+	data, err := ioutil.ReadFile(filepath.Join("testdata", "application_navigation.json"))
+	require.NoError(t, err)
+	var namespaceNavigation []navigation.Navigation
+
+	err = json.Unmarshal([]byte(data), &namespaceNavigation)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(namespaceNavigation))
+
+	tests := []struct {
+		name          string
+		path          string
+		lastTitle     string
+		lastUrl       string
+		expectedTitle component.TitleComponent
+		expectedItems int
+	}{
+		{
+			name:          "Applications Detail Breadcumb",
+			path:          "workloads/namespace/milan/detail/simple-app",
+			expectedTitle: component.NewLink("", "Applications", "/workloads/namespace/milan"),
+			expectedItems: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			last, title := api.CreateNavigationBreadcrumb(namespaceNavigation, test.path)
+			require.Equal(t, test.expectedItems, len(title))
+			require.Equal(t, test.expectedTitle, title[0])
+			require.NotNil(t, title)
+			require.Equal(t, "", last.Title)
+			require.Equal(t, "", last.Url)
 		})
 	}
 }

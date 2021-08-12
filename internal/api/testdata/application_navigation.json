@@ -1,0 +1,9 @@
+[
+  {
+    "title": "Applications",
+    "path": "workloads/namespace/milan",
+    "children": [],
+    "iconName": "application",
+    "isLoading": false
+  }
+]

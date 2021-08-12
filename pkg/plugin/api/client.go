@@ -8,6 +8,8 @@ package api
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -273,4 +275,23 @@ func (c *Client) CreateLink(ctx context.Context, key store.Key) (LinkResponse, e
 	return LinkResponse{
 		Link: *linkComponent,
 	}, nil
+}
+
+// SendEvent sends an event
+func (c *Client) SendEvent(ctx context.Context, clientID string, eventName event.EventType, payload action.Payload) error {
+	client := c.DashboardConnection.Client()
+
+	data, err := convertFromPayload(payload)
+	if err != nil {
+		return err
+	}
+
+	eventRequest := &proto.EventRequest{
+		ClientID:  clientID,
+		EventName: string(eventName),
+		Payload:   data,
+	}
+
+	_, err = client.SendEvent(ctx, eventRequest)
+	return err
 }

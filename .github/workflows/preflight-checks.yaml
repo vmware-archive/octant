@@ -21,13 +21,15 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.3.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: actions/checkout@v2
       - name: install_prettier
         run: |
           npm i -g prettier
@@ -59,10 +61,12 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Karma tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.3.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '16'
-      - uses: actions/checkout@v2
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
       - name: run_karma
         run: |
           go run build.go web-test
@@ -77,13 +81,15 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.3.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: actions/checkout@v2
       - name: Build web assets
         run: |
           go run build.go web-build
@@ -127,7 +133,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [bundle_assets, verify_tag]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.161.0
+    container: goreleaser/goreleaser:v0.174.2
     steps:
       - uses: actions/checkout@v2
         with:

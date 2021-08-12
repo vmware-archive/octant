@@ -173,6 +173,9 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 				require.Error(t, err)
 				return
 			}
+			if err != nil {
+				t.Fatal(err)
+			}
 			require.NoError(t, err)
 
 			component.AssertEqual(t, tc.expected, summary)
@@ -356,7 +359,8 @@ func Test_createHorizontalPodAutoscalerConditionsView(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Transition")
-	expected := component.NewTable("Conditions", "There are no horizontalpodautoscaler conditions!", cols)
+	expected := component.NewTable("Conditions", "There are no conditions!", cols)
+	expected.Sort("Type")
 	expected.Add([]component.TableRow{
 		{
 			"Type":            component.NewText("AbleToScale"),

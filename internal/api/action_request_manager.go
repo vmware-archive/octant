@@ -34,7 +34,7 @@ func NewActionRequestManager(dashConfig config.Dash) *ActionRequestManager {
 	}
 }
 
-func (a ActionRequestManager) Start(ctx context.Context, state octant.State, s api.OctantClient) {
+func (a ActionRequestManager) Start(_ context.Context, _ octant.State, _ api.OctantClient) {
 }
 
 // Handlers returns the handlers this manager supports.

@@ -122,9 +122,19 @@ func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component
 	return component.NewText("<not scheduled>"), nil
 }
 
+var podConditionColumns = [][]string{
+	{"Type", "type"},
+	{"Reason", "reason"},
+	{"Status", "status"},
+	{"Message", "message"},
+	{"Last Probe", "lastProbeTime"},
+	{"Last Transition", "lastTransitionTime"},
+}
+
 // PodHandler is a printFunc that prints Pods
 func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (component.Component, error) {
 	o := NewObject(pod)
+	o.ConditionsGen = conditionsGenFactory("", podConditionColumns, nil)
 	o.EnableEvents()
 
 	ph, err := newPodHandler(pod, o)
@@ -137,9 +147,6 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (componen
 	}
 	if err := ph.Status(options); err != nil {
 		return nil, errors.Wrap(err, "print pod status")
-	}
-	if err := ph.Conditions(options); err != nil {
-		return nil, errors.Wrap(err, "print pod conditions")
 	}
 	if err := ph.InitContainers(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print pod init containers")
@@ -514,41 +521,6 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	return PodListHandler(ctx, mountedPodList, options)
 }
 
-var (
-	podConditionsColumns = component.NewTableCols("Type", "Status", "Last Transition Time", "Message", "Reason")
-)
-
-func createPodConditionsView(pod *corev1.Pod) (*component.Table, error) {
-	if pod == nil {
-		return nil, errors.New("pod is nil")
-	}
-
-	table := component.NewTable("Pod Conditions", "There are no pod conditions!", podConditionsColumns)
-
-	for _, condition := range pod.Status.Conditions {
-		row := component.TableRow{}
-
-		row["Type"] = component.NewText(string(condition.Type))
-		row["Status"] = component.NewText(string(condition.Status))
-		row["Last Transition Time"] = component.NewTimestamp(condition.LastTransitionTime.Time)
-		row["Message"] = component.NewText(condition.Message)
-		row["Reason"] = component.NewText(condition.Reason)
-
-		table.Add(row)
-	}
-
-	return table, nil
-}
-
-func hasOwnerReference(ownerReferences []metav1.OwnerReference, kind string) bool {
-	for _, ownerReference := range ownerReferences {
-		if ownerReference.Kind == kind {
-			return true
-		}
-	}
-	return false
-}
-
 func printPodResources(podSpec corev1.PodSpec) (*component.Table, error) {
 	table := component.NewTable("Resources", "Pod has no resource needs", podResourceCols)
 
@@ -589,7 +561,6 @@ func printPodResources(podSpec corev1.PodSpec) (*component.Table, error) {
 type podObject interface {
 	Config(options Options) error
 	Status(options Options) error
-	Conditions(options Options) error
 	InitContainers(ctx context.Context, options Options) error
 	Containers(ctx context.Context, options Options) error
 	Additional(options Options) error
@@ -599,7 +570,6 @@ type podHandler struct {
 	pod             *corev1.Pod
 	configFunc      func(*corev1.Pod, Options) (*component.Summary, error)
 	summaryFunc     func(*corev1.Pod, Options) (*component.Summary, error)
-	conditionsFunc  func(*corev1.Pod, Options) (*component.Table, error)
 	containerFunc   func(ctx context.Context, pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error)
 	additionalFuncs []func(*corev1.Pod, Options) ObjectPrinterFunc
 	object          *Object
@@ -643,7 +613,6 @@ func newPodHandler(pod *corev1.Pod, object *Object) (*podHandler, error) {
 		pod:             pod,
 		configFunc:      defaultPodConfig,
 		summaryFunc:     defaultPodSummary,
-		conditionsFunc:  defaultPodConditions,
 		containerFunc:   defaultPodContainers,
 		additionalFuncs: defaultPodHandlerAdditionalItems,
 		object:          object,
@@ -678,25 +647,6 @@ func (p *podHandler) Status(options Options) error {
 
 func defaultPodSummary(pod *corev1.Pod, options Options) (*component.Summary, error) {
 	return createPodSummaryStatus(pod)
-}
-
-func (p *podHandler) Conditions(options Options) error {
-	if p.pod == nil {
-		return errors.New("can't display conditions for nil pod")
-	}
-
-	p.object.RegisterItems(ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return p.conditionsFunc(p.pod, options)
-		},
-	})
-
-	return nil
-}
-
-func defaultPodConditions(pod *corev1.Pod, options Options) (*component.Table, error) {
-	return createPodConditionsView(pod)
 }
 
 func (p *podHandler) InitContainers(ctx context.Context, options Options) error {
@@ -755,17 +705,17 @@ func (p *podHandler) Additional(options Options) error {
 	return nil
 }
 
-func addPodTableFilters(table *component.Table) {
-	for k, v := range podTableFilters() {
-		table.AddFilter(k, v)
-	}
-}
-
 func podTableFilters() map[string]component.TableFilter {
 	return map[string]component.TableFilter{
 		"Phase": {
 			Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
 			Selected: []string{"Pending", "Running"},
 		},
+	}
+}
+
+func addPodTableFilters(table *component.Table) {
+	for k, v := range podTableFilters() {
+		table.AddFilter(k, v)
 	}
 }

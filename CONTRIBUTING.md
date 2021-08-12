@@ -38,16 +38,6 @@ A project for a given feature or milestone contain the following lanes:
 We use Github Discussions to archive old community meeting nodes and track longer conversations that are not suitable
 for Slack. A discussion can be tagged with a category to increase visibility and searchability.
 
-## CHANGELOG
-
-Authors are expected to include a changelog file with their pull requests. The changelog file
-should be a new file created in the `changelogs/unreleased` folder. The file should follow the
-naming convention of `pr-username` and the contents of the file should be your text for the
-changelog.
-
-    octant/changelogs/unreleased   <- folder
-        000-username               <- file
-
 ## Proposals
 
 If you wish to add a larger feature or make a major refactor to Octant we encourage folks to write up a proposal document.
@@ -62,6 +52,28 @@ In your proposal it is good to consider and include some of the following:
 * Non-Goals
 * Does this break any public APIs?
 * Does this fix/solve any outstanding issues?
+
+## Create a Pull Request
+
+Contributors making a code change should fork the repository.
+
+When creating a new pull request, fill in the template to reference an existing issue, if any. Run tests and linters locally
+to check if the changes will pass CI. Stale pull requests should be updated with recent changes especially if there
+are merge conflicts.
+
+Commit messages should be concise and convey what changes are made. Additional context for reviewers is added to the
+pull request along with comments to navigate the changes. Draft pull requests can also be used to solicit comments for
+ongoing work in progress.
+
+## CHANGELOG
+
+Authors are expected to include a changelog file with their pull requests. The changelog file
+should be a new file created in the `changelogs/unreleased` folder. The file should follow the
+naming convention of `pr-username` and the contents of the file should be your text for the
+changelog.
+
+    octant/changelogs/unreleased   <- folder
+        000-username               <- file
 
 ## Review Process
 

@@ -76,7 +76,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	octantClient.EXPECT().Send(contentEvent).AnyTimes()
 	octantClient.EXPECT().StopCh().Return(stopCh).AnyTimes()
 
-	moduleManager.EXPECT().ModuleForContentPath(gomock.Any()).Return(fakeModule, true)
+	moduleManager.EXPECT().ModuleForContentPath(gomock.Any()).Return(fakeModule, true).Times(2)
 	moduleManager.EXPECT().Navigation(gomock.Any(), "foo-namespace", "foo-module").Return([]navigation.Navigation{}, nil)
 	fakeModule.EXPECT().Name().Return("foo-module").AnyTimes()
 	fakeModule.EXPECT().Content(gomock.Any(), ".", gomock.Any()).
@@ -89,6 +89,53 @@ func TestContentManager_GenerateContent(t *testing.T) {
 			require.Equal(t, "foo-context", clientState.ContextName)
 		}).
 		Return(contentResponse, nil)
+
+	logger := log.NopLogger()
+
+	poller := api.NewSingleRunPoller()
+
+	manager := api.NewContentManager(moduleManager, dashConfig, logger,
+		api.WithContentGeneratorPoller(poller))
+
+	ctx := context.Background()
+	manager.Start(ctx, state, octantClient)
+}
+
+func TestContentManager_GenerateContent_ClusterOverviewNamespace(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	params := map[string][]string{}
+	filters := []octant.Filter{{Key: "foo", Value: "bar"}}
+
+	dashConfig := configFake.NewMockDash(controller)
+	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	fakeModule := moduleFake.NewMockModule(controller)
+	state := octantFake.NewMockState(controller)
+
+	dashConfig.EXPECT().CurrentContext().Return("foo-context")
+	state.EXPECT().GetClientID().Return("foo-client")
+	state.EXPECT().GetFilters().Return(filters).AnyTimes()
+	state.EXPECT().GetNamespace().Return("foo-namespace").AnyTimes()
+	state.EXPECT().GetQueryParams().Return(params).AnyTimes()
+	state.EXPECT().GetContentPath().Return(".").AnyTimes()
+	state.EXPECT().OnContentPathUpdate(gomock.Any()).DoAndReturn(func(fn octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
+		fn("foo")
+		return func() {}
+	})
+	octantClient := fake.NewMockOctantClient(controller)
+
+	stopCh := make(chan struct{}, 1)
+
+	contentResponse := component.ContentResponse{}
+	contentEvent := api.CreateContentEvent(contentResponse, "", ".", params)
+	octantClient.EXPECT().Send(contentEvent).AnyTimes()
+	octantClient.EXPECT().StopCh().Return(stopCh).AnyTimes()
+
+	moduleManager.EXPECT().ModuleForContentPath(gomock.Any()).Return(fakeModule, true).Times(2)
+	moduleManager.EXPECT().Navigation(gomock.Any(), "foo-namespace", "cluster-overview").Return([]navigation.Navigation{}, nil)
+	fakeModule.EXPECT().Name().Return("cluster-overview").AnyTimes()
+	fakeModule.EXPECT().Content(gomock.Any(), ".", gomock.Any()).Return(contentResponse, nil)
 
 	logger := log.NopLogger()
 

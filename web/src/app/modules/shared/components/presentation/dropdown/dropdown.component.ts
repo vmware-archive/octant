@@ -27,6 +27,7 @@ import { WebsocketService } from '../../../../../data/services/websocket/websock
 export class DropdownComponent extends AbstractViewComponent<DropdownView> {
   readonly defaultItemLimit = 10;
   useSelection = false;
+  showToggleIcon = true;
   selectedItem = '';
   url: string;
   position: string;
@@ -58,6 +59,7 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
     this.type = view.config.type;
     this.action = view.config.action;
     this.items = view.config.items;
+    this.showToggleIcon = view.config.showToggleIcon;
 
     this.items.forEach(item => {
       if (item.name === view.config.selection) {
@@ -100,7 +102,7 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
       });
     }
 
-    if (item.url && this.type === 'link') {
+    if (item.url && item.type === 'link') {
       setTimeout(() => {
         this.router.navigateByUrl(item.url);
       }, 0);
