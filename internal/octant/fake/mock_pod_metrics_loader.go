@@ -12,30 +12,30 @@ import (
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-// MockPodMetricsLoader is a mock of PodMetricsLoader interface
+// MockPodMetricsLoader is a mock of PodMetricsLoader interface.
 type MockPodMetricsLoader struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodMetricsLoaderMockRecorder
 }
 
-// MockPodMetricsLoaderMockRecorder is the mock recorder for MockPodMetricsLoader
+// MockPodMetricsLoaderMockRecorder is the mock recorder for MockPodMetricsLoader.
 type MockPodMetricsLoaderMockRecorder struct {
 	mock *MockPodMetricsLoader
 }
 
-// NewMockPodMetricsLoader creates a new mock instance
+// NewMockPodMetricsLoader creates a new mock instance.
 func NewMockPodMetricsLoader(ctrl *gomock.Controller) *MockPodMetricsLoader {
 	mock := &MockPodMetricsLoader{ctrl: ctrl}
 	mock.recorder = &MockPodMetricsLoaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodMetricsLoader) EXPECT() *MockPodMetricsLoaderMockRecorder {
 	return m.recorder
 }
 
-// Load mocks base method
+// Load mocks base method.
 func (m *MockPodMetricsLoader) Load(arg0 context.Context, arg1, arg2 string) (*unstructured.Unstructured, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Load", arg0, arg1, arg2)
@@ -45,13 +45,13 @@ func (m *MockPodMetricsLoader) Load(arg0 context.Context, arg1, arg2 string) (*u
 	return ret0, ret1, ret2
 }
 
-// Load indicates an expected call of Load
+// Load indicates an expected call of Load.
 func (mr *MockPodMetricsLoaderMockRecorder) Load(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockPodMetricsLoader)(nil).Load), arg0, arg1, arg2)
 }
 
-// SupportsMetrics mocks base method
+// SupportsMetrics mocks base method.
 func (m *MockPodMetricsLoader) SupportsMetrics(arg0 context.Context) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SupportsMetrics", arg0)
@@ -60,7 +60,7 @@ func (m *MockPodMetricsLoader) SupportsMetrics(arg0 context.Context) (bool, erro
 	return ret0, ret1
 }
 
-// SupportsMetrics indicates an expected call of SupportsMetrics
+// SupportsMetrics indicates an expected call of SupportsMetrics.
 func (mr *MockPodMetricsLoaderMockRecorder) SupportsMetrics(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsMetrics", reflect.TypeOf((*MockPodMetricsLoader)(nil).SupportsMetrics), arg0)

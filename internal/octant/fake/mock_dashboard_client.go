@@ -12,30 +12,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockDashboardClientFunction is a mock of DashboardClientFunction interface
+// MockDashboardClientFunction is a mock of DashboardClientFunction interface.
 type MockDashboardClientFunction struct {
 	ctrl     *gomock.Controller
 	recorder *MockDashboardClientFunctionMockRecorder
 }
 
-// MockDashboardClientFunctionMockRecorder is the mock recorder for MockDashboardClientFunction
+// MockDashboardClientFunctionMockRecorder is the mock recorder for MockDashboardClientFunction.
 type MockDashboardClientFunctionMockRecorder struct {
 	mock *MockDashboardClientFunction
 }
 
-// NewMockDashboardClientFunction creates a new mock instance
+// NewMockDashboardClientFunction creates a new mock instance.
 func NewMockDashboardClientFunction(ctrl *gomock.Controller) *MockDashboardClientFunction {
 	mock := &MockDashboardClientFunction{ctrl: ctrl}
 	mock.recorder = &MockDashboardClientFunctionMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDashboardClientFunction) EXPECT() *MockDashboardClientFunctionMockRecorder {
 	return m.recorder
 }
 
-// Call mocks base method
+// Call mocks base method.
 func (m *MockDashboardClientFunction) Call(arg0 context.Context, arg1 *goja.Runtime) func(goja.FunctionCall) goja.Value {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Call", arg0, arg1)
@@ -43,13 +43,13 @@ func (m *MockDashboardClientFunction) Call(arg0 context.Context, arg1 *goja.Runt
 	return ret0
 }
 
-// Call indicates an expected call of Call
+// Call indicates an expected call of Call.
 func (mr *MockDashboardClientFunctionMockRecorder) Call(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Call", reflect.TypeOf((*MockDashboardClientFunction)(nil).Call), arg0, arg1)
 }
 
-// Name mocks base method
+// Name mocks base method.
 func (m *MockDashboardClientFunction) Name() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Name")
@@ -57,7 +57,7 @@ func (m *MockDashboardClientFunction) Name() string {
 	return ret0
 }
 
-// Name indicates an expected call of Name
+// Name indicates an expected call of Name.
 func (mr *MockDashboardClientFunctionMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockDashboardClientFunction)(nil).Name))

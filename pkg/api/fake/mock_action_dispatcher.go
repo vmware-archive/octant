@@ -13,30 +13,30 @@ import (
 	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
-// MockActionDispatcher is a mock of ActionDispatcher interface
+// MockActionDispatcher is a mock of ActionDispatcher interface.
 type MockActionDispatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockActionDispatcherMockRecorder
 }
 
-// MockActionDispatcherMockRecorder is the mock recorder for MockActionDispatcher
+// MockActionDispatcherMockRecorder is the mock recorder for MockActionDispatcher.
 type MockActionDispatcherMockRecorder struct {
 	mock *MockActionDispatcher
 }
 
-// NewMockActionDispatcher creates a new mock instance
+// NewMockActionDispatcher creates a new mock instance.
 func NewMockActionDispatcher(ctrl *gomock.Controller) *MockActionDispatcher {
 	mock := &MockActionDispatcher{ctrl: ctrl}
 	mock.recorder = &MockActionDispatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockActionDispatcher) EXPECT() *MockActionDispatcherMockRecorder {
 	return m.recorder
 }
 
-// Dispatch mocks base method
+// Dispatch mocks base method.
 func (m *MockActionDispatcher) Dispatch(arg0 context.Context, arg1 action.Alerter, arg2 string, arg3 action.Payload) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Dispatch", arg0, arg1, arg2, arg3)
@@ -44,7 +44,7 @@ func (m *MockActionDispatcher) Dispatch(arg0 context.Context, arg1 action.Alerte
 	return ret0
 }
 
-// Dispatch indicates an expected call of Dispatch
+// Dispatch indicates an expected call of Dispatch.
 func (mr *MockActionDispatcherMockRecorder) Dispatch(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dispatch", reflect.TypeOf((*MockActionDispatcher)(nil).Dispatch), arg0, arg1, arg2, arg3)
