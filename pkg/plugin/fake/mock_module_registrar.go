@@ -12,30 +12,30 @@ import (
 	module "github.com/vmware-tanzu/octant/internal/module"
 )
 
-// MockModuleRegistrar is a mock of ModuleRegistrar interface
+// MockModuleRegistrar is a mock of ModuleRegistrar interface.
 type MockModuleRegistrar struct {
 	ctrl     *gomock.Controller
 	recorder *MockModuleRegistrarMockRecorder
 }
 
-// MockModuleRegistrarMockRecorder is the mock recorder for MockModuleRegistrar
+// MockModuleRegistrarMockRecorder is the mock recorder for MockModuleRegistrar.
 type MockModuleRegistrarMockRecorder struct {
 	mock *MockModuleRegistrar
 }
 
-// NewMockModuleRegistrar creates a new mock instance
+// NewMockModuleRegistrar creates a new mock instance.
 func NewMockModuleRegistrar(ctrl *gomock.Controller) *MockModuleRegistrar {
 	mock := &MockModuleRegistrar{ctrl: ctrl}
 	mock.recorder = &MockModuleRegistrarMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockModuleRegistrar) EXPECT() *MockModuleRegistrarMockRecorder {
 	return m.recorder
 }
 
-// Register mocks base method
+// Register mocks base method.
 func (m *MockModuleRegistrar) Register(arg0 module.Module) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0)
@@ -43,19 +43,19 @@ func (m *MockModuleRegistrar) Register(arg0 module.Module) error {
 	return ret0
 }
 
-// Register indicates an expected call of Register
+// Register indicates an expected call of Register.
 func (mr *MockModuleRegistrarMockRecorder) Register(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockModuleRegistrar)(nil).Register), arg0)
 }
 
-// Unregister mocks base method
+// Unregister mocks base method.
 func (m *MockModuleRegistrar) Unregister(arg0 module.Module) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Unregister", arg0)
 }
 
-// Unregister indicates an expected call of Unregister
+// Unregister indicates an expected call of Unregister.
 func (mr *MockModuleRegistrarMockRecorder) Unregister(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unregister", reflect.TypeOf((*MockModuleRegistrar)(nil).Unregister), arg0)

@@ -16,30 +16,30 @@ import (
 	navigation "github.com/vmware-tanzu/octant/pkg/navigation"
 )
 
-// MockManagerInterface is a mock of ManagerInterface interface
+// MockManagerInterface is a mock of ManagerInterface interface.
 type MockManagerInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockManagerInterfaceMockRecorder
 }
 
-// MockManagerInterfaceMockRecorder is the mock recorder for MockManagerInterface
+// MockManagerInterfaceMockRecorder is the mock recorder for MockManagerInterface.
 type MockManagerInterfaceMockRecorder struct {
 	mock *MockManagerInterface
 }
 
-// NewMockManagerInterface creates a new mock instance
+// NewMockManagerInterface creates a new mock instance.
 func NewMockManagerInterface(ctrl *gomock.Controller) *MockManagerInterface {
 	mock := &MockManagerInterface{ctrl: ctrl}
 	mock.recorder = &MockManagerInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockManagerInterface) EXPECT() *MockManagerInterfaceMockRecorder {
 	return m.recorder
 }
 
-// ClientRequestHandlers mocks base method
+// ClientRequestHandlers mocks base method.
 func (m *MockManagerInterface) ClientRequestHandlers() []octant.ClientRequestHandler {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClientRequestHandlers")
@@ -47,13 +47,13 @@ func (m *MockManagerInterface) ClientRequestHandlers() []octant.ClientRequestHan
 	return ret0
 }
 
-// ClientRequestHandlers indicates an expected call of ClientRequestHandlers
+// ClientRequestHandlers indicates an expected call of ClientRequestHandlers.
 func (mr *MockManagerInterfaceMockRecorder) ClientRequestHandlers() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientRequestHandlers", reflect.TypeOf((*MockManagerInterface)(nil).ClientRequestHandlers))
 }
 
-// GetNamespace mocks base method
+// GetNamespace mocks base method.
 func (m *MockManagerInterface) GetNamespace() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNamespace")
@@ -61,13 +61,13 @@ func (m *MockManagerInterface) GetNamespace() string {
 	return ret0
 }
 
-// GetNamespace indicates an expected call of GetNamespace
+// GetNamespace indicates an expected call of GetNamespace.
 func (mr *MockManagerInterfaceMockRecorder) GetNamespace() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockManagerInterface)(nil).GetNamespace))
 }
 
-// GvkFromPath mocks base method
+// GvkFromPath mocks base method.
 func (m *MockManagerInterface) GvkFromPath(arg0, arg1 string) (schema.GroupVersionKind, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GvkFromPath", arg0, arg1)
@@ -76,13 +76,13 @@ func (m *MockManagerInterface) GvkFromPath(arg0, arg1 string) (schema.GroupVersi
 	return ret0, ret1
 }
 
-// GvkFromPath indicates an expected call of GvkFromPath
+// GvkFromPath indicates an expected call of GvkFromPath.
 func (mr *MockManagerInterfaceMockRecorder) GvkFromPath(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GvkFromPath", reflect.TypeOf((*MockManagerInterface)(nil).GvkFromPath), arg0, arg1)
 }
 
-// ModuleForContentPath mocks base method
+// ModuleForContentPath mocks base method.
 func (m *MockManagerInterface) ModuleForContentPath(arg0 string) (module.Module, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ModuleForContentPath", arg0)
@@ -91,13 +91,13 @@ func (m *MockManagerInterface) ModuleForContentPath(arg0 string) (module.Module,
 	return ret0, ret1
 }
 
-// ModuleForContentPath indicates an expected call of ModuleForContentPath
+// ModuleForContentPath indicates an expected call of ModuleForContentPath.
 func (mr *MockManagerInterfaceMockRecorder) ModuleForContentPath(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ModuleForContentPath", reflect.TypeOf((*MockManagerInterface)(nil).ModuleForContentPath), arg0)
 }
 
-// Modules mocks base method
+// Modules mocks base method.
 func (m *MockManagerInterface) Modules() []module.Module {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Modules")
@@ -105,13 +105,13 @@ func (m *MockManagerInterface) Modules() []module.Module {
 	return ret0
 }
 
-// Modules indicates an expected call of Modules
+// Modules indicates an expected call of Modules.
 func (mr *MockManagerInterfaceMockRecorder) Modules() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Modules", reflect.TypeOf((*MockManagerInterface)(nil).Modules))
 }
 
-// Navigation mocks base method
+// Navigation mocks base method.
 func (m *MockManagerInterface) Navigation(arg0 context.Context, arg1, arg2 string) ([]navigation.Navigation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Navigation", arg0, arg1, arg2)
@@ -120,13 +120,13 @@ func (m *MockManagerInterface) Navigation(arg0 context.Context, arg1, arg2 strin
 	return ret0, ret1
 }
 
-// Navigation indicates an expected call of Navigation
+// Navigation indicates an expected call of Navigation.
 func (mr *MockManagerInterfaceMockRecorder) Navigation(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Navigation", reflect.TypeOf((*MockManagerInterface)(nil).Navigation), arg0, arg1, arg2)
 }
 
-// ObjectPath mocks base method
+// ObjectPath mocks base method.
 func (m *MockManagerInterface) ObjectPath(arg0, arg1, arg2, arg3 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ObjectPath", arg0, arg1, arg2, arg3)
@@ -135,13 +135,13 @@ func (m *MockManagerInterface) ObjectPath(arg0, arg1, arg2, arg3 string) (string
 	return ret0, ret1
 }
 
-// ObjectPath indicates an expected call of ObjectPath
+// ObjectPath indicates an expected call of ObjectPath.
 func (mr *MockManagerInterfaceMockRecorder) ObjectPath(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectPath", reflect.TypeOf((*MockManagerInterface)(nil).ObjectPath), arg0, arg1, arg2, arg3)
 }
 
-// Register mocks base method
+// Register mocks base method.
 func (m *MockManagerInterface) Register(arg0 module.Module) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0)
@@ -149,37 +149,37 @@ func (m *MockManagerInterface) Register(arg0 module.Module) error {
 	return ret0
 }
 
-// Register indicates an expected call of Register
+// Register indicates an expected call of Register.
 func (mr *MockManagerInterfaceMockRecorder) Register(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockManagerInterface)(nil).Register), arg0)
 }
 
-// SetNamespace mocks base method
+// SetNamespace mocks base method.
 func (m *MockManagerInterface) SetNamespace(arg0 string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetNamespace", arg0)
 }
 
-// SetNamespace indicates an expected call of SetNamespace
+// SetNamespace indicates an expected call of SetNamespace.
 func (mr *MockManagerInterfaceMockRecorder) SetNamespace(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNamespace", reflect.TypeOf((*MockManagerInterface)(nil).SetNamespace), arg0)
 }
 
-// Unregister mocks base method
+// Unregister mocks base method.
 func (m *MockManagerInterface) Unregister(arg0 module.Module) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Unregister", arg0)
 }
 
-// Unregister indicates an expected call of Unregister
+// Unregister indicates an expected call of Unregister.
 func (mr *MockManagerInterfaceMockRecorder) Unregister(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unregister", reflect.TypeOf((*MockManagerInterface)(nil).Unregister), arg0)
 }
 
-// UpdateContext mocks base method
+// UpdateContext mocks base method.
 func (m *MockManagerInterface) UpdateContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateContext", arg0, arg1)
@@ -187,7 +187,7 @@ func (m *MockManagerInterface) UpdateContext(arg0 context.Context, arg1 string) 
 	return ret0
 }
 
-// UpdateContext indicates an expected call of UpdateContext
+// UpdateContext indicates an expected call of UpdateContext.
 func (mr *MockManagerInterfaceMockRecorder) UpdateContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateContext", reflect.TypeOf((*MockManagerInterface)(nil).UpdateContext), arg0, arg1)

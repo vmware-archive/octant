@@ -16,30 +16,30 @@ import (
 	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
-// MockClientManager is a mock of ClientManager interface
+// MockClientManager is a mock of ClientManager interface.
 type MockClientManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientManagerMockRecorder
 }
 
-// MockClientManagerMockRecorder is the mock recorder for MockClientManager
+// MockClientManagerMockRecorder is the mock recorder for MockClientManager.
 type MockClientManagerMockRecorder struct {
 	mock *MockClientManager
 }
 
-// NewMockClientManager creates a new mock instance
+// NewMockClientManager creates a new mock instance.
 func NewMockClientManager(ctrl *gomock.Controller) *MockClientManager {
 	mock := &MockClientManager{ctrl: ctrl}
 	mock.recorder = &MockClientManagerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClientManager) EXPECT() *MockClientManagerMockRecorder {
 	return m.recorder
 }
 
-// ActionDispatcher mocks base method
+// ActionDispatcher mocks base method.
 func (m *MockClientManager) ActionDispatcher() api.ActionDispatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActionDispatcher")
@@ -47,13 +47,13 @@ func (m *MockClientManager) ActionDispatcher() api.ActionDispatcher {
 	return ret0
 }
 
-// ActionDispatcher indicates an expected call of ActionDispatcher
+// ActionDispatcher indicates an expected call of ActionDispatcher.
 func (mr *MockClientManagerMockRecorder) ActionDispatcher() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionDispatcher", reflect.TypeOf((*MockClientManager)(nil).ActionDispatcher))
 }
 
-// ClientFromRequest mocks base method
+// ClientFromRequest mocks base method.
 func (m *MockClientManager) ClientFromRequest(arg0 config.Dash, arg1 http.ResponseWriter, arg2 *http.Request) (api.StreamingClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClientFromRequest", arg0, arg1, arg2)
@@ -62,13 +62,13 @@ func (m *MockClientManager) ClientFromRequest(arg0 config.Dash, arg1 http.Respon
 	return ret0, ret1
 }
 
-// ClientFromRequest indicates an expected call of ClientFromRequest
+// ClientFromRequest indicates an expected call of ClientFromRequest.
 func (mr *MockClientManagerMockRecorder) ClientFromRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientFromRequest", reflect.TypeOf((*MockClientManager)(nil).ClientFromRequest), arg0, arg1, arg2)
 }
 
-// Clients mocks base method
+// Clients mocks base method.
 func (m *MockClientManager) Clients() []api.StreamingClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Clients")
@@ -76,13 +76,13 @@ func (m *MockClientManager) Clients() []api.StreamingClient {
 	return ret0
 }
 
-// Clients indicates an expected call of Clients
+// Clients indicates an expected call of Clients.
 func (mr *MockClientManagerMockRecorder) Clients() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clients", reflect.TypeOf((*MockClientManager)(nil).Clients))
 }
 
-// Context mocks base method
+// Context mocks base method.
 func (m *MockClientManager) Context() context.Context {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Context")
@@ -90,13 +90,13 @@ func (m *MockClientManager) Context() context.Context {
 	return ret0
 }
 
-// Context indicates an expected call of Context
+// Context indicates an expected call of Context.
 func (mr *MockClientManagerMockRecorder) Context() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Context", reflect.TypeOf((*MockClientManager)(nil).Context))
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockClientManager) Get(arg0 string) event.WSEventSender {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
@@ -104,25 +104,25 @@ func (m *MockClientManager) Get(arg0 string) event.WSEventSender {
 	return ret0
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockClientManagerMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockClientManager)(nil).Get), arg0)
 }
 
-// Run mocks base method
+// Run mocks base method.
 func (m *MockClientManager) Run(arg0 context.Context) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Run", arg0)
 }
 
-// Run indicates an expected call of Run
+// Run indicates an expected call of Run.
 func (mr *MockClientManagerMockRecorder) Run(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockClientManager)(nil).Run), arg0)
 }
 
-// TemporaryClientFromLoadingRequest mocks base method
+// TemporaryClientFromLoadingRequest mocks base method.
 func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 http.ResponseWriter, arg1 *http.Request) (api.StreamingClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TemporaryClientFromLoadingRequest", arg0, arg1)
@@ -131,7 +131,7 @@ func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 http.Response
 	return ret0, ret1
 }
 
-// TemporaryClientFromLoadingRequest indicates an expected call of TemporaryClientFromLoadingRequest
+// TemporaryClientFromLoadingRequest indicates an expected call of TemporaryClientFromLoadingRequest.
 func (mr *MockClientManagerMockRecorder) TemporaryClientFromLoadingRequest(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TemporaryClientFromLoadingRequest", reflect.TypeOf((*MockClientManager)(nil).TemporaryClientFromLoadingRequest), arg0, arg1)

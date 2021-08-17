@@ -14,30 +14,30 @@ import (
 	cluster "github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
-// MockKubeContextDecorator is a mock of KubeContextDecorator interface
+// MockKubeContextDecorator is a mock of KubeContextDecorator interface.
 type MockKubeContextDecorator struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubeContextDecoratorMockRecorder
 }
 
-// MockKubeContextDecoratorMockRecorder is the mock recorder for MockKubeContextDecorator
+// MockKubeContextDecoratorMockRecorder is the mock recorder for MockKubeContextDecorator.
 type MockKubeContextDecoratorMockRecorder struct {
 	mock *MockKubeContextDecorator
 }
 
-// NewMockKubeContextDecorator creates a new mock instance
+// NewMockKubeContextDecorator creates a new mock instance.
 func NewMockKubeContextDecorator(ctrl *gomock.Controller) *MockKubeContextDecorator {
 	mock := &MockKubeContextDecorator{ctrl: ctrl}
 	mock.recorder = &MockKubeContextDecoratorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKubeContextDecorator) EXPECT() *MockKubeContextDecoratorMockRecorder {
 	return m.recorder
 }
 
-// ClusterClient mocks base method
+// ClusterClient mocks base method.
 func (m *MockKubeContextDecorator) ClusterClient() cluster.ClientInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterClient")
@@ -45,13 +45,13 @@ func (m *MockKubeContextDecorator) ClusterClient() cluster.ClientInterface {
 	return ret0
 }
 
-// ClusterClient indicates an expected call of ClusterClient
+// ClusterClient indicates an expected call of ClusterClient.
 func (mr *MockKubeContextDecoratorMockRecorder) ClusterClient() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterClient", reflect.TypeOf((*MockKubeContextDecorator)(nil).ClusterClient))
 }
 
-// Contexts mocks base method
+// Contexts mocks base method.
 func (m *MockKubeContextDecorator) Contexts() []kubeconfig.Context {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Contexts")
@@ -59,13 +59,13 @@ func (m *MockKubeContextDecorator) Contexts() []kubeconfig.Context {
 	return ret0
 }
 
-// Contexts indicates an expected call of Contexts
+// Contexts indicates an expected call of Contexts.
 func (mr *MockKubeContextDecoratorMockRecorder) Contexts() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Contexts", reflect.TypeOf((*MockKubeContextDecorator)(nil).Contexts))
 }
 
-// CurrentContext mocks base method
+// CurrentContext mocks base method.
 func (m *MockKubeContextDecorator) CurrentContext() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CurrentContext")
@@ -73,13 +73,13 @@ func (m *MockKubeContextDecorator) CurrentContext() string {
 	return ret0
 }
 
-// CurrentContext indicates an expected call of CurrentContext
+// CurrentContext indicates an expected call of CurrentContext.
 func (mr *MockKubeContextDecoratorMockRecorder) CurrentContext() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentContext", reflect.TypeOf((*MockKubeContextDecorator)(nil).CurrentContext))
 }
 
-// SwitchContext mocks base method
+// SwitchContext mocks base method.
 func (m *MockKubeContextDecorator) SwitchContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SwitchContext", arg0, arg1)
@@ -87,7 +87,7 @@ func (m *MockKubeContextDecorator) SwitchContext(arg0 context.Context, arg1 stri
 	return ret0
 }
 
-// SwitchContext indicates an expected call of SwitchContext
+// SwitchContext indicates an expected call of SwitchContext.
 func (mr *MockKubeContextDecoratorMockRecorder) SwitchContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SwitchContext", reflect.TypeOf((*MockKubeContextDecorator)(nil).SwitchContext), arg0, arg1)

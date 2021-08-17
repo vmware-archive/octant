@@ -10,30 +10,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockLinkGenerator is a mock of LinkGenerator interface
+// MockLinkGenerator is a mock of LinkGenerator interface.
 type MockLinkGenerator struct {
 	ctrl     *gomock.Controller
 	recorder *MockLinkGeneratorMockRecorder
 }
 
-// MockLinkGeneratorMockRecorder is the mock recorder for MockLinkGenerator
+// MockLinkGeneratorMockRecorder is the mock recorder for MockLinkGenerator.
 type MockLinkGeneratorMockRecorder struct {
 	mock *MockLinkGenerator
 }
 
-// NewMockLinkGenerator creates a new mock instance
+// NewMockLinkGenerator creates a new mock instance.
 func NewMockLinkGenerator(ctrl *gomock.Controller) *MockLinkGenerator {
 	mock := &MockLinkGenerator{ctrl: ctrl}
 	mock.recorder = &MockLinkGeneratorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockLinkGenerator) EXPECT() *MockLinkGeneratorMockRecorder {
 	return m.recorder
 }
 
-// ObjectPath mocks base method
+// ObjectPath mocks base method.
 func (m *MockLinkGenerator) ObjectPath(arg0, arg1, arg2, arg3 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ObjectPath", arg0, arg1, arg2, arg3)
@@ -42,7 +42,7 @@ func (m *MockLinkGenerator) ObjectPath(arg0, arg1, arg2, arg3 string) (string, e
 	return ret0, ret1
 }
 
-// ObjectPath indicates an expected call of ObjectPath
+// ObjectPath indicates an expected call of ObjectPath.
 func (mr *MockLinkGeneratorMockRecorder) ObjectPath(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectPath", reflect.TypeOf((*MockLinkGenerator)(nil).ObjectPath), arg0, arg1, arg2, arg3)

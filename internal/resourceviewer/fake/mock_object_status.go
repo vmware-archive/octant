@@ -15,30 +15,30 @@ import (
 	objectstatus "github.com/vmware-tanzu/octant/internal/objectstatus"
 )
 
-// MockObjectStatus is a mock of ObjectStatus interface
+// MockObjectStatus is a mock of ObjectStatus interface.
 type MockObjectStatus struct {
 	ctrl     *gomock.Controller
 	recorder *MockObjectStatusMockRecorder
 }
 
-// MockObjectStatusMockRecorder is the mock recorder for MockObjectStatus
+// MockObjectStatusMockRecorder is the mock recorder for MockObjectStatus.
 type MockObjectStatusMockRecorder struct {
 	mock *MockObjectStatus
 }
 
-// NewMockObjectStatus creates a new mock instance
+// NewMockObjectStatus creates a new mock instance.
 func NewMockObjectStatus(ctrl *gomock.Controller) *MockObjectStatus {
 	mock := &MockObjectStatus{ctrl: ctrl}
 	mock.recorder = &MockObjectStatusMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockObjectStatus) EXPECT() *MockObjectStatusMockRecorder {
 	return m.recorder
 }
 
-// Status mocks base method
+// Status mocks base method.
 func (m *MockObjectStatus) Status(arg0 context.Context, arg1 runtime.Object, arg2 link.Interface) (*objectstatus.ObjectStatus, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Status", arg0, arg1, arg2)
@@ -47,7 +47,7 @@ func (m *MockObjectStatus) Status(arg0 context.Context, arg1 runtime.Object, arg
 	return ret0, ret1
 }
 
-// Status indicates an expected call of Status
+// Status indicates an expected call of Status.
 func (mr *MockObjectStatusMockRecorder) Status(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockObjectStatus)(nil).Status), arg0, arg1, arg2)

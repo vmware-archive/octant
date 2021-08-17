@@ -14,30 +14,30 @@ import (
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// MockSummarizer is a mock of Summarizer interface
+// MockSummarizer is a mock of Summarizer interface.
 type MockSummarizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockSummarizerMockRecorder
 }
 
-// MockSummarizerMockRecorder is the mock recorder for MockSummarizer
+// MockSummarizerMockRecorder is the mock recorder for MockSummarizer.
 type MockSummarizerMockRecorder struct {
 	mock *MockSummarizer
 }
 
-// NewMockSummarizer creates a new mock instance
+// NewMockSummarizer creates a new mock instance.
 func NewMockSummarizer(ctrl *gomock.Controller) *MockSummarizer {
 	mock := &MockSummarizer{ctrl: ctrl}
 	mock.recorder = &MockSummarizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSummarizer) EXPECT() *MockSummarizerMockRecorder {
 	return m.recorder
 }
 
-// Summarize mocks base method
+// Summarize mocks base method.
 func (m *MockSummarizer) Summarize(arg0 context.Context, arg1 string, arg2 applications.SummarizerConfig) (*component.Table, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Summarize", arg0, arg1, arg2)
@@ -46,7 +46,7 @@ func (m *MockSummarizer) Summarize(arg0 context.Context, arg1 string, arg2 appli
 	return ret0, ret1
 }
 
-// Summarize indicates an expected call of Summarize
+// Summarize indicates an expected call of Summarize.
 func (mr *MockSummarizerMockRecorder) Summarize(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Summarize", reflect.TypeOf((*MockSummarizer)(nil).Summarize), arg0, arg1, arg2)
