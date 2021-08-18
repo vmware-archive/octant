@@ -352,6 +352,7 @@ func (c *GRPCClient) PrintTabs(ctx context.Context, object runtime.Object) ([]Ta
 type GRPCServer struct {
 	Impl   Service
 	broker Broker
+	dashboard.UnimplementedPluginServer
 }
 
 var _ dashboard.PluginServer = (*GRPCServer)(nil)

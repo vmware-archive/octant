@@ -8,9 +8,9 @@ package api
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -32,7 +32,7 @@ func convertFromKey(in store.Key) (*proto.KeyRequest, error) {
 	}
 
 	if in.Selector != nil {
-		keyRequest.LabelSelector = &wrappers.BytesValue{Value: []byte(in.Selector.String())}
+		keyRequest.LabelSelector = &wrapperspb.BytesValue{Value: []byte(in.Selector.String())}
 	}
 
 	return &keyRequest, nil
@@ -68,15 +68,14 @@ func convertToKey(in *proto.KeyRequest) (store.Key, error) {
 }
 
 func convertFromAlert(alert action.Alert) (*proto.AlertRequest, error) {
-	expiration, err := ptypes.TimestampProto(*alert.Expiration)
-	if err != nil {
-		return &proto.AlertRequest{}, err
+	if alert.Expiration == nil {
+		return &proto.AlertRequest{}, errors.New("expiration is nil")
 	}
 
 	alertRequest := proto.AlertRequest{
 		Type:       string(alert.Type),
 		Message:    alert.Message,
-		Expiration: expiration,
+		Expiration: timestamppb.New(*alert.Expiration),
 	}
 
 	return &alertRequest, nil
@@ -87,10 +86,7 @@ func convertToAlert(in *proto.AlertRequest) (action.Alert, error) {
 		return action.Alert{}, errors.New("alert request is nil")
 	}
 
-	expiration, err := ptypes.Timestamp(in.Expiration)
-	if err != nil {
-		return action.Alert{}, err
-	}
+	expiration := in.Expiration.AsTime()
 
 	alert := action.Alert{
 		Type:       action.AlertType(in.Type),

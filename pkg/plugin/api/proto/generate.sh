@@ -1,10 +1,6 @@
 #!/bin/sh
 # generate golang for protobuf
 
-# get directory of this script
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-OCTANT_ROOT=${DIR}/../../../..
 MODULE="github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 
-protoc -I${OCTANT_ROOT}/vendor -I${OCTANT_ROOT} -I${DIR} --go_out=plugins=grpc:${DIR} --go_opt=module=${MODULE} ${DIR}/dashboard_api.proto
-
+protoc --go_out=. --go-grpc_out=paths=source_relative:. --go_opt=module=${MODULE} dashboard_api.proto

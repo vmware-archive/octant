@@ -253,7 +253,8 @@ func goInstall() {
 	pkgs := []string{
 		"github.com/golang/mock/gomock",
 		"github.com/golang/mock/mockgen",
-		"github.com/golang/protobuf/protoc-gen-go",
+		"google.golang.org/protobuf/cmd/protoc-gen-go",
+		"google.golang.org/grpc/cmd/protoc-gen-go-grpc",
 		"golang.org/x/tools/cmd/goimports",
 	}
 	for _, pkg := range pkgs {
