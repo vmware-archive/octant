@@ -364,13 +364,18 @@ func (m *Manager) watchJS(ctx context.Context) {
 		}
 	}()
 
+	watchedDirs := []string{}
 	for _, dir := range dirs {
 		if err := watcher.Add(dir); err != nil {
-			logger.Warnf("unable to add %s to JavaScript plugin watcher", dir)
+			logger.Warnf("Unable to add %s to JavaScript plugin watcher. Error: %s\n", dir, err)
+		} else {
+			watchedDirs = append(watchedDirs, dir)
 		}
 	}
 
-	logger.Infof("watching for new JavaScript plugins in %q", dirs)
+	if len(watchedDirs) > 0 {
+		logger.Infof("Watching for new JavaScript plugins in %q\n", dirs)
+	}
 
 	writeEvents := make(map[string]bool)
 	updatePlugin := func(name string) {
@@ -392,26 +397,26 @@ func (m *Manager) watchJS(ctx context.Context) {
 		case <-ctx.Done():
 			logger.Infof("context cancelled shutting down JavaScript plugin watcher.")
 			return
-		case event, ok := <-watcher.Events:
+		case ev, ok := <-watcher.Events:
 			if !ok {
 				logger.Errorf("bad event returned from JavaScript plugin watcher")
 				return
 			}
-			if event.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
+			if ev.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
 				continue
 			}
-			if IsJavaScriptPlugin(event.Name) {
-				if event.Op&fsnotify.Remove == fsnotify.Remove {
-					jsPlugin, ok := m.store.GetJS(event.Name)
+			if IsJavaScriptPlugin(ev.Name) {
+				if ev.Op&fsnotify.Remove == fsnotify.Remove {
+					jsPlugin, ok := m.store.GetJS(ev.Name)
 					if ok {
 						if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
 							logger.Errorf("unregistering: %w", err)
 						}
-						m.store.RemoveJS(event.Name)
-						logger.Infof("removing: JavaScript plugin: %s", event.Name)
+						m.store.RemoveJS(ev.Name)
+						logger.Infof("removing: JavaScript plugin: %s", ev.Name)
 					}
-				} else if event.Op&fsnotify.Write == fsnotify.Write {
-					writeEvents[event.Name] = true
+				} else if ev.Op&fsnotify.Write == fsnotify.Write {
+					writeEvents[ev.Name] = true
 				}
 			}
 		case err, ok := <-watcher.Errors:
