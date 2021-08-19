@@ -42,13 +42,35 @@ rm ~/.config/octant/plugins/octant-sample-plugin
 
 After deleting the plugin binary and restarting Octant, you should no longer see the plugin available as part of Octant.
 
+## Logs
+
+Octant use [go-plugin](https://github.com/hashicorp/go-plugin) library, this library allows "Any plugins that use the log standard library will have log data automatically sent to the host process." by default with granularity level INFO, to set the log's granularity Octant provides a LoggerHelper that can be use this way.
+
+```go
+var logger = service.NewLoggerHelper()
+logger.Info("octant-sample-plugin is starting, with logger helper")
+```
+
+The default granularity level is INFO and can be change to DEBUG by adding the option -v or by setting the OCTANT_VERBOSE environment variable to true
+
+Log levels
+
+- Info: Will be display by default, information about steady state operations.
+- Warn: Will be display by default, information about rare but handled events.
+- Error: Will be display by default and and will show the stack trace, information about unrecoverable events.
+- Debug: Not shown by default, information for programmer low level analysis
+
+References
+- https://github.com/hashicorp/go-hclog
+- https://github.com/hashicorp/go-plugin
+
 # Writing Plugins
 
 When you want to extend Octant to do something that is not part of the core functionality you will need to write a plugin. Writing an Octant plugin consists of three main parts: defining the capabilities, creating handlers, and registering and serving the plugin.
 
 ## Capabilities
 
-Using `plugin.Capabilities` you can define your desired list of capabilites using GVKs. Octant provides a set of well defined capabilites for plugins. These capabilites directly map to Octant renderers and allow your plugin to inject its own components in to the view.
+Using `plugin.Capabilities` you can define your desired list of capabilities using GVKs. Octant provides a set of well defined capabilites for plugins. These capabilites directly map to Octant renderers and allow your plugin to inject its own components in to the view.
 
 When `plugin.Metadata.IsModule` to true plugins can provide content and navigation entries.
 

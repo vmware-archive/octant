@@ -26,6 +26,8 @@ var pluginName = "plugin-name"
 
 const pluginActionName = "action.octant.dev/example"
 
+var logger = service.NewLoggerHelper()
+
 // This is a sample plugin showing the features of Octant's plugin API.
 func main() {
 	// Remove the prefix from the go logger since Octant will print logs with timestamps.
@@ -59,8 +61,13 @@ func main() {
 	}
 
 	// The plugin can log and the log messages will show up in Octant.
-	log.Printf("octant-sample-plugin is starting")
+	logger.Info("octant-sample-plugin is starting, with logger helper")
+	service.SetupPluginLogger(service.Info)
+	// OUTPUT: 2021-08-23T11:35:02.714-0500    INFO    octant-sample-plugin    plugin/logger.go:43     octant-sample-plugin is starting, with logger helper    {"timestamp": "2021-08-23T11:35:02.714-0500"}
+	log.Println("octant-sample-plugin is starting, with with prefix logger")
+	// OUTPUT: 2021-08-23T11:35:02.714-0500    INFO    octant-sample-plugin    plugin/logger.go:43     [INFO] 2021/08/23 11:35:02 octant-sample-plugin is starting, with with prefix logger
 	p.Serve()
+
 }
 
 // handleTab is called when Octant wants to print a tab for an object.

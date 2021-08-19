@@ -249,9 +249,11 @@ github.com/golang/mock/mockgen
 github.com/golang/mock/mockgen/model
 # github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/proto
+github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.3
 github.com/golang/snappy
@@ -299,7 +301,7 @@ github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
+# github.com/hashicorp/go-plugin v1.4.2
 ## explicit
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
@@ -606,6 +608,8 @@ google.golang.org/grpc/internal/transport/networktype
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/peer
+google.golang.org/grpc/reflection
+google.golang.org/grpc/reflection/grpc_reflection_v1alpha
 google.golang.org/grpc/resolver
 google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
@@ -648,6 +652,7 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
+google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
