@@ -41,6 +41,7 @@ message NavigationResponse {
         repeated Navigation children = 3;
         string icon_name = 4;
         string icon_source = 5;
+        string custom_svg = 6;
     }
 
     Navigation navigation = 1;

@@ -14,6 +14,7 @@ import {
   loadTextEditIconSet,
   loadTechnologyIconSet,
   loadChartIconSet,
+  ClarityIcons,
 } from '@cds/core/icon';
 import { IconView, Tooltip } from '../../../models/content';
 
@@ -56,6 +57,10 @@ export class IconComponent extends AbstractViewComponent<IconView> {
 
     if (this.tooltip) {
       this.generateTooltipClassStyles();
+    }
+
+    if (view.config.customSvg) {
+      ClarityIcons.addIcons([view.config.shape, view.config.customSvg]);
     }
 
     this.shape = view.config.shape;

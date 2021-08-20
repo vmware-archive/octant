@@ -6,11 +6,15 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
-import { Navigation } from '../../../sugarloaf/models/navigation';
+import {
+  Navigation,
+  NavigationChild,
+} from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LoadingService } from '../loading/loading.service';
+import { ClarityIcons } from '@cds/core/icon';
 
 export type Selection = {
   module: number;
@@ -26,6 +30,7 @@ export type Module = {
   endIndex?: number;
   icon: string;
   children?: any[];
+  customSvg?: string;
 };
 
 const emptyNavigation: Navigation = {
@@ -166,7 +171,11 @@ export class NavigationService {
           description: section.description,
           path: section.path,
           title: section.title,
+          customSvg: section.customSvg,
         });
+        if (section.customSvg) {
+          ClarityIcons.addIcons([section.iconName, section.customSvg]);
+        }
       }
     });
 
@@ -186,6 +195,7 @@ export class NavigationService {
             path: module.path,
             icon: module.icon,
             title: module.title,
+            customSvg: module.customSvg,
           };
           module.children = [
             ...[first],
@@ -199,11 +209,25 @@ export class NavigationService {
           module.children.push(sections[i]);
         }
       }
+      if (module.children) {
+        this.findCustomSvg(module.children);
+      }
     });
     if (modules.length > 0) {
       modules.push(modules.splice(pluginsIndex, 1)[0]);
     }
     this.modules.next(modules);
+  }
+
+  findCustomSvg(navigationChildren: NavigationChild[]): void {
+    navigationChildren.forEach((navChild, index) => {
+      if (navChild.children) {
+        this.findCustomSvg(navChild.children);
+      }
+      if (navChild.customSvg) {
+        ClarityIcons.addIcons([navChild.iconName, navChild.customSvg]);
+      }
+    });
   }
 
   redirect(namespace: string): string {

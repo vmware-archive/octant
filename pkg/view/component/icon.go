@@ -22,6 +22,7 @@ type IconConfig struct {
 	BadgeColor string         `json:"badgeColor"`
 	Label      string         `json:"label"`
 	Tooltip    *TooltipConfig `json:"tooltip,omitempty"`
+	CustomSvg  string         `json:"customSvg"`
 }
 
 type Direction string
@@ -145,4 +146,9 @@ func (i *Icon) SetBadgeColor(color string) {
 // SetSize sets the size of a badge. The size can me sm, md, lg, xl, xxl, or an integer for N x N pixels.
 func (i *Icon) SetSize(size string) {
 	i.Config.Size = size
+}
+
+// SetCustomSvg sets an SVG for an Icon.
+func (i *Icon) SetCustomSvg(customSvg string) {
+	i.Config.CustomSvg = customSvg
 }

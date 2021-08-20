@@ -625,6 +625,7 @@ export interface IconView extends View {
     badgeColor?: string;
     label?: string;
     tooltip?: Tooltip;
+    customSvg?: string;
   };
 }
 
