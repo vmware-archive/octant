@@ -349,6 +349,28 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
   },
 ];
 
+export const NAVIGATION_WITH_VALID_CUSTOM_SVG: NavigationChild[] = [
+  {
+    module: 'workloads',
+    title: 'Applications',
+    path: 'workloads/namespace/default',
+    iconName: 'custom',
+    isLoading: false,
+    customSvg: '<svg></svg>',
+  },
+];
+
+export const NAVIGATION_WITH_INVALID_CUSTOM_SVG: NavigationChild[] = [
+  {
+    module: 'workloads',
+    title: 'Applications',
+    path: 'workloads/namespace/default',
+    iconName: 'custom',
+    isLoading: false,
+    customSvg: '<svg></sv>',
+  },
+];
+
 export const expectedSelection = {
   'workloads/namespace/default': { module: 0, index: 0 },
   'overview/namespace/default': { module: 1, index: 0 },

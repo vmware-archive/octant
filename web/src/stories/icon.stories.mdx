@@ -53,6 +53,32 @@ export const iconWithTooltipView=  {
   }
 };
 
+export const svg = `
+<svg width="300" height="200">
+  <polygon points="100,10 40,198 190,78 10,78 160,198" style="fill:lime;stroke:purple;stroke-width:5;fill-rule:evenodd;" />
+</svg>
+`;
+
+export const iconWithSvgView = {
+  metadata: {
+    type: 'icon',
+  },
+  config: {
+    shape: "custom-svg",
+    size: "200",
+    direction: "",
+    flip: "",
+    solid: false,
+    status: "",
+    inverse: false,
+    badge: "",
+    color: "",
+    badgeColor: "",
+    label: "",
+    customSvg: svg,
+  }
+};
+
 export const IconStoryTemplate = args => ({
   template: `<app-view-icon [view]= "view" ></app-view-icon>`,
   argTypes: argTypesView,
@@ -62,6 +88,13 @@ export const IconStoryTemplate = args => ({
 export const iconWithTooltipDocs = {source: {code: `
 i := component.NewIcon("user", component.WithTooltip("hello", component.TooltipMedium, component.TooltipRight)
 i.Config.Color = "#2596be"
+`}}
+
+export const iconWithSvgDocs = {source: {code: `
+i := component.NewIcon("my-custom-icon")
+svg := "<svg width='300' height='200'><polygon points='100,10 40,198 190,78 10,78 160,198' style='fill:lime;stroke:purple;stroke-width:5;fill-rule:evenodd;' /></svg>"
+i.SetCustomSvg(svg)
+i.SetSize("200")
 `}}
 
 <h1>Icon Component</h1>
@@ -96,4 +129,19 @@ i.Config.Color = "#2596be"
 
 <h2>Props</h2>
 <ArgsTable story = "Icon with tooltip" />
+
+<h2>Icon with SVG</h2>
+<p>An icon can be configured to use a custom SVG. Remember to set the size of the icon otherwise it might not be shown</p>
+<p>It's possible to have a naming collision with Clarity icons, it's recommended to use non-common names for the svg</p>
+
+<Canvas withToolbar>
+  <Story name="Icon with SVG"
+         parameters={{ docs: iconWithSvgDocs }}
+         args={{ view: iconWithSvgView }}>
+    { IconStoryTemplate.bind({}) }
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable story = "Icon with SVG" />
 
