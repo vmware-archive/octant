@@ -1,4 +1,4 @@
-<cds-modal size="lg" id="preferences-modal" [closable]="true" [hidden]="!isOpenValue" (closeChange)="togglePreferences()">
+<cds-modal size="lg" id="preferences-modal" [closable]="true" hidden (closeChange)="onCancel()">
   <cds-modal-header>
     <h4 cds-text="title" cds-first-focus tabindex="-1">Preferences</h4>
   </cds-modal-header>
