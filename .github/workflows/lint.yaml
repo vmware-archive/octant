@@ -13,10 +13,10 @@ jobs:
   go_linter:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16.x
-      - uses: actions/checkout@v2
       - name: go vet
         env:
           GOFLAGS: -mod=vendor
@@ -26,13 +26,15 @@ jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v2.3.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16.x
-      - uses: actions/checkout@v2
       - name: eslint
         run: |
           go run build.go web-lint

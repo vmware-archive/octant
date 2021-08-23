@@ -39,6 +39,9 @@ func GenerateBreadcrumb(cm *ContentManager, contentPath string, state octant.Sta
 	parent, title := CreateNavigationBreadcrumb(navs, contentPath)
 	if title == nil {
 		return title
+	} else if parent.Title == "" {
+		title = append(title, component.NewText(path.Base(contentPath)))
+		return title
 	}
 
 	if strings.Contains(contentPath, crPath) {
@@ -75,6 +78,12 @@ func GenerateBreadcrumb(cm *ContentManager, contentPath string, state octant.Sta
 func CreateNavigationBreadcrumb(navs []navigation.Navigation, contentPath string) (LinkDefinition, []component.TitleComponent) {
 	var last LinkDefinition
 	var title []component.TitleComponent
+
+	// When there is a single non-nested navigation entry, then show it as a link.
+	if len(navs) == 1 && contentPath != navs[0].Path && strings.HasPrefix(contentPath, navs[0].Path) {
+		title = append(title, component.NewLink("", path.Base(navs[0].Title), path_util.PrefixedPath(navs[0].Path)))
+		return LinkDefinition{}, title
+	}
 
 	thisPath := contentPath
 	for {

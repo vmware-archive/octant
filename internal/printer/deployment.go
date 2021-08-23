@@ -21,10 +21,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-var (
-	deploymentConditionColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
-)
-
 // DeploymentListHandler is a printFunc that lists deployments
 func DeploymentListHandler(ctx context.Context, list *appsv1.DeploymentList, opts Options) (component.Component, error) {
 	if list == nil {
@@ -85,9 +81,6 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 	if err := dh.Pods(ctx, deployment, options); err != nil {
 		return nil, errors.Wrap(err, "print deployment pods")
 	}
-	if err := dh.Conditions(); err != nil {
-		return nil, errors.Wrap(err, "print deployment conditions")
-	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -123,31 +116,6 @@ func createDeploymentSummaryStatus(deployment *appsv1.Deployment) (*component.Su
 	}...)
 
 	return summary, nil
-}
-
-func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.Table, error) {
-	if deployment == nil {
-		return nil, errors.New("unable to generate conditions from a nil deployment")
-	}
-
-	table := component.NewTable("Conditions", "There are no deployment conditions!", deploymentConditionColumns)
-
-	for _, condition := range deployment.Status.Conditions {
-		row := component.TableRow{
-			"Type":            component.NewText(string(condition.Type)),
-			"Reason":          component.NewText(condition.Reason),
-			"Status":          component.NewText(string(condition.Status)),
-			"Message":         component.NewText(condition.Message),
-			"Last Update":     component.NewTimestamp(condition.LastUpdateTime.Time),
-			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
-		}
-
-		table.Add(row)
-	}
-
-	table.Sort("Type")
-
-	return table, nil
 }
 
 type actionGeneratorFunction func(*appsv1.Deployment) ([]component.Action, error)
@@ -287,16 +255,14 @@ type deploymentObject interface {
 	Config() error
 	Status() error
 	Pods(ctx context.Context, object runtime.Object, options Options) error
-	Conditions() error
 }
 
 type deploymentHandler struct {
-	deployment     *appsv1.Deployment
-	configFunc     func(*appsv1.Deployment) (*component.Summary, error)
-	summaryFunc    func(*appsv1.Deployment) (*component.Summary, error)
-	podFunc        func(context.Context, []runtime.Object, Options) (component.Component, error)
-	conditionsFunc func(*appsv1.Deployment) (*component.Table, error)
-	object         *Object
+	deployment  *appsv1.Deployment
+	configFunc  func(*appsv1.Deployment) (*component.Summary, error)
+	summaryFunc func(*appsv1.Deployment) (*component.Summary, error)
+	podFunc     func(context.Context, []runtime.Object, Options) (component.Component, error)
+	object      *Object
 }
 
 var _ deploymentObject = (*deploymentHandler)(nil)
@@ -311,12 +277,11 @@ func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deplo
 	}
 
 	dh := &deploymentHandler{
-		deployment:     deployment,
-		configFunc:     defaultDeploymentConfig,
-		summaryFunc:    defaultDeploymentSummary,
-		podFunc:        defaultDeploymentPods,
-		conditionsFunc: defaultDeploymentConditions,
-		object:         object,
+		deployment:  deployment,
+		configFunc:  defaultDeploymentConfig,
+		summaryFunc: defaultDeploymentSummary,
+		podFunc:     defaultDeploymentPods,
+		object:      object,
 	}
 
 	return dh, nil
@@ -348,25 +313,6 @@ func (d *deploymentHandler) Status() error {
 
 func defaultDeploymentSummary(deployment *appsv1.Deployment) (*component.Summary, error) {
 	return createDeploymentSummaryStatus(deployment)
-}
-
-func (d *deploymentHandler) Conditions() error {
-	if d.deployment == nil {
-		return errors.New("can't display conditions for nil deployment")
-	}
-
-	d.object.RegisterItems(ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return d.conditionsFunc(d.deployment)
-		},
-	})
-
-	return nil
-}
-
-func defaultDeploymentConditions(deployment *appsv1.Deployment) (*component.Table, error) {
-	return createDeploymentConditionsView(deployment)
 }
 
 func (d *deploymentHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {

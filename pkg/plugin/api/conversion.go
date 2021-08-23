@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
+	"fmt"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/pkg/errors"
@@ -105,6 +107,22 @@ func convertToLinkComponent(in, name string) (*component.Link, error) {
 	}
 	link := component.NewLink("", name, in)
 	return link, nil
+}
+
+func convertFromPayload(payload action.Payload) ([]byte, error) {
+	return json.Marshal(payload)
+}
+
+func convertToEvent(in *proto.EventRequest) (string, string, action.Payload, error) {
+	if in == nil {
+		return "", "", action.Payload{}, fmt.Errorf("event request is nil")
+	}
+	payload := action.Payload{}
+	err := json.Unmarshal(in.Payload, &payload)
+	if err != nil {
+		return "", "", action.Payload{}, fmt.Errorf("unmarshal payload: %w", err)
+	}
+	return in.ClientID, in.EventName, payload, nil
 }
 
 func convertFromObjects(in *unstructured.UnstructuredList) ([][]byte, error) {

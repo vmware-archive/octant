@@ -56,6 +56,14 @@ func Test_Object_ToComponent(t *testing.T) {
 		}
 	}
 
+	fnConditions := func(o *Object) {
+		o.ConditionsGen = func(_ context.Context, _ runtime.Object, fl *flexlayout.FlexLayout) error {
+			section := fl.AddSection()
+			require.NoError(t, section.Add(component.NewText("conditions"), 12))
+			return nil
+		}
+	}
+
 	stubPlugins := func(pluginPrinter *fake.MockManagerInterface) {
 		printResponse := &plugin.PrintResponse{}
 		pluginPrinter.EXPECT().
@@ -231,7 +239,7 @@ func Test_Object_ToComponent(t *testing.T) {
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
-			o := NewObject(tc.object, fnPodTemplate, fnEvent)
+			o := NewObject(tc.object, fnPodTemplate, fnEvent, fnConditions)
 
 			o.RegisterConfig(defaultConfig)
 
@@ -252,6 +260,10 @@ func Test_Object_ToComponent(t *testing.T) {
 			require.NoError(t, err)
 
 			expected := component.NewFlexLayout("Summary")
+			tc.sections = append(tc.sections, component.FlexLayoutSection{{
+				Width: component.WidthHalf,
+				View:  component.NewText("conditions"),
+			}})
 			expected.AddSections(tc.sections...)
 
 			component.AssertEqual(t, expected, got)

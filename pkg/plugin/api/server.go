@@ -66,6 +66,7 @@ type Service interface {
 	ForceFrontendUpdate(ctx context.Context) error
 	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
 	CreateLink(ctx context.Context, key store.Key) (LinkResponse, error)
+	SendEvent(ctx context.Context, clientID string, eventName event.EventType, payload action.Payload) error
 }
 
 // FrontendUpdateController can control the frontend. ie. the web gui
@@ -173,13 +174,14 @@ func (s *GRPCService) ForceFrontendUpdate(ctx context.Context) error {
 	return s.FrontendProxy.ForceFrontendUpdate()
 }
 
-// SendAlert sends an alert
+// SendAlert sends an alert. This method is deprecated and will be removed in a future release
 func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert action.Alert) error {
-	event := event.CreateEvent(event.EventTypeAlert, action.Payload{
-		"type":       alert.Type,
-		"message":    alert.Message,
-		"expiration": alert.Expiration,
-	})
+	return nil
+}
+
+func (s *GRPCService) SendEvent(ctx context.Context, clientID string, eventName event.EventType, payload action.Payload) error {
+	event := event.CreateEvent(eventName, payload)
+
 	if s.WebsocketClientManager == nil {
 		return fmt.Errorf("websocket client manager is nil")
 	}
@@ -193,7 +195,6 @@ func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert acti
 		clientID := ocontext.ClientStateFrom(ctx).ClientID
 		return fmt.Errorf("unable to find ws client %s", clientID)
 	}
-
 	sender.Send(event)
 	return nil
 }
@@ -312,7 +313,7 @@ func (c *grpcServer) Create(ctx context.Context, in *proto.CreateRequest) (*prot
 	return &proto.CreateResponse{}, nil
 }
 
-// Get gets an object.
+// Delete deletes an object.
 func (c *grpcServer) Delete(ctx context.Context, in *proto.KeyRequest) (*proto.DeleteResponse, error) {
 	key, err := convertToKey(in)
 	if err != nil {
@@ -357,7 +358,7 @@ func (c *grpcServer) CancelPortForward(ctx context.Context, in *proto.CancelPort
 	return &proto.Empty{}, nil
 }
 
-// Namespaces lists namespaces.
+// ListNamespaces lists namespaces.
 func (c *grpcServer) ListNamespaces(ctx context.Context, _ *proto.Empty) (*proto.NamespacesResponse, error) {
 	nsResp, err := c.service.ListNamespaces(ctx)
 	if err != nil {
@@ -379,14 +380,18 @@ func (c *grpcServer) ForceFrontendUpdate(ctx context.Context, _ *proto.Empty) (*
 	return &proto.Empty{}, nil
 }
 
-// SendAlert sends an alert
+// SendAlert sends an alert. This method is deprecated and will be removed in a future release
 func (c *grpcServer) SendAlert(ctx context.Context, in *proto.AlertRequest) (*proto.Empty, error) {
 	alert, err := convertToAlert(in)
 	if err != nil {
 		return nil, err
 	}
 
-	c.service.SendAlert(ctx, in.ClientID, alert)
+	c.service.SendEvent(ctx, in.ClientID, event.EventTypeAlert, action.Payload{
+		"type":       alert.Type,
+		"message":    alert.Message,
+		"expiration": alert.Expiration,
+	})
 	return &proto.Empty{}, nil
 }
 
@@ -422,4 +427,14 @@ func extractObjectStoreMetadata(ctx context.Context) context.Context {
 	}
 
 	return ctx
+}
+
+func (c *grpcServer) SendEvent(ctx context.Context, in *proto.EventRequest) (*proto.EventResponse, error) {
+	clientID, eventName, payload, err := convertToEvent(in)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.service.SendEvent(ctx, clientID, event.EventType(eventName), payload)
+	return &proto.EventResponse{}, err
 }

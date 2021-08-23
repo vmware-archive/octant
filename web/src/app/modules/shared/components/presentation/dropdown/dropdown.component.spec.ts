@@ -52,6 +52,7 @@ describe('DropdownComponent', () => {
         type: 'button',
         action: 'action',
         useSelection: false,
+        showToggleIcon: false,
         items: [
           {
             name: 'item-header',
@@ -119,6 +120,7 @@ describe('DropdownComponent', () => {
         type: 'button',
         action: 'action',
         useSelection: false,
+        showToggleIcon: false,
         items: [
           {
             name: 'first',

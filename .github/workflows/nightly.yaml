@@ -10,13 +10,15 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/setup-node@v2.3.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16.x
-      - uses: actions/checkout@v2
       - name: Build web assets
         run: |
           go run build.go web-build
@@ -45,7 +47,7 @@ jobs:
     name: Run goreleaser
     needs: [nightly-build]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.161.0
+    container: goreleaser/goreleaser:v0.174.2
     steps:
       - uses: actions/checkout@v2
         with:

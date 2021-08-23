@@ -35,17 +35,25 @@ func TestNodeListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+	tpo.pluginManager.EXPECT().ObjectStatus(ctx, node)
+
 	got, err := NodeListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows("Nodes", "We couldn't find any nodes!", nodeListColumns, []component.TableRow{
 		{
-			"Age":     component.NewTimestamp(node.CreationTimestamp.Time),
-			"Name":    component.NewLink("", "node-1", "/node"),
+			"Age": component.NewTimestamp(node.CreationTimestamp.Time),
+			"Name": component.NewLink("", "node-1", "/node",
+				genObjectStatus(component.TextStatusOK, []string{
+					"v1 Node is OK",
+				})),
 			"Labels":  component.NewLabels(make(map[string]string)),
 			"Version": component.NewText("1.15.1"),
 			"Status":  component.NewText("Unknown"),
 			"Roles":   component.NewText("<none>"),
+			component.GridActionKey: gridActionsFactory([]component.GridAction{
+				buildObjectDeleteAction(t, node),
+			}),
 		},
 	})
 
@@ -267,37 +275,6 @@ func Test_createNodeResourcesView(t *testing.T) {
 			"Key":         component.NewText("Pods"),
 			"Capacity":    component.NewText("1"),
 			"Allocatable": component.NewText("2"),
-		},
-	})
-
-	component.AssertEqual(t, expected, got)
-}
-
-func Test_createNodeConditionsView(t *testing.T) {
-
-	node := testutil.CreateNode("node-1")
-	node.Status.Conditions = []corev1.NodeCondition{
-		{
-			Type:               "type",
-			Status:             "status",
-			LastHeartbeatTime:  *testutil.CreateTimestamp(),
-			LastTransitionTime: *testutil.CreateTimestamp(),
-			Reason:             "reason",
-			Message:            "message",
-		},
-	}
-
-	got, err := createNodeConditionsView(node)
-	require.NoError(t, err)
-
-	expected := component.NewTableWithRows("Conditions", "There are no node conditions!", nodeConditionsColumns, []component.TableRow{
-		{
-			"Type":            component.NewText("type"),
-			"Reason":          component.NewText("reason"),
-			"Status":          component.NewText("status"),
-			"Message":         component.NewText("message"),
-			"Last Heartbeat":  component.NewTimestamp(node.Status.Conditions[0].LastHeartbeatTime.Time),
-			"Last Transition": component.NewTimestamp(node.Status.Conditions[0].LastTransitionTime.Time),
 		},
 	})
 
