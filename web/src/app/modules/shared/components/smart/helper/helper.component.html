@@ -50,7 +50,7 @@
   </clr-dropdown>
 </div>
 
-<cds-modal size="md" id="build-modal" [closable]="true" [hidden]="true" (closeChange)="toggleBuildInfo()">
+<cds-modal size="md" id="build-modal" [closable]="true" hidden (closeChange)="toggleBuildInfo()">
   <cds-modal-header>
     <h3 cds-text="title" cds-first-focus tabindex="-1">Build Information</h3>
   </cds-modal-header>
@@ -77,7 +77,7 @@
   </cds-modal-actions>
 </cds-modal>
 
-<cds-modal size="lg" id="release-modal" [closable]="true" [hidden]="true" (closeChange)="toggleReleases()">
+<cds-modal size="lg" id="release-modal" [closable]="true" hidden (closeChange)="toggleReleases()">
   <cds-modal-header>
     <h3 cds-text="title" cds-first-focus tabindex="-1">Octant Release Information</h3>
   </cds-modal-header>
@@ -100,7 +100,7 @@
   </cds-modal-actions>
 </cds-modal>
 
-<cds-modal size="md" id="shortcut-modal" [closable]="true" [hidden]="true" (closeChange)="toggleShortcut()">
+<cds-modal size="md" id="shortcut-modal" [closable]="true" hidden (closeChange)="toggleShortcut()">
   <cds-modal-header>
     <h3 cds-text="title" cds-first-focus tabindex="-1">Keyboard Shortcuts</h3>
   </cds-modal-header>
