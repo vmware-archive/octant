@@ -501,21 +501,9 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string) error
 	return nil
 }
 
-func (m *Manager) startJS(ctx context.Context) error {
-	pluginList, err := AvailablePlugins(DefaultConfig)
-	if err != nil {
-		return err
-	}
-
-	for _, pluginPath := range pluginList {
-		if IsJavaScriptPlugin(pluginPath) {
-			logger := log.From(ctx)
-			logger.Debugf("creating ts plugin client")
-
-			if err := m.registerJSPlugin(ctx, pluginPath); err != nil {
-				return fmt.Errorf("javascript plugin: %w", err)
-			}
-		}
+func (m *Manager) startJS(ctx context.Context, pluginPath string) error {
+	if err := m.registerJSPlugin(ctx, pluginPath); err != nil {
+		return fmt.Errorf("javascript plugin: %w", err)
 	}
 
 	return nil
@@ -541,8 +529,19 @@ func (m *Manager) Start(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if err := m.startJS(ctx); err != nil {
+	pluginList, err := AvailablePlugins(DefaultConfig)
+	if err != nil {
 		return err
+	}
+	for _, pluginPath := range pluginList {
+		if IsJavaScriptPlugin(pluginPath) {
+			logger := log.From(ctx)
+			logger.Debugf("creating ts plugin client")
+
+			if err := m.startJS(ctx, pluginPath); err != nil {
+				logger.Warnf("start JS plugin: %s\n", err)
+			}
+		}
 	}
 
 	go m.watchJS(ctx)
@@ -551,7 +550,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		c := m.configs[i]
 
 		if err := m.start(ctx, c); err != nil {
-			return err
+			logger.Warnf("start plugin: %s\n", err)
 		}
 	}
 
