@@ -10,7 +10,7 @@ require (
 	github.com/dop251/goja_nodejs v0.0.0-20200706082813-b2775b86b9e0
 	github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.0
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.6.0
