@@ -47,7 +47,7 @@ github.com/fatih/color
 github.com/felixge/httpsnoop
 # github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 github.com/form3tech-oss/jwt-go
-# github.com/fsnotify/fsnotify v1.5.0
+# github.com/fsnotify/fsnotify v1.5.1
 ## explicit
 github.com/fsnotify/fsnotify
 # github.com/go-logr/logr v0.4.0
