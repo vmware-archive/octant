@@ -17,7 +17,7 @@
       (click)="closeTab(tab.accessor)"
     ></clr-icon>
     <ng-template [clrIfActive]="activeTab === tab.accessor">
-      <clr-tab-content>
+      <clr-tab-content *clrIfActive>
         <app-view-container [view]="tab.view"></app-view-container>
       </clr-tab-content>
     </ng-template>
