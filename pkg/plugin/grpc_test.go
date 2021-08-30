@@ -300,6 +300,7 @@ func Test_GRPCClient_PrintTabs(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedLayout := component.NewFlexLayout("component title")
+		expectedLayout.SetAccessor("tab name")
 		expectedLayout.AddSections(
 			component.FlexLayoutSection{
 				{
