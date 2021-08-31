@@ -144,6 +144,25 @@ func TestAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "applyYAML",
+			initFunc: func(t *testing.T, mocks *apiMocks) {
+				mocks.objectStore.EXPECT().
+					CreateOrUpdateFromYAML(contextType, "default", "---\nyaml").
+					Return([]string{}, nil).
+					Do(func(ctx context.Context, namespace, yaml string) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
+			},
+			doFunc: func(t *testing.T, client *api.Client) {
+				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
+				_, err := client.ApplyYAML(clientCtx, "default", "---\nyaml")
+				require.NoError(t, err)
+			},
+		},
+		{
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().

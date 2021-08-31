@@ -20,4 +20,9 @@ const (
 	// The ActionRequest.Payload for this action contains a single string entry `contextName` with a value
 	// of the new context.
 	RequestSetContext = "action.octant.dev/setContext"
+
+	// ActionApplyYaml is the action to apply a yaml resource configuration.
+	// The ActionRequest.Payload for this action contains string entry `namespace` and a string entry
+	// `update` containing the yaml configuration for a resource.
+	ActionApplyYaml = "action.octant.dev/apply"
 )
