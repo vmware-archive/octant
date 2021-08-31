@@ -6,7 +6,6 @@ import {
   iconLookup,
 } from './indicator.component';
 import { CdsModule } from '@cds/angular';
-import '@cds/core/icon/register.js';
 import { Component } from '@angular/core';
 import { View } from '../../../models/content';
 
