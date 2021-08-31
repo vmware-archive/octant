@@ -668,7 +668,7 @@ func (p *podHandler) containers(ctx context.Context, containers []corev1.Contain
 		container := containers[i]
 
 		itemDescriptors = append(itemDescriptors, ItemDescriptor{
-			Width: component.WidthHalf,
+			Width: component.WidthFull,
 			Func: func() (component.Component, error) {
 				return p.containerFunc(ctx, p.pod, &container, isInit, options)
 			},

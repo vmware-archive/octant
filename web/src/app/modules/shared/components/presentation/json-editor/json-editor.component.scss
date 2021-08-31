@@ -3,7 +3,7 @@
  */
 
 .jsoneditor {
-  width: 600px;
+  width: 800px;
   border: none;
 }
 
@@ -11,6 +11,10 @@ div.jsoneditor-field,
 div.jsoneditor-value {
   color: var(--tableValue-color);
   font-family: var(--clr-font);
+}
+
+div.jsoneditor-value.jsoneditor-string {
+  color: var(--highlight-color);
 }
 
 div.jsoneditor-tree button.jsoneditor-button:focus {

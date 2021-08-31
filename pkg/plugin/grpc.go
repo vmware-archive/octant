@@ -333,7 +333,7 @@ func (c *GRPCClient) PrintTabs(ctx context.Context, object runtime.Object) ([]Ta
 			if !ok {
 				return errors.Errorf("expected to be flex layout was: %T", c)
 			}
-
+			layout.SetAccessor(t.Name)
 			tab.Name = t.Name
 			tab.Contents = *layout
 			responses = append(responses, TabResponse{&tab})
@@ -348,8 +348,7 @@ func (c *GRPCClient) PrintTabs(ctx context.Context, object runtime.Object) ([]Ta
 	return responses, nil
 }
 
-// GRPCServer is the grpc server the dashboard will use to communicate with the
-// the plugin.
+// GRPCServer is the grpc server the dashboard will use to communicate with the plugin.
 type GRPCServer struct {
 	Impl   Service
 	broker Broker

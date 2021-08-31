@@ -37,6 +37,26 @@ func (m *MockDashboardClient) EXPECT() *MockDashboardClientMockRecorder {
 	return m.recorder
 }
 
+// ApplyYAML mocks base method.
+func (m *MockDashboardClient) ApplyYAML(arg0 context.Context, arg1 *proto.ApplyYAMLRequest, arg2 ...grpc.CallOption) (*proto.ApplyYAMLResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ApplyYAML", varargs...)
+	ret0, _ := ret[0].(*proto.ApplyYAMLResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApplyYAML indicates an expected call of ApplyYAML.
+func (mr *MockDashboardClientMockRecorder) ApplyYAML(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyYAML", reflect.TypeOf((*MockDashboardClient)(nil).ApplyYAML), varargs...)
+}
+
 // CancelPortForward mocks base method.
 func (m *MockDashboardClient) CancelPortForward(arg0 context.Context, arg1 *proto.CancelPortForwardRequest, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()

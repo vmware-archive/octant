@@ -4,13 +4,14 @@ go 1.16
 
 require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
+	github.com/containers/image/v5 v5.14.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/dop251/goja v0.0.0-20200629185240-bfd59704b500
 	github.com/dop251/goja_nodejs v0.0.0-20200706082813-b2775b86b9e0
 	github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.0
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.6.0
@@ -28,7 +29,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/iancoleman/strcase v0.2.0
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/json-iterator/go v1.1.11
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/pkg/errors v0.9.1
@@ -43,7 +43,7 @@ require (
 	go.uber.org/zap v1.19.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/tools v0.1.5
-	google.golang.org/grpc v1.39.1
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	k8s.io/api v0.21.3
 	k8s.io/apiextensions-apiserver v0.21.3

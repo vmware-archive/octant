@@ -26,7 +26,7 @@ func TestJSONEditor_MarshalJSON(t *testing.T) {
 		{
 			name: "in general",
 			input: func() *JSONEditor {
-				return NewJSONEditor("{ \"hello\": 123 }")
+				return NewJSONEditor("{ \"hello\": 123 }", false)
 			},
 			expectedFile: "json_editor.json",
 		},

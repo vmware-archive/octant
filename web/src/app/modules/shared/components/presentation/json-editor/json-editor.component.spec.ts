@@ -4,6 +4,9 @@
 
 import { JSONEditorComponent } from './json-editor.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DebugElement } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { JSONEditorView } from '../../../models/content';
 
 describe('JSONEditorComponent', () => {
   let component: JSONEditorComponent;
@@ -34,5 +37,28 @@ describe('JSONEditorComponent', () => {
     component.content = { hello: 'world' };
     const result = component.isValidJson(component.content);
     expect(result).toEqual(component.content);
+  });
+
+  it('respects collapsed flag', () => {
+    component.view = {
+      config: {
+        mode: 'view',
+        content: '{ "hello": "world", "my": "world" }',
+        collapsed: true,
+      },
+      metadata: {
+        type: 'jsonEditor',
+      },
+    } as JSONEditorView;
+
+    fixture.detectChanges();
+
+    const editorDebugElement: DebugElement = fixture.debugElement.query(
+      By.css('.jsoneditor')
+    );
+    const editorNativeElement: HTMLDivElement =
+      editorDebugElement.nativeElement;
+
+    expect(editorNativeElement.clientHeight).toBeLessThan(50);
   });
 });

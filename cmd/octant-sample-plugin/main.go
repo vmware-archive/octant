@@ -185,8 +185,7 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 
 // handleNavigation creates a navigation tree for this plugin. Navigation is dynamic and will
 // be called frequently from Octant. Navigation is a tree of `Navigation` structs.
-// The plugin can use whatever paths it likes since these paths can be namespaced to the
-// the plugin.
+// The plugin can use whatever paths it likes since these paths can be namespaced to the plugin.
 func handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
 	return navigation.Navigation{
 		Title: "Sample Plugin",

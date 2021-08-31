@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -97,6 +98,8 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 
 	var containerStatus *corev1.ContainerStatus
+	var hostOS = "linux"
+
 	if pod, ok := cc.parent.(*corev1.Pod); ok {
 		var err error
 		containerStatus, err = findContainerStatus(pod, cc.container.Name, cc.isInit)
@@ -113,6 +116,9 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 				title = "Ephemeral Container"
 			}
 		}
+		if api.IsWindowsContainer(pod) {
+			hostOS = "windows"
+		}
 	}
 
 	sections := component.SummarySections{}
@@ -120,6 +126,14 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	sections.AddText("Image", c.Image)
 	if containerStatus != nil {
 		sections.AddText("Image ID", containerStatus.ImageID)
+	}
+
+	manifest, configuration, err := ManifestManager.GetImageManifest(cc.context, hostOS, c.Image)
+	if err == nil {
+		sections.Add("Image Manifest", component.NewJSONEditor(manifest, true))
+		sections.Add("Image Configuration", component.NewJSONEditor(configuration, true))
+	} else {
+		sections.Add("Image Manifest", component.NewText(fmt.Sprintf("Unable to load image manifest %s", err)))
 	}
 
 	hostPorts := describeContainerHostPorts(c.Ports)
