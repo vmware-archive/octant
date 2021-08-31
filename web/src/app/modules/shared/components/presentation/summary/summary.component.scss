@@ -6,11 +6,13 @@
   :host-context(body) {
     --tableLabel-color: #565656;
     --tableValue-color: #737373;
+    --highlight-color: green;
   }
 
   :host-context(body.dark) {
     --tableLabel-color: #eaedf0;
     --tableValue-color: #acbac3;
+    --highlight-color: lightgreen;
   }
 
   .progress.loop {

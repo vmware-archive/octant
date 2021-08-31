@@ -31,6 +31,7 @@ var (
 	BUILD_TIME = time.Now().UTC().Format(time.RFC3339)
 	LD_FLAGS   = fmt.Sprintf("-X \"main.buildTime=%s\" -X main.gitCommit=%s", BUILD_TIME, GIT_COMMIT)
 	GO_FLAGS   = fmt.Sprintf("-ldflags=%s", LD_FLAGS)
+	IMAGE_FLAGS = "exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp"
 )
 
 func main() {
@@ -262,7 +263,7 @@ func goInstall() {
 
 func generate() {
 	removeFakes()
-	runCmd("go", nil, "generate", "-v", "./pkg/...", "./internal/...")
+	runCmd("go", nil, "generate", "-tags", IMAGE_FLAGS, "-v", "./pkg/...", "./internal/...")
 }
 
 func build() {
@@ -273,7 +274,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-tags", "embedded", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", "embedded " + IMAGE_FLAGS, "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 // buildElectron builds an Octant binary without web assets
@@ -294,7 +295,7 @@ func buildElectron() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-mod=vendor", "-o", "web/extraResources/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", IMAGE_FLAGS, "-mod=vendor", "-o", "web/extraResources/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func runDev() {
@@ -307,11 +308,11 @@ func runDev() {
 }
 
 func test() {
-	runCmd("go", nil, "test", "-v", "./internal/...", "./pkg/...")
+	runCmd("go", nil, "test", "-tags", IMAGE_FLAGS, "-v", "./internal/...", "./pkg/...")
 }
 
 func vet() {
-	runCmd("go", nil, "vet", "./internal/...", "./pkg/...")
+	runCmd("go", nil, "vet", "-tags", IMAGE_FLAGS, "./internal/...", "./pkg/...")
 	goFmt(false)
 }
 

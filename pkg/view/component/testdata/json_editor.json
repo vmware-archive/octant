@@ -4,6 +4,7 @@
   },
   "config": {
     "mode": "view",
-    "content": "{ \"hello\": 123 }"
+    "content": "{ \"hello\": 123 }",
+    "collapsed": false
   }
 }

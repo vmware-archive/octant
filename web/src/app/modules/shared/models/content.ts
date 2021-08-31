@@ -537,6 +537,7 @@ export interface JSONEditorView extends View {
   config: {
     mode: string;
     content: string;
+    collapsed: boolean;
   };
 }
 

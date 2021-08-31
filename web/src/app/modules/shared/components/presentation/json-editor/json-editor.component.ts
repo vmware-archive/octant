@@ -43,6 +43,10 @@ export class JSONEditorComponent
     if (this.container) {
       const editor = new JSONEditor(this.container, this.options);
       editor.set(this.content);
+
+      if (this.v?.config?.collapsed) {
+        editor.collapseAll();
+      }
     }
   }
 

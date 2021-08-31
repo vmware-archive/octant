@@ -104,7 +104,7 @@ func Test_Metadata(t *testing.T) {
 							},
 							{
 								Header:  "Fields",
-								Content: component.NewJSONEditor(fieldJSONData),
+								Content: component.NewJSONEditor(fieldJSONData, false),
 							},
 						}...),
 					},
