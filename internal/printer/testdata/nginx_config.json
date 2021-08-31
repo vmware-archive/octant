@@ -1,0 +1,87 @@
+{
+  "created": "2020-04-23T13:04:39.11443763Z",
+  "architecture": "amd64",
+  "os": "linux",
+  "config": {
+    "ExposedPorts": {
+      "80/tcp": {}
+    },
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NGINX_VERSION=1.16.1",
+      "NJS_VERSION=0.3.8",
+      "PKG_RELEASE=1~buster"
+    ],
+    "Cmd": [
+      "nginx",
+      "-g",
+      "daemon off;"
+    ],
+    "Labels": {
+      "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+    },
+    "StopSignal": "SIGTERM"
+  },
+  "rootfs": {
+    "type": "layers",
+    "diff_ids": [
+      "sha256:c2adabaecedbda0af72b153c6499a0555f3a769d52370469d8f6bd6328af9b13",
+      "sha256:82068c842707f3491e7398973688d8abd66f1494f00e646d801be1545c539f1c",
+      "sha256:c23548ea0b991f6a482104af9e7f92279f280ae96ef25e707c273796e4ff33b2"
+    ]
+  },
+  "history": [
+    {
+      "created": "2020-04-23T00:20:32.126556976Z",
+      "created_by": "/bin/sh -c #(nop) ADD file:9b8be2b52ee0fa31da1b6256099030b73546253a57e94cccb24605cd888bb74d in / "
+    },
+    {
+      "created": "2020-04-23T00:20:32.391326355Z",
+      "created_by": "/bin/sh -c #(nop)  CMD [\"bash\"]",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:02:24.647346893Z",
+      "created_by": "/bin/sh -c #(nop)  LABEL maintainer=NGINX Docker Maintainers <docker-maint@nginx.com>",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:08.25062865Z",
+      "created_by": "/bin/sh -c #(nop)  ENV NGINX_VERSION=1.16.1",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:08.615216894Z",
+      "created_by": "/bin/sh -c #(nop)  ENV NJS_VERSION=0.3.8",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:08.887858872Z",
+      "created_by": "/bin/sh -c #(nop)  ENV PKG_RELEASE=1~buster",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:37.718964737Z",
+      "created_by": "/bin/sh -c set -x     && addgroup --system --gid 101 nginx     && adduser --system --disabled-login --ingroup nginx --no-create-home --home /nonexistent --gecos \"nginx user\" --shell /bin/false --uid 101 nginx     && apt-get update     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates     &&     NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62;     found='';     for server in         ha.pool.sks-keyservers.net         hkp://keyserver.ubuntu.com:80         hkp://p80.pool.sks-keyservers.net:80         pgp.mit.edu     ; do         echo \"Fetching GPG key $NGINX_GPGKEY from $server\";         apt-key adv --keyserver \"$server\" --keyserver-options timeout=10 --recv-keys \"$NGINX_GPGKEY\" && found=yes && break;     done;     test -z \"$found\" && echo >&2 \"error: failed to fetch GPG key $NGINX_GPGKEY\" && exit 1;     apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/*     && dpkgArch=\"$(dpkg --print-architecture)\"     && nginxPackages=\"         nginx=${NGINX_VERSION}-${PKG_RELEASE}         nginx-module-xslt=${NGINX_VERSION}-${PKG_RELEASE}         nginx-module-geoip=${NGINX_VERSION}-${PKG_RELEASE}         nginx-module-image-filter=${NGINX_VERSION}-${PKG_RELEASE}         nginx-module-njs=${NGINX_VERSION}.${NJS_VERSION}-${PKG_RELEASE}     \"     && case \"$dpkgArch\" in         amd64|i386)             echo \"deb https://nginx.org/packages/debian/ buster nginx\" >> /etc/apt/sources.list.d/nginx.list             && apt-get update             ;;         *)             echo \"deb-src https://nginx.org/packages/debian/ buster nginx\" >> /etc/apt/sources.list.d/nginx.list                         && tempDir=\"$(mktemp -d)\"             && chmod 777 \"$tempDir\"                         && savedAptMark=\"$(apt-mark showmanual)\"                         && apt-get update             && apt-get build-dep -y $nginxPackages             && (                 cd \"$tempDir\"                 && DEB_BUILD_OPTIONS=\"nocheck parallel=$(nproc)\"                     apt-get source --compile $nginxPackages             )                         && apt-mark showmanual | xargs apt-mark auto > /dev/null             && { [ -z \"$savedAptMark\" ] || apt-mark manual $savedAptMark; }                         && ls -lAFh \"$tempDir\"             && ( cd \"$tempDir\" && dpkg-scanpackages . > Packages )             && grep '^Package: ' \"$tempDir/Packages\"             && echo \"deb [ trusted=yes ] file://$tempDir ./\" > /etc/apt/sources.list.d/temp.list             && apt-get -o Acquire::GzipIndexes=false update             ;;     esac         && apt-get install --no-install-recommends --no-install-suggests -y                         $nginxPackages                         gettext-base     && apt-get remove --purge --auto-remove -y ca-certificates && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list         && if [ -n \"$tempDir\" ]; then         apt-get purge -y --auto-remove         && rm -rf \"$tempDir\" /etc/apt/sources.list.d/temp.list;     fi"
+    },
+    {
+      "created": "2020-04-23T13:04:38.539144297Z",
+      "created_by": "/bin/sh -c ln -sf /dev/stdout /var/log/nginx/access.log     && ln -sf /dev/stderr /var/log/nginx/error.log"
+    },
+    {
+      "created": "2020-04-23T13:04:38.727541531Z",
+      "created_by": "/bin/sh -c #(nop)  EXPOSE 80",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:38.91124117Z",
+      "created_by": "/bin/sh -c #(nop)  STOPSIGNAL SIGTERM",
+      "empty_layer": true
+    },
+    {
+      "created": "2020-04-23T13:04:39.11443763Z",
+      "created_by": "/bin/sh -c #(nop)  CMD [\"nginx\" \"-g\" \"daemon off;\"]",
+      "empty_layer": true
+    }
+  ]
+}

@@ -42,6 +42,32 @@ func TestClient_Update(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_ApplyYAML(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	ctx := context.Background()
+	namespace := "foo-namespace"
+	yamlString := "---\napiVersion:apps/v1"
+
+	dashboardClient := fake.NewMockDashboardClient(controller)
+	req := &proto.ApplyYAMLRequest{
+		Namespace: namespace,
+		Yaml:      yamlString,
+	}
+	dashboardClient.EXPECT().ApplyYAML(gomock.Any(), req).Return(&proto.ApplyYAMLResponse{}, nil)
+
+	conn := fake.NewMockDashboardConnection(controller)
+	conn.EXPECT().Client().Return(dashboardClient)
+
+	connOpt := MockDashboardConnection(conn)
+
+	client, err := api.NewClient("address", connOpt)
+	require.NoError(t, err)
+
+	_, err = client.ApplyYAML(ctx, namespace, yamlString)
+	require.NoError(t, err)
+}
 func TestClient_ForceFrontendUpdate(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()

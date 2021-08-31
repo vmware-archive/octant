@@ -40,6 +40,21 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// ApplyYAML mocks base method.
+func (m *MockService) ApplyYAML(arg0 context.Context, arg1, arg2 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyYAML", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApplyYAML indicates an expected call of ApplyYAML.
+func (mr *MockServiceMockRecorder) ApplyYAML(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyYAML", reflect.TypeOf((*MockService)(nil).ApplyYAML), arg0, arg1, arg2)
+}
+
 // CancelPortForward mocks base method.
 func (m *MockService) CancelPortForward(arg0 context.Context, arg1 string) {
 	m.ctrl.T.Helper()

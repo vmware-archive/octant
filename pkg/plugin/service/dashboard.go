@@ -21,6 +21,7 @@ type Dashboard interface {
 	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
 	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
+	ApplyYAML(ctx context.Context, namespace, yaml string) ([]string, error)
 	Delete(ctx context.Context, key store.Key) error
 	PortForward(ctx context.Context, req api.PortForwardRequest) (api.PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)

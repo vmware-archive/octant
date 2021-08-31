@@ -26,17 +26,19 @@ type JSONEditor struct {
 }
 
 type JSONEditorConfig struct {
-	Mode    JSONEditorMode `json:"mode"`
-	Content string         `json:"content"`
+	Mode      JSONEditorMode `json:"mode"`
+	Content   string         `json:"content"`
+	Collapsed bool           `json:"collapsed"`
 }
 
 // NewJSONEditor creates an instance of JSONEditor
-func NewJSONEditor(content string) *JSONEditor {
+func NewJSONEditor(content string, collapsed bool) *JSONEditor {
 	return &JSONEditor{
 		Base: newBase(TypeJSONEditor, nil),
 		Config: JSONEditorConfig{
-			Mode:    ViewMode,
-			Content: content,
+			Mode:      ViewMode,
+			Content:   content,
+			Collapsed: collapsed,
 		},
 	}
 }

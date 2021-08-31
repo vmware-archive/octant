@@ -364,13 +364,18 @@ func (m *Manager) watchJS(ctx context.Context) {
 		}
 	}()
 
+	watchedDirs := []string{}
 	for _, dir := range dirs {
 		if err := watcher.Add(dir); err != nil {
-			logger.Warnf("unable to add %s to JavaScript plugin watcher", dir)
+			logger.Warnf("Unable to add %s to JavaScript plugin watcher. Error: %s\n", dir, err)
+		} else {
+			watchedDirs = append(watchedDirs, dir)
 		}
 	}
 
-	logger.Infof("watching for new JavaScript plugins in %q", dirs)
+	if len(watchedDirs) > 0 {
+		logger.Infof("Watching for new JavaScript plugins in %q\n", dirs)
+	}
 
 	writeEvents := make(map[string]bool)
 	updatePlugin := func(name string) {
@@ -392,26 +397,26 @@ func (m *Manager) watchJS(ctx context.Context) {
 		case <-ctx.Done():
 			logger.Infof("context cancelled shutting down JavaScript plugin watcher.")
 			return
-		case event, ok := <-watcher.Events:
+		case ev, ok := <-watcher.Events:
 			if !ok {
 				logger.Errorf("bad event returned from JavaScript plugin watcher")
 				return
 			}
-			if event.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
+			if ev.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
 				continue
 			}
-			if IsJavaScriptPlugin(event.Name) {
-				if event.Op&fsnotify.Remove == fsnotify.Remove {
-					jsPlugin, ok := m.store.GetJS(event.Name)
+			if IsJavaScriptPlugin(ev.Name) {
+				if ev.Op&fsnotify.Remove == fsnotify.Remove {
+					jsPlugin, ok := m.store.GetJS(ev.Name)
 					if ok {
 						if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
 							logger.Errorf("unregistering: %w", err)
 						}
-						m.store.RemoveJS(event.Name)
-						logger.Infof("removing: JavaScript plugin: %s", event.Name)
+						m.store.RemoveJS(ev.Name)
+						logger.Infof("removing: JavaScript plugin: %s", ev.Name)
 					}
-				} else if event.Op&fsnotify.Write == fsnotify.Write {
-					writeEvents[event.Name] = true
+				} else if ev.Op&fsnotify.Write == fsnotify.Write {
+					writeEvents[ev.Name] = true
 				}
 			}
 		case err, ok := <-watcher.Errors:
@@ -496,21 +501,9 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string) error
 	return nil
 }
 
-func (m *Manager) startJS(ctx context.Context) error {
-	pluginList, err := AvailablePlugins(DefaultConfig)
-	if err != nil {
-		return err
-	}
-
-	for _, pluginPath := range pluginList {
-		if IsJavaScriptPlugin(pluginPath) {
-			logger := log.From(ctx)
-			logger.Debugf("creating ts plugin client")
-
-			if err := m.registerJSPlugin(ctx, pluginPath); err != nil {
-				return fmt.Errorf("javascript plugin: %w", err)
-			}
-		}
+func (m *Manager) startJS(ctx context.Context, pluginPath string) error {
+	if err := m.registerJSPlugin(ctx, pluginPath); err != nil {
+		return fmt.Errorf("javascript plugin: %w", err)
 	}
 
 	return nil
@@ -536,8 +529,19 @@ func (m *Manager) Start(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if err := m.startJS(ctx); err != nil {
+	pluginList, err := AvailablePlugins(DefaultConfig)
+	if err != nil {
 		return err
+	}
+	for _, pluginPath := range pluginList {
+		if IsJavaScriptPlugin(pluginPath) {
+			logger := log.From(ctx)
+			logger.Debugf("creating ts plugin client")
+
+			if err := m.startJS(ctx, pluginPath); err != nil {
+				logger.Warnf("start JS plugin: %s\n", err)
+			}
+		}
 	}
 
 	go m.watchJS(ctx)
@@ -546,7 +550,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		c := m.configs[i]
 
 		if err := m.start(ctx, c); err != nil {
-			return err
+			logger.Warnf("start plugin: %s\n", err)
 		}
 	}
 

@@ -161,7 +161,7 @@ func (m *Metadata) managedFields() ([]component.Summary, error) {
 			},
 			{
 				Header:  "Fields",
-				Content: component.NewJSONEditor(fields),
+				Content: component.NewJSONEditor(fields, false),
 			},
 		}...)
 		summaryList = append(summaryList, *summary)

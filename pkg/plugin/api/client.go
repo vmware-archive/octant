@@ -149,6 +149,20 @@ func (c *Client) Update(ctx context.Context, object *unstructured.Unstructured) 
 	return err
 }
 
+// ApplyYAML creates or updates resource(s) based on input yaml string.
+func (c *Client) ApplyYAML(ctx context.Context, namespace, yaml string) ([]string, error) {
+	client := c.DashboardConnection.Client()
+
+	req := &proto.ApplyYAMLRequest{
+		Namespace: namespace,
+		Yaml:      yaml,
+	}
+
+	res, err := client.ApplyYAML(ctx, req)
+
+	return res.Resources, err
+}
+
 func (c *Client) Create(ctx context.Context, object *unstructured.Unstructured) error {
 	client := c.DashboardConnection.Client()
 
