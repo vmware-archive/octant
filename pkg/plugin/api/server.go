@@ -225,11 +225,12 @@ func NewGRPCServer(service Service) *grpcServer {
 
 type grpcServer struct {
 	service Service
+	proto.UnimplementedDashboardServer
 }
 
 var _ proto.DashboardServer = (*grpcServer)(nil)
 
-// List list objects.
+// List lists objects.
 func (c *grpcServer) List(ctx context.Context, in *proto.KeyRequest) (*proto.ListResponse, error) {
 	key, err := convertToKey(in)
 	if err != nil {

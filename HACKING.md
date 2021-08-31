@@ -6,7 +6,7 @@
 * [node 10.15.0 or above](https://nodejs.org/en/)
 * [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
-* [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
+* [protoc](https://github.com/protocolbuffers/protobuf) - protobuf compiler
 
 ## Quick Start
 
