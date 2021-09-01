@@ -372,18 +372,8 @@ func (m *Manager) Load(cmd string) (PluginConfig, error) {
 }
 
 func (m *Manager) Unload(ctx context.Context, cmd string) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	if IsJavaScriptPlugin(cmd) {
-		jsPlugin, ok := m.store.GetJS(cmd)
-		if ok {
-			if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
-				logger := log.From(ctx)
-				logger.Errorf("unregistering: %w", err)
-			}
-			m.store.RemoveJS(cmd)
-		}
+		m.unregisterJSPlugin(ctx, cmd)
 	} else {
 		m.unregisterGoPlugin(ctx, cmd)
 	}
@@ -477,6 +467,9 @@ func (m *Manager) watchPluginFiles(ctx context.Context) {
 }
 
 func (m *Manager) unregisterGoPlugin(ctx context.Context, cmd string) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	logger := log.From(ctx)
 
 	name := filepath.Base(cmd)
@@ -514,11 +507,15 @@ func (m *Manager) unregisterGoPlugin(ctx context.Context, cmd string) {
 	}
 }
 
-func (m *Manager) unregisterJSPlugin(ctx context.Context, p JSPlugin) error {
-	p.Close()
-	if err := m.unregisterMetadata(ctx, p.PluginPath(), p.Metadata(), p); err != nil {
-		logger := log.From(ctx)
-		logger.Errorf("failed unregister metadata (js): %w", err)
+func (m *Manager) unregisterJSPlugin(ctx context.Context, cmd string) error {
+	jsPlugin, ok := m.store.GetJS(cmd)
+	if ok {
+		m.store.RemoveJS(cmd)
+		jsPlugin.Close()
+		if err := m.unregisterMetadata(ctx, jsPlugin.PluginPath(), jsPlugin.Metadata(), jsPlugin); err != nil {
+			logger := log.From(ctx)
+			logger.Errorf("failed unregister metadata (js): %w", err)
+		}
 	}
 	return nil
 }
