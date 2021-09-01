@@ -6,6 +6,7 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
+import isSvg from 'is-svg';
 import {
   Navigation,
   NavigationChild,
@@ -29,7 +30,7 @@ export type Module = {
   startIndex: number;
   endIndex?: number;
   icon: string;
-  children?: any[];
+  children?: NavigationChild[];
   customSvg?: string;
 };
 
@@ -164,6 +165,10 @@ export class NavigationService {
 
     sections.forEach((section, index) => {
       if (section.module && section.module.length > 0) {
+        if (section.customSvg) {
+          this.registerCustomSvg(section);
+        }
+
         modules.push({
           startIndex: index,
           name: section.module,
@@ -173,9 +178,6 @@ export class NavigationService {
           title: section.title,
           customSvg: section.customSvg,
         });
-        if (section.customSvg) {
-          ClarityIcons.addIcons([section.iconName, section.customSvg]);
-        }
       }
     });
 
@@ -210,7 +212,7 @@ export class NavigationService {
         }
       }
       if (module.children) {
-        this.findCustomSvg(module.children);
+        this.findCustomSvg(module.children, true);
       }
     });
     if (modules.length > 0) {
@@ -219,15 +221,27 @@ export class NavigationService {
     this.modules.next(modules);
   }
 
-  findCustomSvg(navigationChildren: NavigationChild[]): void {
-    navigationChildren.forEach((navChild, index) => {
+  findCustomSvg(navigationChildren: NavigationChild[], skip: boolean): void {
+    navigationChildren.forEach(navChild => {
       if (navChild.children) {
-        this.findCustomSvg(navChild.children);
+        this.findCustomSvg(navChild.children, false);
       }
-      if (navChild.customSvg) {
-        ClarityIcons.addIcons([navChild.iconName, navChild.customSvg]);
+      if (!skip && navChild.customSvg) {
+        // do not show custom icon for parent of submenu
+        this.registerCustomSvg(navChild);
       }
     });
+  }
+
+  registerCustomSvg(nc: NavigationChild): void {
+    if (isSvg(nc.customSvg)) {
+      ClarityIcons.addIcons([nc.iconName, nc.customSvg]);
+    } else {
+      console.error(
+        `Invalid SVG for module: '${nc.title}'. Using default icon shape...`
+      );
+      nc.iconName = 'times';
+    }
   }
 
   redirect(namespace: string): string {

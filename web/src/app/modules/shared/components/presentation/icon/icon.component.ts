@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
 } from '@angular/core';
+import isSvg from 'is-svg';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
   loadCoreIconSet,
@@ -60,7 +61,12 @@ export class IconComponent extends AbstractViewComponent<IconView> {
     }
 
     if (view.config.customSvg) {
-      ClarityIcons.addIcons([view.config.shape, view.config.customSvg]);
+      if (isSvg(view.config.customSvg)) {
+        ClarityIcons.addIcons([view.config.shape, view.config.customSvg]);
+      } else {
+        console.error(`Invalid SVG for icon '${view.config.shape}'`);
+        view.config.shape = 'times';
+      }
     }
 
     this.shape = view.config.shape;
