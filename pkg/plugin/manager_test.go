@@ -83,8 +83,9 @@ func TestManager(t *testing.T) {
 
 	manager.SetStore(store)
 
-	err := manager.Load(name)
+	cfg, err := manager.Load(name)
 	require.NoError(t, err)
+	assert.Equal(t, name, cfg.Name)
 
 	ctx := context.Background()
 	err = manager.Start(ctx)
@@ -205,14 +206,14 @@ func TestManager_Tabs(t *testing.T) {
 
 type fakePluginClient struct {
 	clientProtocol *fake.MockClientProtocol
-	service        *fake.MockService
+	service        *fake.MockModuleService
 	name           string
 }
 
 var _ dashPlugin.Client = (*fakePluginClient)(nil)
 
 func newFakePluginClient(name string, controller *gomock.Controller) *fakePluginClient {
-	service := fake.NewMockService(controller)
+	service := fake.NewMockModuleService(controller)
 	metadata := dashPlugin.Metadata{
 		Name: name,
 	}
