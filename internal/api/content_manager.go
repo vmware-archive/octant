@@ -188,7 +188,11 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
 	if !ok {
-		return emptyContent, false, fmt.Errorf("unable to find module for content path %q", contentPath)
+		content := Content{
+			Response: notFoundPage(contentPath),
+			Path:     contentPath,
+		}
+		return content, false, nil
 	}
 	modulePath := strings.TrimPrefix(contentPath, m.Name())
 	options := module.ContentOptions{

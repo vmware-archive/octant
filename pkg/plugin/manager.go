@@ -640,7 +640,7 @@ func (m *Manager) Start(ctx context.Context) error {
 	return nil
 }
 
-// goPluginPingPong will attempt to restart a Go plugin process if the Ping method for a client returns a non-nill error.
+// goPluginPingPong will attempt to restart a Go plugin process if the Ping method for a client returns a non-nil error.
 func (m *Manager) goPluginPingPong(ctx context.Context) {
 	logger := log.From(ctx)
 
@@ -668,6 +668,8 @@ func (m *Manager) goPluginPingPong(ctx context.Context) {
 						logger.WithErr(err).Errorf("unable to find command for plugin")
 						continue
 					}
+
+					m.Unload(ctx, cmd)
 
 					c := PluginConfig{
 						Name: clientName,
