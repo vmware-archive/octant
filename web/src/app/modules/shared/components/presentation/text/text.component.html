@@ -4,7 +4,7 @@
   </ng-container>
   {{ value }}
   <div *ngIf="clipboardValue" class="button-container">
-    <div cds-layout="horizonal gap:sm">
+    <div cds-layout="horizontal gap:sm">
       <cds-icon-button action="flat" ariaLabel="copy-button" (click)="copyToClipboard()">
         <cds-icon shape="clipboard"></cds-icon>
         <ng-container *ngIf="copied">Copied</ng-container>
