@@ -32,7 +32,7 @@ func initPlugin(moduleManager module.ManagerInterface, actionManager *action.Man
 		if plugin.IsJavaScriptPlugin(pluginPath) {
 			continue
 		}
-		if err := m.Load(pluginPath); err != nil {
+		if _, err := m.Load(pluginPath); err != nil {
 			return nil, fmt.Errorf("initialize plugin %q: %w", pluginPath, err)
 		}
 

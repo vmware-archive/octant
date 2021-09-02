@@ -137,6 +137,21 @@ func (mr *MockManagerStoreMockRecorder) Clients() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clients", reflect.TypeOf((*MockManagerStore)(nil).Clients))
 }
 
+// Get mocks base method.
+func (m *MockManagerStore) Get(arg0 string) (plugin.Client, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", arg0)
+	ret0, _ := ret[0].(plugin.Client)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockManagerStoreMockRecorder) Get(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockManagerStore)(nil).Get), arg0)
+}
+
 // GetCommand mocks base method.
 func (m *MockManagerStore) GetCommand(arg0 string) (string, error) {
 	m.ctrl.T.Helper()
@@ -182,6 +197,21 @@ func (mr *MockManagerStoreMockRecorder) GetMetadata(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMetadata", reflect.TypeOf((*MockManagerStore)(nil).GetMetadata), arg0)
 }
 
+// GetModuleService mocks base method.
+func (m *MockManagerStore) GetModuleService(arg0 string) (plugin.ModuleService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetModuleService", arg0)
+	ret0, _ := ret[0].(plugin.ModuleService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetModuleService indicates an expected call of GetModuleService.
+func (mr *MockManagerStoreMockRecorder) GetModuleService(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleService", reflect.TypeOf((*MockManagerStore)(nil).GetModuleService), arg0)
+}
+
 // GetService mocks base method.
 func (m *MockManagerStore) GetService(arg0 string) (plugin.Service, error) {
 	m.ctrl.T.Helper()
@@ -209,6 +239,18 @@ func (m *MockManagerStore) NamesJS() []string {
 func (mr *MockManagerStoreMockRecorder) NamesJS() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NamesJS", reflect.TypeOf((*MockManagerStore)(nil).NamesJS))
+}
+
+// Remove mocks base method.
+func (m *MockManagerStore) Remove(arg0 string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Remove", arg0)
+}
+
+// Remove indicates an expected call of Remove.
+func (mr *MockManagerStoreMockRecorder) Remove(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockManagerStore)(nil).Remove), arg0)
 }
 
 // RemoveJS mocks base method.

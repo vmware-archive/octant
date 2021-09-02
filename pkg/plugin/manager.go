@@ -82,10 +82,13 @@ type Client interface {
 type ManagerStore interface {
 	Store(name string, client Client, metadata *Metadata, cmd string) error
 	StoreJS(name string, jspc JSPlugin) error
+	Get(name string) (Client, bool)
 	GetJS(name string) (JSPlugin, bool)
+	Remove(name string)
 	RemoveJS(name string)
 	NamesJS() []string
 	GetMetadata(name string) (*Metadata, error)
+	GetModuleService(name string) (ModuleService, error)
 	GetService(name string) (Service, error)
 	GetCommand(name string) (string, error)
 	Clients() map[string]Client
@@ -130,6 +133,11 @@ func (s *DefaultStore) StoreJS(name string, plugin JSPlugin) error {
 	return nil
 }
 
+func (s *DefaultStore) Get(name string) (Client, bool) {
+	client, ok := s.clients[name]
+	return client, ok
+}
+
 func (s *DefaultStore) GetJS(name string) (JSPlugin, bool) {
 	voidStar, ok := s.jsPlugins.Load(name)
 	if !ok {
@@ -137,6 +145,12 @@ func (s *DefaultStore) GetJS(name string) (JSPlugin, bool) {
 	}
 	jspc, ok := voidStar.(JSPlugin)
 	return jspc, ok
+}
+
+func (s *DefaultStore) Remove(name string) {
+	delete(s.commands, name)
+	delete(s.clients, name)
+	delete(s.metadata, name)
 }
 
 func (s *DefaultStore) RemoveJS(name string) {
@@ -156,8 +170,8 @@ func (s *DefaultStore) Store(name string, client Client, metadata *Metadata, cmd
 	return nil
 }
 
-// GetService gets the service for a plugin.
-func (s *DefaultStore) GetService(name string) (Service, error) {
+// GetModuleService gets the moduleService for a plugin
+func (s *DefaultStore) GetModuleService(name string) (ModuleService, error) {
 	client, ok := s.clients[name]
 	if !ok {
 		return nil, errors.Errorf("plugin %q doesn't have a client", name)
@@ -173,11 +187,24 @@ func (s *DefaultStore) GetService(name string) (Service, error) {
 		return nil, errors.Wrapf(err, "dispensing plugin for %q", name)
 	}
 
-	service, ok := raw.(Service)
+	moduleService, ok := raw.(ModuleService)
 	if !ok {
 		return nil, errors.Errorf("unknown type for plugin %q: %T", name, raw)
 	}
 
+	return moduleService, nil
+}
+
+// GetService gets the service for a plugin.
+func (s *DefaultStore) GetService(name string) (Service, error) {
+	moduleService, err := s.GetModuleService(name)
+	if err != nil {
+		return nil, err
+	}
+	service, ok := moduleService.(Service)
+	if !ok {
+		return nil, fmt.Errorf("failed to GetService, unable to cast ModuleService to Service")
+	}
 	return service, nil
 }
 
@@ -217,9 +244,9 @@ func (s *DefaultStore) ClientNames() []string {
 	return list
 }
 
-type config struct {
-	cmd  string
-	name string
+type PluginConfig struct {
+	Cmd  string
+	Name string
 }
 
 // ClusterClient defines the cluster client plugin manager has access to.
@@ -277,7 +304,7 @@ type Manager struct {
 	Runners Runners
 
 	octantClient javascript.OctantClient
-	configs      []config
+	configs      []PluginConfig
 	store        ManagerStore
 
 	lock sync.Mutex
@@ -322,40 +349,48 @@ func (m *Manager) SetStore(store ManagerStore) {
 }
 
 // Load loads a plugin.
-func (m *Manager) Load(cmd string) error {
+func (m *Manager) Load(cmd string) (PluginConfig, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	name := filepath.Base(cmd)
 
 	for _, c := range m.configs {
-		if name == c.name {
-			return errors.Errorf("tried to load plugin %q more than once", name)
+		if name == c.Name {
+			return PluginConfig{}, fmt.Errorf("tried to load plugin %q more than once", name)
 		}
 	}
 
-	c := config{
-		name: name,
-		cmd:  cmd,
+	c := PluginConfig{
+		Name: name,
+		Cmd:  cmd,
 	}
 
 	m.configs = append(m.configs, c)
 
-	return nil
+	return c, nil
 }
 
-func (m *Manager) watchJS(ctx context.Context) {
+func (m *Manager) Unload(ctx context.Context, cmd string) {
+	if IsJavaScriptPlugin(cmd) {
+		m.unregisterJSPlugin(ctx, cmd)
+	} else {
+		m.unregisterGoPlugin(ctx, cmd)
+	}
+}
+
+func (m *Manager) watchPluginFiles(ctx context.Context) {
 	logger := log.From(ctx)
 
 	dirs, err := DefaultConfig.PluginDirs(DefaultConfig.Home())
 	if err != nil {
-		logger.Errorf("unable to get plugin dirs for JavaScript plugins: %w", err)
+		logger.Errorf("unable to get plugin directories: %w", err)
 		return
 	}
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		logger.Errorf("initializing JavaScript plugin watcher: %w", err)
+		logger.Errorf("initializing plugin watcher: %w", err)
 		return
 	}
 	defer func() {
@@ -367,57 +402,53 @@ func (m *Manager) watchJS(ctx context.Context) {
 	watchedDirs := []string{}
 	for _, dir := range dirs {
 		if err := watcher.Add(dir); err != nil {
-			logger.Warnf("Unable to add %s to JavaScript plugin watcher. Error: %s\n", dir, err)
+			logger.Warnf("Unable to add %s to the plugin watcher. Error: %s\n", dir, err)
 		} else {
 			watchedDirs = append(watchedDirs, dir)
 		}
 	}
 
 	if len(watchedDirs) > 0 {
-		logger.Infof("Watching for new JavaScript plugins in %q\n", dirs)
+		logger.Infof("Watching for plugin changes %q\n", dirs)
 	}
 
 	writeEvents := make(map[string]bool)
 	updatePlugin := func(name string) {
-		jsPlugin, ok := m.store.GetJS(name)
-		if ok {
-			if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
-				logger.Errorf("unregistering: %w", err)
+		m.Unload(ctx, name)
+		if IsJavaScriptPlugin(name) {
+			logger.Infof("reloading: JavaScript plugin: %s", name)
+			if err := m.registerJSPlugin(ctx, name); err != nil {
+				logger.Errorf("reloading: JavaScript plugin: %w", err)
 			}
-			m.store.RemoveJS(name)
-		}
-		logger.Infof("reloading: JavaScript plugin: %s", name)
-		if err := m.registerJSPlugin(ctx, name); err != nil {
-			logger.Errorf("reloading: JavaScript plugin watcher: %w", err)
+		} else {
+			logger.Infof("reloading: Go plugin: %s", name)
+			config, err := m.Load(name)
+			if err != nil {
+				logger.Errorf("reloading: Go plugin: %w", err)
+			} else {
+				m.start(ctx, config)
+			}
 		}
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Infof("context cancelled shutting down JavaScript plugin watcher.")
+			logger.Infof("context cancelled shutting down plugin watcher.")
 			return
 		case ev, ok := <-watcher.Events:
 			if !ok {
-				logger.Errorf("bad event returned from JavaScript plugin watcher")
+				logger.Errorf("bad event returned from plugin watcher")
 				return
 			}
 			if ev.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
 				continue
 			}
-			if IsJavaScriptPlugin(ev.Name) {
-				if ev.Op&fsnotify.Remove == fsnotify.Remove {
-					jsPlugin, ok := m.store.GetJS(ev.Name)
-					if ok {
-						if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
-							logger.Errorf("unregistering: %w", err)
-						}
-						m.store.RemoveJS(ev.Name)
-						logger.Infof("removing: JavaScript plugin: %s", ev.Name)
-					}
-				} else if ev.Op&fsnotify.Write == fsnotify.Write {
-					writeEvents[ev.Name] = true
-				}
+			if ev.Op&(fsnotify.Remove|fsnotify.Rename) == fsnotify.Remove || ev.Op&fsnotify.Rename == fsnotify.Rename {
+				logger.Infof("removing plugin: %s", ev.Name)
+				m.Unload(ctx, ev.Name)
+			} else if ev.Op&(fsnotify.Write|ev.Op&fsnotify.Rename|ev.Op&fsnotify.Create) == fsnotify.Create {
+				writeEvents[ev.Name] = true
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
@@ -435,12 +466,63 @@ func (m *Manager) watchJS(ctx context.Context) {
 	}
 }
 
-func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
-	p.Close()
+func (m *Manager) unregisterGoPlugin(ctx context.Context, cmd string) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
 
-	metadata := p.Metadata()
+	logger := log.From(ctx)
+
+	name := filepath.Base(cmd)
+
+	var match bool
+	var matchIdx int
+
+	for i, c := range m.configs {
+		if name == c.Name {
+			match = true
+			matchIdx = i
+			break
+		}
+	}
+
+	if match {
+		client, ok := m.store.Get(name)
+		if ok {
+			client.Kill()
+		}
+		if metadata, err := m.store.GetMetadata(name); err == nil {
+			moduleService, err := m.store.GetModuleService(name)
+			if err != nil {
+				logger.Errorf("failed unregister service (go): %w", err)
+			}
+			if err := m.unregisterMetadata(ctx, cmd, metadata, moduleService); err != nil {
+				logger.Errorf("failed unregister metadata (go): %w", err)
+			}
+		}
+
+		m.configs[matchIdx] = m.configs[len(m.configs)-1]
+		m.configs = m.configs[:len(m.configs)-1]
+
+		m.store.Remove(name)
+	}
+}
+
+func (m *Manager) unregisterJSPlugin(ctx context.Context, cmd string) error {
+	jsPlugin, ok := m.store.GetJS(cmd)
+	if ok {
+		m.store.RemoveJS(cmd)
+		jsPlugin.Close()
+		if err := m.unregisterMetadata(ctx, jsPlugin.PluginPath(), jsPlugin.Metadata(), jsPlugin); err != nil {
+			logger := log.From(ctx)
+			logger.Errorf("failed unregister metadata (js): %w", err)
+		}
+	}
+	return nil
+}
+
+func (m *Manager) unregisterMetadata(ctx context.Context, path string, metadata *Metadata, moduleService ModuleService) error {
 	if metadata.Capabilities.IsModule {
-		mp, err := NewModuleProxy(metadata.Name, metadata, p)
+		mp, err := NewModuleProxy(metadata.Name, metadata, moduleService)
 		if err != nil {
 			return fmt.Errorf("unregister: creating module proxy: %w", err)
 		}
@@ -449,7 +531,7 @@ func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 
 	for _, actionName := range metadata.Capabilities.ActionNames {
 		actionPath := actionName
-		m.ActionRegistrar.Unregister(actionPath, p.PluginPath())
+		m.ActionRegistrar.Unregister(actionPath, path)
 	}
 	return nil
 }
@@ -544,8 +626,6 @@ func (m *Manager) Start(ctx context.Context) error {
 		}
 	}
 
-	go m.watchJS(ctx)
-
 	for i := range m.configs {
 		c := m.configs[i]
 
@@ -554,12 +634,14 @@ func (m *Manager) Start(ctx context.Context) error {
 		}
 	}
 
-	go m.watchPlugins(ctx)
+	go m.watchPluginFiles(ctx)
+	go m.goPluginPingPong(ctx)
 
 	return nil
 }
 
-func (m *Manager) watchPlugins(ctx context.Context) {
+// goPluginPingPong will attempt to restart a Go plugin process if the Ping method for a client returns a non-nil error.
+func (m *Manager) goPluginPingPong(ctx context.Context) {
 	logger := log.From(ctx)
 
 	timer := time.NewTimer(5 * time.Second)
@@ -570,7 +652,7 @@ func (m *Manager) watchPlugins(ctx context.Context) {
 		case <-ctx.Done():
 			logger.Infof("shutting down plugin watcher")
 			running = false
-			break
+			return
 		case <-timer.C:
 			for clientName, client := range m.store.Clients() {
 				rpcClient, err := client.Client()
@@ -587,9 +669,11 @@ func (m *Manager) watchPlugins(ctx context.Context) {
 						continue
 					}
 
-					c := config{
-						name: clientName,
-						cmd:  cmd,
+					m.Unload(ctx, cmd)
+
+					c := PluginConfig{
+						Name: clientName,
+						Cmd:  cmd,
 					}
 
 					if err := m.start(ctx, c); err != nil {
@@ -605,39 +689,39 @@ func (m *Manager) watchPlugins(ctx context.Context) {
 
 }
 
-func (m *Manager) start(ctx context.Context, c config) error {
-	client := m.ClientFactory.Init(ctx, c.cmd)
+func (m *Manager) start(ctx context.Context, c PluginConfig) error {
+	client := m.ClientFactory.Init(ctx, c.Cmd)
 
 	rpcClient, err := client.Client()
 	if err != nil {
-		return errors.Wrapf(err, "get rpc client for %q", c.name)
+		return errors.Wrapf(err, "get rpc client for %q", c.Name)
 	}
 
-	pluginLogger := log.From(ctx).With("plugin-name", c.name)
+	pluginLogger := log.From(ctx).With("plugin-name", c.Name)
 
 	raw, err := rpcClient.Dispense("plugin")
 	if err != nil {
-		return errors.Wrapf(err, "dispensing plugin for %q", c.name)
+		return errors.Wrapf(err, "dispensing plugin for %q", c.Name)
 	}
 
 	service, ok := raw.(Service)
 	if !ok {
-		return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
+		return errors.Errorf("unknown type for plugin %q: %T", c.Name, raw)
 	}
 
 	metadata, err := service.Register(ctx, m.API.Addr())
 	if err != nil {
-		return errors.Wrapf(err, "register plugin %q", c.name)
+		return errors.Wrapf(err, "register plugin %q", c.Name)
 	}
 
-	if err := m.store.Store(c.name, client, &metadata, c.cmd); err != nil {
+	if err := m.store.Store(c.Name, client, &metadata, c.Cmd); err != nil {
 		return errors.Wrapf(err, "storing plugin")
 	}
 
 	for _, actionName := range metadata.Capabilities.ActionNames {
 		actionPath := actionName
 		pluginLogger.With("action-path", actionPath).Infof("registering plugin action")
-		err := m.ActionRegistrar.Register(actionPath, c.name, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+		err := m.ActionRegistrar.Register(actionPath, c.Name, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 			return service.HandleAction(ctx, actionPath, payload)
 		})
 
@@ -647,7 +731,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 	}
 
 	pluginLogger.With(
-		"cmd", c.cmd,
+		"cmd", c.Cmd,
 		"metadata", metadata,
 	).Infof("registered plugin %q", metadata.Name)
 
@@ -659,7 +743,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 
 		pluginLogger.Infof("plugin supports navigation")
 
-		mp, err := NewModuleProxy(c.name, &metadata, service)
+		mp, err := NewModuleProxy(c.Name, &metadata, service)
 		if err != nil {
 			return errors.Wrap(err, "creating module proxy")
 		}
