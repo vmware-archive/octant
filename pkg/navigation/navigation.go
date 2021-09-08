@@ -59,6 +59,7 @@ type Navigation struct {
 	Children    []Navigation `json:"children,omitempty"`
 	IconName    string       `json:"iconName,omitempty"`
 	Loading     bool         `json:"isLoading"`
+	CustomSvg   string       `json:"customSvg,omitempty"`
 }
 
 // New creates a Navigation.
@@ -215,6 +216,7 @@ type navConfig struct {
 	suffix    string
 	iconName  string
 	isLoading bool
+	customSvg string
 }
 
 // EntriesHelper generates navigation entries.

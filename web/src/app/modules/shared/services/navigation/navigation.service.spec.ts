@@ -16,6 +16,8 @@ import { ContentService } from '../content/content.service';
 import {
   expectedSelection,
   NAVIGATION_MOCK_DATA,
+  NAVIGATION_WITH_INVALID_CUSTOM_SVG,
+  NAVIGATION_WITH_VALID_CUSTOM_SVG,
 } from './navigation.test.data';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -192,6 +194,50 @@ describe('NavigationService', () => {
           svc.activeUrl = new BehaviorSubject<string>(test.url);
           const result = svc.redirect(test.namespace);
           expect(test.result).toEqual(result);
+        }
+      ));
+    });
+  });
+
+  describe('custom icon svgs', () => {
+    describe('with valid custom svg', () => {
+      it('uses the given icon svg', inject(
+        [NavigationService, WebsocketService],
+        (svc: NavigationService, backendService: BackendService) => {
+          const currentNavigation: Navigation = {
+            sections: NAVIGATION_WITH_VALID_CUSTOM_SVG,
+            defaultPath: '',
+          };
+
+          backendService.triggerHandler(
+            'event.octant.dev/navigation',
+            currentNavigation
+          );
+
+          svc.current.subscribe(_ => {
+            expect(svc.modules.value[0].icon).toEqual('custom');
+          });
+        }
+      ));
+    });
+
+    describe('with invalid custom svg', () => {
+      it('uses the default icon', inject(
+        [NavigationService, WebsocketService],
+        (svc: NavigationService, backendService: BackendService) => {
+          const currentNavigation: Navigation = {
+            sections: NAVIGATION_WITH_INVALID_CUSTOM_SVG,
+            defaultPath: '',
+          };
+
+          backendService.triggerHandler(
+            'event.octant.dev/navigation',
+            currentNavigation
+          );
+
+          svc.current.subscribe(_ => {
+            expect(svc.modules.value[0].icon).toEqual('times');
+          });
         }
       ));
     });

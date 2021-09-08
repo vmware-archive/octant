@@ -8,6 +8,7 @@ export interface NavigationChild {
   children?: NavigationChild[];
   iconName?: string;
   isLoading: boolean;
+  customSvg?: string;
 }
 
 export interface Navigation {

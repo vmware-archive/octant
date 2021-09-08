@@ -14,8 +14,10 @@ import {
   loadTextEditIconSet,
   loadTechnologyIconSet,
   loadChartIconSet,
+  ClarityIcons,
 } from '@cds/core/icon';
 import { IconView, Tooltip } from '../../../models/content';
+import { isSvg } from '../../../../../util/isSvg';
 
 @Component({
   selector: 'app-view-icon',
@@ -56,6 +58,15 @@ export class IconComponent extends AbstractViewComponent<IconView> {
 
     if (this.tooltip) {
       this.generateTooltipClassStyles();
+    }
+
+    if (view.config.customSvg) {
+      if (isSvg(view.config.customSvg)) {
+        ClarityIcons.addIcons([view.config.shape, view.config.customSvg]);
+      } else {
+        console.error(`Invalid SVG for icon '${view.config.shape}'`);
+        view.config.shape = 'times';
+      }
     }
 
     this.shape = view.config.shape;

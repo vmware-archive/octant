@@ -23,7 +23,14 @@
             'button-tool-labels': showLabels
           }">
             <div *ngIf="showLabels" class="button-wrapper">
-              <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
+              <div *ngIf="tab.customSvg; else regularIcon">
+                <cds-icon class="icon-nav" [attr.shape]="tab.icon"></cds-icon>
+              </div>
+              <ng-template #regularIcon>
+                <div>
+                  <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
+                </div>
+              </ng-template>
               <div class="button-text-wrapper">
                 <div class="button-text">{{tab.title}}</div>
               </div>
@@ -132,11 +139,12 @@
             [clrVerticalNavGroupExpanded]="shouldExpand(i)"
             (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
           >
-            <clr-icon
-              [attr.shape]="section.iconName | default: 'exclamation-circle'"
-              clrVerticalNavIcon
-            ></clr-icon>
+            <cds-icon *ngIf="section.customSvg; else firstLevelIcon" [attr.shape]="section.iconName" clrVerticalNavIcon></cds-icon>
             {{ section.title }}
+            <ng-template #firstLevelIcon>
+              <clr-icon [attr.shape]="section.iconName | default: 'exclamation-circle'" clrVerticalNavIcon></clr-icon>
+            </ng-template>
+
             <clr-vertical-nav-group-children>
               <a
                 clrVerticalNavLink
@@ -158,11 +166,14 @@
                   [routerLinkActiveOptions]="{ exact: false }"
                   routerLinkActive="active"
                 >
-                  <clr-icon
-                    *ngIf="itemIcon(category) as categoryIcon"
-                    [attr.shape]="categoryIcon"
-                    clrVerticalNavIcon
-                  ></clr-icon>
+                  <cds-icon *ngIf="category.customSvg; else secondLevelIcon" [attr.shape]="category.iconName" clrVerticalNavIcon></cds-icon>
+                  <ng-template #secondLevelIcon>
+                    <clr-icon
+                      *ngIf="itemIcon(category) as categoryIcon"
+                      [attr.shape]="categoryIcon"
+                      clrVerticalNavIcon
+                    ></clr-icon>
+                  </ng-template>
                   {{ category.title }}
                 </a>
               </ng-container>
