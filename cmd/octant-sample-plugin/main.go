@@ -64,8 +64,8 @@ func main() {
 	logger.Info("octant-sample-plugin is starting, with logger helper")
 	service.SetupPluginLogger(service.Info)
 	// OUTPUT: 2021-08-23T11:35:02.714-0500    INFO    octant-sample-plugin    plugin/logger.go:43     octant-sample-plugin is starting, with logger helper    {"timestamp": "2021-08-23T11:35:02.714-0500"}
-	log.Println("octant-sample-plugin is starting, with with prefix logger")
-	// OUTPUT: 2021-08-23T11:35:02.714-0500    INFO    octant-sample-plugin    plugin/logger.go:43     [INFO] 2021/08/23 11:35:02 octant-sample-plugin is starting, with with prefix logger
+	log.Println("octant-sample-plugin is starting with prefix logger")
+	// OUTPUT: 2021-08-23T11:35:02.714-0500    INFO    octant-sample-plugin    plugin/logger.go:43     [INFO] 2021/08/23 11:35:02 octant-sample-plugin is starting with prefix logger
 	p.Serve()
 
 }
