@@ -7,6 +7,10 @@
   border: none;
 }
 
+div.jsoneditor-tree {
+  background: none;
+}
+
 div.jsoneditor-field,
 div.jsoneditor-value {
   color: var(--tableValue-color);

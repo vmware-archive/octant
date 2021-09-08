@@ -1,8 +1,8 @@
-package printer
+package manifest
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +13,9 @@ import (
 )
 
 func Test_GetImageManifest(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping test in CI to avoid rate limits")
+	}
 	tests := []struct {
 		name         string
 		input        string
@@ -48,7 +51,7 @@ func Test_GetImageManifest(t *testing.T) {
 			manifestPath: "alpine_manifest.json",
 			configPath:   "alpine_config.json",
 			hostOS:       "windows",
-			error:        "error parsing manifest for for image docker://alpine:3.14.0: choosing image instance: no image found in manifest list for architecture amd64, variant \"\", OS windows",
+			error:        "error parsing manifest for image docker://alpine:3.14.0: choosing image instance: no image found in manifest list for architecture amd64, variant \"\", OS windows",
 		},
 	}
 	mc := NewManifestConfiguration()
@@ -61,7 +64,6 @@ func Test_GetImageManifest(t *testing.T) {
 			expectedConfig := string(inputConfig)[:len(inputConfig)-1]
 
 			manifest, config, err := mc.GetImageManifest(context.Background(), tt.hostOS, tt.input)
-			fmt.Println("err", err)
 			if len(tt.error) > 0 {
 				assert.EqualError(t, err, tt.error)
 				return
