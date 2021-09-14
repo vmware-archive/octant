@@ -22,6 +22,7 @@ const (
 	ActionOverviewServiceEditor   = "action.octant.dev/serviceEditor"
 	ActionDeploymentConfiguration = "action.octant.dev/deploymentConfiguration"
 	ActionUpdateObject            = "action.octant.dev/update"
+	ActionGetManifest             = "action.octant.dev/manifest"
 )
 
 func sendAlert(alerter action.Alerter, alertType action.AlertType, message string, expiration *time.Time) {

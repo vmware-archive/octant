@@ -361,3 +361,46 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
   ctx = metadata.AppendToOutgoingContext(request.Context(), "x-octant-foo", "bar")
   u, err := request.DashboardClient.Get(ctx, key)
 ```
+
+## Custom Icon
+
+### Custom Icon for plugins
+
+It's possible to add a custom SVG for plugins.
+
+First to do is define your SVG:
+
+```go
+svg := "<svg width=\"10px\" height=\"10px\">" +
+  "<g>" +
+    "<ellipse fill=\"#000000\" stroke=\"#000000\" cx=\"5\" cy=\"5.5\" rx=\"3\" ry=\"3\"/>" +
+  "</g>" +
+"</svg>"
+```
+
+Then, where you are defining your navigation, add the SVG and set a custom name for it:
+
+```go
+navigation.Navigation{
+		Title: "Sample Plugin",
+		Path:  request.GeneratePath(),
+		Children: []navigation.Navigation{
+			{
+				Title:    "Nested Once",
+				Path:     request.GeneratePath("nested-once"),
+				IconName: "folder",
+				Children: []navigation.Navigation{
+					{
+						Title:    "Nested Twice",
+						Path:     request.GeneratePath("nested-once", "nested-twice"),
+						IconName: "folder",
+					},
+				},
+			},
+		},
+		IconName:  "test-custom-svg",
+		CustomSvg: svg,
+	}, nil
+```
+
+Note: It's possible to have a naming collision with Clarity icons, it's recommended to use non-common names for the svg

@@ -8,16 +8,16 @@ package printer
 import (
 	"context"
 	"fmt"
-
-	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/util/json"
-
-	"github.com/vmware-tanzu/octant/internal/log"
-	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
-
 	"path"
 	"sort"
 	"strings"
+
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/manifest"
+	"github.com/vmware-tanzu/octant/internal/util/json"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/action"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 
@@ -128,12 +128,16 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.AddText("Image ID", containerStatus.ImageID)
 	}
 
-	manifest, configuration, err := ManifestManager.GetImageManifest(cc.context, hostOS, c.Image)
-	if err == nil {
-		sections.Add("Image Manifest", component.NewJSONEditor(manifest, true))
-		sections.Add("Image Configuration", component.NewJSONEditor(configuration, true))
+	if !manifest.ManifestManager.HasEntry(hostOS, c.Image) {
+		sections.Add("Image Manifest", component.NewButton("Show Manifest", action.CreatePayload(octant.ActionGetManifest, map[string]interface{}{"host": hostOS, "image": c.Image})))
 	} else {
-		sections.Add("Image Manifest", component.NewText(fmt.Sprintf("Unable to load image manifest %s", err)))
+		manifest, configuration, err := manifest.ManifestManager.GetImageManifest(cc.context, hostOS, c.Image)
+		if err == nil {
+			sections.Add("Image Manifest", component.NewJSONEditor(manifest, true))
+			sections.Add("Image Configuration", component.NewJSONEditor(configuration, true))
+		} else {
+			sections.Add("Image Manifest", component.NewText(fmt.Sprintf("Unable to load image manifest %s", err)))
+		}
 	}
 
 	hostPorts := describeContainerHostPorts(c.Ports)

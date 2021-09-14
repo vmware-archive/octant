@@ -18,7 +18,8 @@
         "badge": "",
         "color": "",
         "badgeColor": "",
-        "label": ""
+        "label": "",
+        "customSvg": ""
       }
     },
     "message": "Message",
