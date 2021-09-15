@@ -26,13 +26,13 @@ params:
   slack_url: "https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG"
   rss_url: "/blog/feed.xml"
   github_base_url: "https://github.com/vmware-tanzu/octant"
-  use_advanced_docs: false
+  use_advanced_docs: true
   docs_right_sidebar: true
   docs_search: false
   docs_search_index_name: index_name
   docs_search_api_key: api_key
   docs_versioning: false
-  docs_latest: v0.40.0
+  docs_latest: main
   docs_versions:
     - v0.30.0
     - v0.40.0

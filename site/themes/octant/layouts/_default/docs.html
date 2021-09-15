@@ -5,9 +5,12 @@
 				<h1>Documentation</h1>
 			</div>
 		</div>
-		<div class="subpage wrapper">
-			<p>If you are new to Octant check out our <a href="https://reference.octant.dev/?path=/docs/docs-intro--page#getting-started">Getting Started</a> guide which can help you get Octant installed and running.</p>
-			<p>For complete documentation, from installation to how to get started developing plugins for Octant, visit our <a href="https://reference.octant.dev/">Octant Reference</a> website.</p>
+		<div class="wrapper docs clearfix">
+			{{ partial "docs-sidebar.html" . }}
+			<div class="docs-content {{ if not .Site.Params.docs_right_sidebar }}full{{ end }}">
+				{{ .Content }}
+			</div>
+			{{ partial "docs-right-bar.html" . }}
 		</div>
 	</main>
 {{ end }}

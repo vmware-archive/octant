@@ -27,6 +27,11 @@ body {
     }
     @include breakpoint(medium) {
     }
+    &.docs {
+      @include breakpoint(extra-large) {
+        max-width: 80%;
+      }
+    }
 }
 .clearfix {
 	*zoom: 1;
@@ -147,7 +152,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-BoldItalic";
     src:url("/fonts/Metropolis-BoldItalic.eot");
@@ -157,7 +162,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-Light";
     src:url("/fonts/Metropolis-Light.eot");
@@ -167,7 +172,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-LightItalic";
     src:url("/fonts/Metropolis-LightItalic.eot");
@@ -177,7 +182,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-Regular";
     src:url("/fonts/Metropolis-Regular.eot");
@@ -187,7 +192,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-RegularItalic";
     src:url("/fonts/Metropolis-RegularItalic.eot");
@@ -197,7 +202,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-Medium";
     src:url("/fonts/Metropolis-Medium.eot");
@@ -207,7 +212,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-MediumItalic";
     src:url("/fonts/Metropolis-MediumItalic.eot");
@@ -217,7 +222,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-SemiBold";
     src:url("/fonts/Metropolis-SemiBold.eot");
@@ -227,7 +232,7 @@ button {
     font-weight: normal;
     font-style: normal;
   }
-  
+
   @font-face {
     font-family: "Metropolis-SemiBoldItalic";
     src:url("/fonts/Metropolis-SemiBoldItalic.eot");
