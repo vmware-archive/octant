@@ -1,7 +1,6 @@
 <div class="side-nav">
     {{ if .Site.Params.use_advanced_docs }}
         {{ $version := .CurrentSection.Params.version }}
-        {{ .Render "versions" }}
         {{ .Render "search" }}
         {{ if $version }}
             {{ $tocTemplateName := index (index $.Site.Data.docs "toc-mapping") $version }}
@@ -14,7 +13,7 @@
                 <ul>
                     {{ range .subfolderitems }}
                     <li>
-                        {{ $url :=  (index (print "/docs/" $version .url "/"))  }}
+                        {{ $url :=  (index (print "/docs" .url "/"))  }}
                         <a href="{{ $url }}" {{ if (eq  $.Page.RelPermalink $url)  }}class="active"{{ end }}>{{ .page }}</a>
                     </li>
                     {{ end }}
