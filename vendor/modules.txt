@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.81.0
+# cloud.google.com/go v0.93.3
 cloud.google.com/go/compute/metadata
 # contrib.go.opencensus.io/exporter/jaeger v0.2.1
 ## explicit
@@ -259,7 +259,7 @@ github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/snappy
 # github.com/google/btree v1.0.0
 github.com/google/btree
-# github.com/google/go-cmp v0.5.5
+# github.com/google/go-cmp v0.5.6
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -355,7 +355,7 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 github.com/mistifyio/go-zfs
 # github.com/mitchellh/go-testing-interface v1.0.0
 github.com/mitchellh/go-testing-interface
-# github.com/mitchellh/mapstructure v1.4.1
+# github.com/mitchellh/mapstructure v1.4.2
 github.com/mitchellh/mapstructure
 # github.com/moby/spdystream v0.2.0
 github.com/moby/spdystream
@@ -387,7 +387,7 @@ github.com/opencontainers/selinux/pkg/pwalk
 # github.com/ostreedev/ostree-go v0.0.0-20190702140239-759a8c1ac913
 github.com/ostreedev/ostree-go/pkg/glibobject
 github.com/ostreedev/ostree-go/pkg/otbuiltin
-# github.com/pelletier/go-toml v1.9.3
+# github.com/pelletier/go-toml v1.9.4
 github.com/pelletier/go-toml
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
@@ -422,7 +422,7 @@ github.com/soheilhy/cmux
 ## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.3.1
+# github.com/spf13/cast v1.4.1
 github.com/spf13/cast
 # github.com/spf13/cobra v1.2.1
 ## explicit
@@ -431,9 +431,14 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/spf13/viper v1.8.1
+# github.com/spf13/viper v1.9.0
 ## explicit
 github.com/spf13/viper
+github.com/spf13/viper/internal/encoding
+github.com/spf13/viper/internal/encoding/hcl
+github.com/spf13/viper/internal/encoding/json
+github.com/spf13/viper/internal/encoding/toml
+github.com/spf13/viper/internal/encoding/yaml
 # github.com/stoewer/go-strcase v1.2.0
 ## explicit
 github.com/stoewer/go-strcase
@@ -480,7 +485,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+# golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
 # golang.org/x/mod v0.4.2
@@ -488,7 +493,7 @@ golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
+# golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -499,8 +504,9 @@ golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+# golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 golang.org/x/oauth2
+golang.org/x/oauth2/authhandler
 golang.org/x/oauth2/google
 golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
@@ -510,7 +516,7 @@ golang.org/x/oauth2/jwt
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+# golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -518,7 +524,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
 golang.org/x/term
-# golang.org/x/text v0.3.5
+# golang.org/x/text v0.3.6
 golang.org/x/text/cases
 golang.org/x/text/collate
 golang.org/x/text/internal
@@ -550,7 +556,7 @@ golang.org/x/tools/internal/typeparams
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/api v0.44.0
+# google.golang.org/api v0.56.0
 google.golang.org/api/support/bundler
 # google.golang.org/appengine v1.6.7
 google.golang.org/appengine
@@ -563,7 +569,7 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
+# google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.40.0
 ## explicit
@@ -658,7 +664,7 @@ google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.62.0
+# gopkg.in/ini.v1 v1.63.2
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
