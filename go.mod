@@ -29,7 +29,6 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/iancoleman/strcase v0.2.0
 	github.com/json-iterator/go v1.1.11
-	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/soheilhy/cmux v0.1.5
@@ -47,7 +46,7 @@ require (
 	google.golang.org/protobuf v1.27.1
 	k8s.io/api v0.21.3
 	k8s.io/apiextensions-apiserver v0.21.3
-	k8s.io/apimachinery v0.21.3
+	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.21.3
 	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.21.3
