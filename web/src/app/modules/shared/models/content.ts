@@ -117,6 +117,18 @@ export interface DropdownView extends View {
   };
 }
 
+export interface MfComponentView extends View {
+  config: {
+    name: string;
+    remoteEntry: string;
+    remoteName: string;
+    exposedModule: string;
+    elementName: string;
+    data?: string;
+    action?: string;
+  };
+}
+
 export interface DonutChartView extends View {
   config: {
     segments: DonutSegment[];

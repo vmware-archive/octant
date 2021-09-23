@@ -30,6 +30,7 @@ import { LinkComponent } from './components/presentation/link/link.component';
 import { ListComponent } from './components/presentation/list/list.component';
 import { LoadingComponent } from './components/presentation/loading/loading.component';
 import { LogsComponent } from './components/smart/logs/logs.component';
+import { MfComponent } from './components/smart/mf-component/mf.component';
 import { ModalComponent } from './components/presentation/modal/modal.component';
 import { PortsComponent } from './components/presentation/ports/ports.component';
 import { PortForwardComponent } from './components/presentation/port-forward/port-forward.component';
@@ -77,6 +78,7 @@ const DynamicComponentMapping: ComponentMapping = {
   link: LinkComponent,
   list: ListComponent,
   logs: LogsComponent,
+  mfcomponent: MfComponent,
   modal: ModalComponent,
   podStatus: PodStatusComponent,
   portforward: PortForwardComponent,

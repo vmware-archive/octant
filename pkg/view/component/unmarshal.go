@@ -251,6 +251,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal YAML config")
 		o = t
+	case TypeMFComponent:
+		t := &MfComponent{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal Type Module Federation config")
+		o = t
 	default:
 		return nil, errors.Errorf("unknown view component %q", to.Metadata.Type)
 	}

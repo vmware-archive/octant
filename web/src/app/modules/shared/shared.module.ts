@@ -38,6 +38,7 @@ import { TimestampComponent } from './components/presentation/timestamp/timestam
 import { LoadingComponent } from './components/presentation/loading/loading.component';
 import { HighlightModule } from 'ngx-highlightjs';
 import { LabelSelectorComponent } from './components/presentation/label-selector/label-selector.component';
+import { MfComponent } from './components/smart/mf-component/mf.component';
 import { ModalComponent } from './components/presentation/modal/modal.component';
 import { CytoscapeComponent } from './components/presentation/cytoscape/cytoscape.component';
 import { Cytoscape2Component } from './components/presentation/cytoscape2/cytoscape2.component';
@@ -93,6 +94,7 @@ import { FormViewContainerComponent } from './components/form-view-container/for
 import { SignpostComponent } from './components/presentation/signpost/signpost.component';
 import { JoinPipe } from './pipes/join/join.pipe';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ModuleFederationToolsModule } from '@angular-architects/module-federation-tools';
 
 @NgModule({
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -138,6 +140,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    MfComponent,
     ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
@@ -216,6 +219,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    MfComponent,
     ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
@@ -260,6 +264,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     ReactiveFormsModule,
     ResizableModule,
     RouterModule,
+    ModuleFederationToolsModule,
   ],
   providers: [highlightProvider(), dynamicComponents()],
   exports: [
@@ -303,6 +308,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    MfComponent,
     ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
