@@ -5,7 +5,11 @@
 			<p>To help you get started, see the documentation.</p>
 		</div>
 		<div class="right-side">
-			<a href="/docs/" class="button">Documentation</a>
+			{{ if eq (path.Dir .Page.File.Path) "docs" }}
+				<a href="https://reference.octant.dev" target="_blank" class="button">Documentation</a>
+			{{ else }}
+				<a href="/docs/" class="button">Documentation</a>
+			{{ end }}
 		</div>
 	</div>
 </div>
