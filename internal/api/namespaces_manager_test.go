@@ -45,6 +45,8 @@ func TestNamespacesManager_GenerateNamespaces(t *testing.T) {
 }
 
 func TestNamespacesGenerator(t *testing.T) {
+	ctx := context.Background()
+
 	tests := []struct {
 		name     string
 		setup    func(controller *gomock.Controller) *configFake.MockDash
@@ -57,8 +59,8 @@ func TestNamespacesGenerator(t *testing.T) {
 				namespaces := []string{"ns-1"}
 
 				namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
-				namespaceClient.EXPECT().Names().Return(namespaces, nil)
-				namespaceClient.EXPECT().ProvidedNamespaces().Return([]string{})
+				namespaceClient.EXPECT().Names(ctx).Return(namespaces, nil)
+				namespaceClient.EXPECT().ProvidedNamespaces(ctx).Return([]string{})
 
 				clusterClient := clusterFake.NewMockClientInterface(controller)
 				clusterClient.EXPECT().NamespaceClient().Return(namespaceClient, nil)

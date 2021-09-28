@@ -115,7 +115,7 @@ func (n *NamespacesManager) runUpdate(state octant.State, client api.OctantClien
 }
 
 // NamespacesGenerator generates a list of namespaces.
-func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]string, error) {
+func NamespacesGenerator(ctx context.Context, config NamespaceManagerConfig) ([]string, error) {
 	if config == nil {
 		return nil, errors.New("namespaces manager config is nil")
 	}
@@ -126,9 +126,9 @@ func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]st
 		return nil, errors.Wrap(err, "retrieve namespaces client")
 	}
 
-	providedNamespaces := namespaceClient.ProvidedNamespaces()
+	providedNamespaces := namespaceClient.ProvidedNamespaces(ctx)
 
-	names, err := namespaceClient.Names()
+	names, err := namespaceClient.Names(ctx)
 	if err != nil {
 		initialNamespace := namespaceClient.InitialNamespace()
 		names = []string{initialNamespace}

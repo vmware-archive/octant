@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,17 +35,17 @@ func (m *MockNamespaceInterface) EXPECT() *MockNamespaceInterfaceMockRecorder {
 }
 
 // HasNamespace mocks base method.
-func (m *MockNamespaceInterface) HasNamespace(namespace string) bool {
+func (m *MockNamespaceInterface) HasNamespace(ctx context.Context, namespace string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasNamespace", namespace)
+	ret := m.ctrl.Call(m, "HasNamespace", ctx, namespace)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // HasNamespace indicates an expected call of HasNamespace.
-func (mr *MockNamespaceInterfaceMockRecorder) HasNamespace(namespace interface{}) *gomock.Call {
+func (mr *MockNamespaceInterfaceMockRecorder) HasNamespace(ctx, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasNamespace", reflect.TypeOf((*MockNamespaceInterface)(nil).HasNamespace), namespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasNamespace", reflect.TypeOf((*MockNamespaceInterface)(nil).HasNamespace), ctx, namespace)
 }
 
 // InitialNamespace mocks base method.
@@ -62,30 +63,30 @@ func (mr *MockNamespaceInterfaceMockRecorder) InitialNamespace() *gomock.Call {
 }
 
 // Names mocks base method.
-func (m *MockNamespaceInterface) Names() ([]string, error) {
+func (m *MockNamespaceInterface) Names(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Names")
+	ret := m.ctrl.Call(m, "Names", ctx)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Names indicates an expected call of Names.
-func (mr *MockNamespaceInterfaceMockRecorder) Names() *gomock.Call {
+func (mr *MockNamespaceInterfaceMockRecorder) Names(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Names", reflect.TypeOf((*MockNamespaceInterface)(nil).Names))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Names", reflect.TypeOf((*MockNamespaceInterface)(nil).Names), ctx)
 }
 
 // ProvidedNamespaces mocks base method.
-func (m *MockNamespaceInterface) ProvidedNamespaces() []string {
+func (m *MockNamespaceInterface) ProvidedNamespaces(ctx context.Context) []string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProvidedNamespaces")
+	ret := m.ctrl.Call(m, "ProvidedNamespaces", ctx)
 	ret0, _ := ret[0].([]string)
 	return ret0
 }
 
 // ProvidedNamespaces indicates an expected call of ProvidedNamespaces.
-func (mr *MockNamespaceInterfaceMockRecorder) ProvidedNamespaces() *gomock.Call {
+func (mr *MockNamespaceInterfaceMockRecorder) ProvidedNamespaces(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvidedNamespaces", reflect.TypeOf((*MockNamespaceInterface)(nil).ProvidedNamespaces))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvidedNamespaces", reflect.TypeOf((*MockNamespaceInterface)(nil).ProvidedNamespaces), ctx)
 }

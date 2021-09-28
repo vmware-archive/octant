@@ -21,12 +21,16 @@ import (
 	"testing"
 	"time"
 
+	authv1 "k8s.io/api/authorization/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/watch"
+
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/util/json"
 	"github.com/vmware-tanzu/octant/pkg/cluster"
@@ -173,6 +177,7 @@ func TestNewRunnerLoadsValidKubeConfigFilteringNonexistent(t *testing.T) {
 	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
 }
 
+// TODO: Refactor test for both types of informer factories
 func TestNewRunnerUsesClusterClient(t *testing.T) {
 	namespace := "foobar-banana"
 	controller := gomock.NewController(t)
@@ -181,17 +186,13 @@ func TestNewRunnerUsesClusterClient(t *testing.T) {
 	listener := NewInMemoryListener()
 
 	sharedIndexInformer := clusterFake.NewMockSharedIndexInformer(controller)
-	sharedIndexInformer.EXPECT().SetWatchErrorHandler(gomock.Any())
-	sharedIndexInformer.EXPECT().AddEventHandlerWithResyncPeriod(gomock.Any(), gomock.Any())
 	sharedIndexInformer.EXPECT().Run(gomock.Any()).AnyTimes()
 
 	genericInformer := clusterFake.NewMockGenericInformer(controller)
 	genericInformer.EXPECT().Informer().Return(sharedIndexInformer).AnyTimes()
 	genericInformer.EXPECT().Lister().AnyTimes()
 
-	crds := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
 	dynamicInformerFactory := clusterFake.NewMockDynamicSharedInformerFactory(controller)
-	dynamicInformerFactory.EXPECT().ForResource(crds).Return(genericInformer)
 
 	logger := internalLog.NopLogger()
 	cancel, err := makeRunner(
@@ -211,10 +212,25 @@ func TestNewRunnerUsesClusterClient(t *testing.T) {
 func mockClusterClientReturningNamespace(controller *gomock.Controller, namespace string) cluster.ClientInterface {
 	nsClient := clusterFake.NewMockNamespaceInterface(controller)
 	nsClient.EXPECT().InitialNamespace().Return(namespace)
-	nsClient.EXPECT().ProvidedNamespaces().Return([]string{namespace})
-	nsClient.EXPECT().Names().AnyTimes()
+	nsClient.EXPECT().ProvidedNamespaces(gomock.Any()).Return([]string{namespace})
+	nsClient.EXPECT().Names(gomock.Any()).AnyTimes()
 
 	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	ssari := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+
+	kubernetesClient.EXPECT().AuthorizationV1().Return(authClient).AnyTimes()
+	authClient.EXPECT().SelfSubjectAccessReviews().Return(ssari).AnyTimes()
+	ssari.EXPECT().Create(gomock.Any(), gomock.Any(), metav1.CreateOptions{}).Return(&authv1.SelfSubjectAccessReview{}, nil).AnyTimes()
+
+	nri := clusterFake.NewMockNamespaceableResourceInterface(controller)
+	dynamicClient.EXPECT().Resource(gomock.Any()).Return(nri).AnyTimes()
+	ri := clusterFake.NewMockResourceInterface(controller)
+	nri.EXPECT().Namespace(gomock.Any()).Return(ri).AnyTimes()
+	ri.EXPECT().List(gomock.Any(), gomock.Any()).Return(&unstructured.UnstructuredList{}, nil)
+
+	ri.EXPECT().Watch(gomock.Any(), gomock.Any()).Return(watch.NewFake(), nil)
 
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).MinTimes(1)
@@ -222,6 +238,7 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	clusterClient.EXPECT().RESTClient()
 	clusterClient.EXPECT().RESTConfig()
 	clusterClient.EXPECT().DefaultNamespace().Return(namespace)
+	clusterClient.EXPECT().KubernetesClient().Return(kubernetesClient, nil).AnyTimes()
 
 	return clusterClient
 }

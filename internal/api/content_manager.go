@@ -39,7 +39,7 @@ const (
 type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
-// if the action should be be immediately rerun.
+// if the action should be immediately rerun.
 type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
 
 // Content is a content to be sent to clients.
