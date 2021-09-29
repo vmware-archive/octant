@@ -1,0 +1,73 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs';
+import { argTypesView } from "./helpers/helpers";
+
+export const mfComponentDocs= { source: { code: `TBD`}}
+
+export const mfAngularComponentView = {
+  config: {
+    name: 'AngularComponent',
+    remoteEntry:
+      'https://nice-grass-018f7d910.azurestaticapps.net/remoteEntry.js',
+    remoteName: 'angular1',
+    exposedModule: './web-components',
+    elementName: 'angular1-element',
+  },
+  metadata: {
+    type: 'mfcomponent',
+  },
+};
+
+export const mfReactComponentView = {
+  config: {
+    name: 'ReactComponent',
+    remoteEntry:
+      'https://witty-wave-0a695f710.azurestaticapps.net/remoteEntry.js',
+    remoteName: 'react',
+    exposedModule: './web-components',
+    elementName: 'react-element',
+  },
+  metadata: {
+    type: 'mfcomponent',
+  },
+};
+
+export const MfComponentStoryTemplate = args => ({
+  template: `<app-mf-component [view]= "view"></app-mf-component>`,
+  argTypes: argTypesView,
+  props: {view: args.view},
+});
+
+<h1>Micro Frontend component</h1>
+<h2>Description</h2>
+
+<p>Micro Frontend component is used to bring any arbitrary external component to Octant.
+External components are hosted either locally or remotely and exposed as Module Federated components.
+MfComponent creates a tiny wrapper around external component and acts as a proxy to pass the data in and handle component events.</p>
+
+<h2>External Angular component</h2>
+Here we have an external Angular component hosted on a remote server
+<a href="https://nice-grass-018f7d910.azurestaticapps.net"> here</a>.
+That component is wrapped inside the MfComponent so it can be included in Octant.
+
+<Meta title="Components/MfComponent" argTypes = { argTypesView } />
+
+<Canvas withToolbar>
+  <Story name="Remote Angular component"
+         parameters={{ docs: mfComponentDocs }}
+         args= {{ view: mfAngularComponentView }}>
+    { MfComponentStoryTemplate.bind({}) }  </Story>
+</Canvas>
+
+<h2>External React component</h2>
+External component can be created in arbitrary framework, for example
+here is a simple React component also <a href="https://witty-wave-0a695f710.azurestaticapps.net">hosted remotely.</a>
+
+<Canvas withToolbar>
+  <Story name="Remote React component"
+         parameters={{ docs: mfComponentDocs }}
+         args= {{ view: mfReactComponentView }}>
+    { MfComponentStoryTemplate.bind({}) }  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable story = "Remote Angular component" />

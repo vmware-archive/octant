@@ -1,0 +1,7 @@
+{
+    "name":"template-mf-angular",
+    "remoteEntry":"http://localhost:3000/remoteEntry.js",
+    "remoteName":"templatemfangular",
+    "exposedModule":"./web-components",
+    "elementName":"template-mf-angular"
+}

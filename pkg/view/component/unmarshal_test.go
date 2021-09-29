@@ -380,6 +380,21 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "mfcomponent",
+			configFile: "config_mfcomponent.json",
+			objectType: TypeMFComponent,
+			expected: &MfComponent{
+				Base: newBase(TypeMFComponent, nil),
+				Config: MfComponentConfig{
+					Name:          "template-mf-angular",
+					RemoteEntry:   "http://localhost:3000/remoteEntry.js",
+					RemoteName:    "templatemfangular",
+					ExposedModule: "./web-components",
+					ElementName:   "template-mf-angular",
+				},
+			},
+		},
+		{
 			name:       "modal",
 			configFile: "config_modal.json",
 			objectType: TypeModal,

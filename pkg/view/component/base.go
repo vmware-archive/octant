@@ -100,6 +100,8 @@ const (
 	TypeTimestamp = "timestamp"
 	// TypeYAML is a YAML component.
 	TypeYAML = "yaml"
+	// TypeMFComponent is a Module Federation component.
+	TypeMFComponent = "mfcomponent"
 )
 
 // Base is an abstract base for components..
