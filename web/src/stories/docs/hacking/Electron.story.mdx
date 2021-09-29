@@ -20,8 +20,11 @@ mode.
 Octant is still primarily a browser-based application. To run the
 Electron application, the Angular frontend must be running first.
 
-`$ go run build.go build-electron-dev`
+`$ go run build.go build-electron`
 
-An application will be generated in `cmd/octant-electron/output`. Currently,
-the application is configured to proxy the frontend to a separately running
-Angular frontend (at 127.0.0.1:4200).
+After, move to `/web` and run `npm run electron:local`
+
+An Electron application will be opened
+
+Currently, the application is configured to proxy the frontend to a
+separately running Angular frontend (at 127.0.0.1:4200).
