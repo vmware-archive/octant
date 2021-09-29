@@ -193,8 +193,9 @@ func handleStreamingMessage(client api.StreamingClient, request api.StreamReques
 	var g errgroup.Group
 
 	for _, handler := range handlers {
+		h := handler
 		g.Go(func() error {
-			return handler.Handler(client.State(), request.Payload)
+			return h.Handler(client.State(), request.Payload)
 		})
 	}
 
