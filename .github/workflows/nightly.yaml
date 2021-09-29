@@ -18,7 +18,7 @@ jobs:
           cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
       - name: Build web assets
         run: |
           go run build.go web-build
@@ -47,7 +47,7 @@ jobs:
     name: Run goreleaser
     needs: [nightly-build]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.174.2
+    container: goreleaser/goreleaser:v0.180.3
     steps:
       - uses: actions/checkout@v2
         with:
