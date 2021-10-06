@@ -35,7 +35,7 @@ func NewMutatingWebhookConfiguration(os store.Store) *MutatingWebhookConfigurati
 	}
 }
 
-// Support returns the gvk this typed visitor supports.
+// Supports returns the gvk this typed visitor supports.
 func (p *MutatingWebhookConfiguration) Supports() schema.GroupVersionKind {
 	return gvk.MutatingWebhookConfiguration
 }
@@ -59,14 +59,15 @@ func (p *MutatingWebhookConfiguration) Visit(ctx context.Context, object *unstru
 
 	g.Go(func() error {
 		for _, mutatingwebhook := range mutatingwebhookconfiguration.Webhooks {
+			mw := mutatingwebhook
 			g.Go(func() error {
-				if mutatingwebhook.ClientConfig.Service == nil {
+				if mw.ClientConfig.Service == nil {
 					return nil
 				}
 
 				key := store.KeyFromGroupVersionKind(gvk.Service)
-				key.Namespace = mutatingwebhook.ClientConfig.Service.Namespace
-				key.Name = mutatingwebhook.ClientConfig.Service.Name
+				key.Namespace = mw.ClientConfig.Service.Namespace
+				key.Name = mw.ClientConfig.Service.Name
 				service, err := p.objectStore.Get(ctx, key)
 				if err != nil {
 					if kerrors.IsNotFound(err) {

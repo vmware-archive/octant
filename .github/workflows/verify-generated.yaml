@@ -16,7 +16,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
       - name: Install libraries
         run: sudo apt-get update && sudo apt install -y libgpgme-dev libassuan-dev libdevmapper-dev libbtrfs-dev
       - name: Checkout code
