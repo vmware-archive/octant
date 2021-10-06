@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.opencensus.io/trace"
+	authv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/retry"
@@ -40,14 +42,16 @@ type lister interface {
 }
 
 type DynamicCache struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	client cluster.ClientInterface
+	ctx           context.Context
+	cancel        context.CancelFunc
+	client        cluster.ClientInterface
+	dynamicClient dynamic.Interface
 
 	informerFactory dynamicinformer.DynamicSharedInformerFactory
-	knownInformers  sync.Map // gvr:GenericInformer
-	unwatched       sync.Map // gvr:bool
-	gvrCache        sync.Map // gk:gvr
+
+	knownInformers sync.Map // gvr:GenericInformer
+	unwatched      sync.Map // gvr:bool
+	gvrCache       sync.Map // gk:gvr
 
 	removeCh chan schema.GroupVersionResource
 	mu       sync.Mutex
@@ -75,6 +79,7 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, opts .
 		ctx:            ctx,
 		cancel:         cancel,
 		client:         client,
+		dynamicClient:  dynamicClient,
 		knownInformers: sync.Map{},
 		unwatched:      sync.Map{},
 		gvrCache:       sync.Map{},
@@ -328,7 +333,7 @@ func (d *DynamicCache) Watch(ctx context.Context, key store.Key, handler cache.R
 
 	span.AddAttributes(trace.StringAttribute("key", fmt.Sprintf("%s", key)))
 
-	d.forResource(ctx, gvr, handler)
+	d.forResource(ctx, gvr, key.Namespace, handler)
 
 	return err
 }
@@ -364,12 +369,36 @@ func (d *DynamicCache) stopAllInformers() {
 	})
 }
 
-func (d *DynamicCache) isUnwatched(ctx context.Context, gvr schema.GroupVersionResource) bool {
+func (d *DynamicCache) isUnwatched(_ context.Context, gvr schema.GroupVersionResource) bool {
 	_, ok := d.unwatched.Load(gvr)
 	return ok
 }
 
-func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionResource, handler cache.ResourceEventHandler) interuptibleInformer {
+func (d *DynamicCache) CheckResourceAccess(ctx context.Context, gvr schema.GroupVersionResource) bool {
+	kubernetesClient, err := d.client.KubernetesClient()
+	if err != nil {
+		return false
+	}
+
+	ssar := &authv1.SelfSubjectAccessReview{
+		Spec: authv1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authv1.ResourceAttributes{
+				Verb:     "list",
+				Group:    gvr.Group,
+				Version:  gvr.Version,
+				Resource: gvr.Resource,
+			},
+		},
+	}
+	resp, err := kubernetesClient.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, ssar, metav1.CreateOptions{})
+	if err != nil {
+		return false
+	}
+
+	return resp.Status.Allowed
+}
+
+func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionResource, namespace string, handler cache.ResourceEventHandler) interuptibleInformer {
 	_, span := trace.StartSpan(ctx, "dynamicCache:forResource")
 	defer span.End()
 
@@ -378,6 +407,10 @@ func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionR
 
 	v, ok := d.knownInformers.Load(gvr)
 	if !ok {
+		if !d.CheckResourceAccess(ctx, gvr) {
+			d.informerFactory = dynamicinformer.NewFilteredDynamicSharedInformerFactory(d.dynamicClient, resyncPeriod, namespace, nil)
+		}
+
 		i := d.informerFactory.ForResource(gvr)
 		stopCh := make(chan struct{})
 		i.Informer().SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr, stopCh))
@@ -425,7 +458,7 @@ func (d *DynamicCache) listerForResource(ctx context.Context, key store.Key) (li
 		return nil, oerrors.NewAccessError(key, "List", err)
 	}
 
-	ii := d.forResource(ctx, gvr, nil)
+	ii := d.forResource(ctx, gvr, key.Namespace, nil)
 
 	var l lister
 	if key.Namespace == "" {
@@ -610,6 +643,6 @@ func CreateOrUpdateFromHandler(
 // Resources are created in the order they are present in the YAML.
 // An error creating a resource halts resource creation.
 // A list of created resources is returned. You may have created resources AND a non-nil error.
-func (dc *DynamicCache) CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error) {
-	return CreateOrUpdateFromHandler(ctx, namespace, input, dc.Get, dc.Create, dc.client)
+func (d *DynamicCache) CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error) {
+	return CreateOrUpdateFromHandler(ctx, namespace, input, d.Get, d.Create, d.client)
 }

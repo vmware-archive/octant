@@ -22,7 +22,7 @@ type State interface {
 	SetContentPath(string)
 	// GetContentPath returns the content path.
 	GetContentPath() string
-	// OnNamespaceUpdate registers a function to be called with the content path
+	// OnContentPathUpdate registers a function to be called with the content path
 	// is changed.
 	OnContentPathUpdate(fn ContentPathUpdateFunc) UpdateCancelFunc
 	// GetQueryParams returns the query params.
@@ -49,7 +49,7 @@ type State interface {
 	Dispatch(ctx context.Context, actionName string, payload action.Payload) error
 	// SendAlert sends an alert.
 	SendAlert(alert action.Alert)
-	// ClientID returns the websocket client ID.
+	// GetClientID returns the websocket client ID.
 	GetClientID() string
 }
 

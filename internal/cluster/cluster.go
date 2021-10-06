@@ -182,7 +182,7 @@ func (c *Cluster) NamespaceClient() (clusterTypes.NamespaceInterface, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "resolving initial namespace")
 	}
-	return newNamespaceClient(dc, rc, ns, c.providedNamespaces), nil
+	return newNamespaceClient(dc, rc, c.kubernetesClient, ns, c.providedNamespaces), nil
 }
 
 // DynamicClient returns a dynamic client.

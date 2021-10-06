@@ -165,7 +165,7 @@ func (s *GRPCService) CancelPortForward(ctx context.Context, id string) {
 
 // ListNamespaces lists namespaces
 func (s *GRPCService) ListNamespaces(ctx context.Context) (NamespacesResponse, error) {
-	namespaces, err := s.NamespaceInterface.Names()
+	namespaces, err := s.NamespaceInterface.Names(ctx)
 	if err != nil {
 		return NamespacesResponse{}, err
 	}

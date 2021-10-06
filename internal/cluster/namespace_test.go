@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package cluster
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,7 @@ import (
 )
 
 func Test_namespaceClient_Names(t *testing.T) {
+	ctx := context.Background()
 	scheme := runtime.NewScheme()
 
 	dc := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme,
@@ -27,9 +29,9 @@ func Test_namespaceClient_Names(t *testing.T) {
 		newUnstructured("v1", "Namespace", "app-1", "app-1"),
 	)
 
-	nc := newNamespaceClient(dc, nil, "default", []string{})
+	nc := newNamespaceClient(dc, nil, nil, "default", []string{})
 
-	got, err := nc.Names()
+	got, err := nc.Names(ctx)
 	require.NoError(t, err)
 
 	expected := []string{"app-1", "default"}
@@ -37,21 +39,22 @@ func Test_namespaceClient_Names(t *testing.T) {
 }
 
 func Test_namespaceClient_providedNamespaces(t *testing.T) {
+	ctx := context.Background()
 	providedNamespaces := []string{"default", "user-1"}
 
 	scheme := runtime.NewScheme()
 	dc := dynamicfake.NewSimpleDynamicClient(scheme)
-	nc := newNamespaceClient(dc, nil, "default", providedNamespaces)
+	nc := newNamespaceClient(dc, nil, nil, "default", providedNamespaces)
 
-	assert.Equal(t, providedNamespaces, nc.ProvidedNamespaces())
+	assert.Equal(t, providedNamespaces, nc.ProvidedNamespaces(ctx))
 
-	nc = newNamespaceClient(dc, nil, "default", []string{})
-	assert.Equal(t, nc.ProvidedNamespaces(), []string{"default"})
+	nc = newNamespaceClient(dc, nil, nil, "default", []string{})
+	assert.Equal(t, nc.ProvidedNamespaces(ctx), []string{"default"})
 }
 
 func Test_namespaceClient_InitialNamespace(t *testing.T) {
-	expected := "inital-namespace"
-	nc := newNamespaceClient(nil, nil, expected, []string{})
+	expected := "initial-namespace"
+	nc := newNamespaceClient(nil, nil, nil, expected, []string{})
 	assert.Equal(t, expected, nc.InitialNamespace())
 }
 

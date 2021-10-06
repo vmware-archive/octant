@@ -5,10 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 
 package cluster
 
+import "context"
+
 // NamespaceInterface is an interface for querying namespace details.
 type NamespaceInterface interface {
-	Names() ([]string, error)
+	Names(ctx context.Context) ([]string, error)
 	InitialNamespace() string
-	ProvidedNamespaces() []string
-	HasNamespace(namespace string) bool
+	ProvidedNamespaces(ctx context.Context) []string
+	HasNamespace(ctx context.Context, namespace string) bool
 }
