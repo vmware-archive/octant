@@ -1,72 +1,33 @@
 package chunked
 
 import (
+	archivetar "archive/tar"
 	"bytes"
-	"encoding/base64"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"time"
+	"strconv"
 
-	"github.com/containers/storage/pkg/ioutils"
+	"github.com/containerd/stargz-snapshotter/estargz"
+	"github.com/containers/storage/pkg/chunked/compressor"
+	"github.com/containers/storage/pkg/chunked/internal"
 	"github.com/klauspost/compress/zstd"
+	"github.com/klauspost/pgzip"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 	"github.com/vbatts/tar-split/archive/tar"
 )
 
-type zstdTOC struct {
-	Version int                `json:"version"`
-	Entries []zstdFileMetadata `json:"entries"`
-}
-
-type zstdFileMetadata struct {
-	Type       string            `json:"type"`
-	Name       string            `json:"name"`
-	Linkname   string            `json:"linkName,omitempty"`
-	Mode       int64             `json:"mode,omitempty"`
-	Size       int64             `json:"size"`
-	UID        int               `json:"uid"`
-	GID        int               `json:"gid"`
-	ModTime    time.Time         `json:"modtime"`
-	AccessTime time.Time         `json:"accesstime"`
-	ChangeTime time.Time         `json:"changetime"`
-	Devmajor   int64             `json:"devMajor"`
-	Devminor   int64             `json:"devMinor"`
-	Xattrs     map[string]string `json:"xattrs,omitempty"`
-	Digest     string            `json:"digest,omitempty"`
-	Offset     int64             `json:"offset,omitempty"`
-	EndOffset  int64             `json:"endOffset,omitempty"`
-
-	// Currently chunking is not supported.
-	ChunkSize   int64  `json:"chunkSize,omitempty"`
-	ChunkOffset int64  `json:"chunkOffset,omitempty"`
-	ChunkDigest string `json:"chunkDigest,omitempty"`
-}
-
 const (
-	TypeReg     = "reg"
-	TypeChunk   = "chunk"
-	TypeLink    = "hardlink"
-	TypeChar    = "char"
-	TypeBlock   = "block"
-	TypeDir     = "dir"
-	TypeFifo    = "fifo"
-	TypeSymlink = "symlink"
+	TypeReg     = internal.TypeReg
+	TypeChunk   = internal.TypeChunk
+	TypeLink    = internal.TypeLink
+	TypeChar    = internal.TypeChar
+	TypeBlock   = internal.TypeBlock
+	TypeDir     = internal.TypeDir
+	TypeFifo    = internal.TypeFifo
+	TypeSymlink = internal.TypeSymlink
 )
-
-var tarTypes = map[byte]string{
-	tar.TypeReg:     TypeReg,
-	tar.TypeRegA:    TypeReg,
-	tar.TypeLink:    TypeLink,
-	tar.TypeChar:    TypeChar,
-	tar.TypeBlock:   TypeBlock,
-	tar.TypeDir:     TypeDir,
-	tar.TypeFifo:    TypeFifo,
-	tar.TypeSymlink: TypeSymlink,
-}
 
 var typesToTar = map[string]byte{
 	TypeReg:     tar.TypeReg,
@@ -78,14 +39,6 @@ var typesToTar = map[string]byte{
 	TypeSymlink: tar.TypeSymlink,
 }
 
-func getType(t byte) (string, error) {
-	r, found := tarTypes[t]
-	if !found {
-		return "", fmt.Errorf("unknown tarball type: %v", t)
-	}
-	return r, nil
-}
-
 func typeToTarType(t string) (byte, error) {
 	r, found := typesToTar[t]
 	if !found {
@@ -94,54 +47,136 @@ func typeToTarType(t string) (byte, error) {
 	return r, nil
 }
 
-const (
-	manifestChecksumKey = "io.containers.zstd-chunked.manifest-checksum"
-	manifestInfoKey     = "io.containers.zstd-chunked.manifest-position"
-
-	// manifestTypeCRFS is a manifest file compatible with the CRFS TOC file.
-	manifestTypeCRFS = 1
-
-	// footerSizeSupported is the footer size supported by this implementation.
-	// Newer versions of the image format might increase this value, so reject
-	// any version that is not supported.
-	footerSizeSupported = 40
-)
-
-var (
-	// when the zstd decoder encounters a skippable frame + 1 byte for the size, it
-	// will ignore it.
-	// https://tools.ietf.org/html/rfc8478#section-3.1.2
-	skippableFrameMagic = []byte{0x50, 0x2a, 0x4d, 0x18}
-
-	zstdChunkedFrameMagic = []byte{0x47, 0x6e, 0x55, 0x6c, 0x49, 0x6e, 0x55, 0x78}
-)
-
 func isZstdChunkedFrameMagic(data []byte) bool {
 	if len(data) < 8 {
 		return false
 	}
-	return bytes.Equal(zstdChunkedFrameMagic, data[:8])
+	return bytes.Equal(internal.ZstdChunkedFrameMagic, data[:8])
+}
+
+func readEstargzChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, annotations map[string]string) ([]byte, int64, error) {
+	// information on the format here https://github.com/containerd/stargz-snapshotter/blob/main/docs/stargz-estargz.md
+	footerSize := int64(51)
+	if blobSize <= footerSize {
+		return nil, 0, errors.New("blob too small")
+	}
+	chunk := ImageSourceChunk{
+		Offset: uint64(blobSize - footerSize),
+		Length: uint64(footerSize),
+	}
+	parts, errs, err := blobStream.GetBlobAt([]ImageSourceChunk{chunk})
+	if err != nil {
+		return nil, 0, err
+	}
+	var reader io.ReadCloser
+	select {
+	case r := <-parts:
+		reader = r
+	case err := <-errs:
+		return nil, 0, err
+	}
+	defer reader.Close()
+	footer := make([]byte, footerSize)
+	if _, err := io.ReadFull(reader, footer); err != nil {
+		return nil, 0, err
+	}
+
+	/* Read the ToC offset:
+	   - 10 bytes  gzip header
+	   - 2  bytes  XLEN (length of Extra field) = 26 (4 bytes header + 16 hex digits + len("STARGZ"))
+	   - 2  bytes  Extra: SI1 = 'S', SI2 = 'G'
+	   - 2  bytes  Extra: LEN = 22 (16 hex digits + len("STARGZ"))
+	   - 22 bytes  Extra: subfield = fmt.Sprintf("%016xSTARGZ", offsetOfTOC)
+	   - 5  bytes  flate header: BFINAL = 1(last block), BTYPE = 0(non-compressed block), LEN = 0
+	   - 8  bytes  gzip footer
+	*/
+	tocOffset, err := strconv.ParseInt(string(footer[16:16+22-6]), 16, 64)
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "parse ToC offset")
+	}
+
+	size := int64(blobSize - footerSize - tocOffset)
+	// set a reasonable limit
+	if size > (1<<20)*50 {
+		return nil, 0, errors.New("manifest too big")
+	}
+
+	chunk = ImageSourceChunk{
+		Offset: uint64(tocOffset),
+		Length: uint64(size),
+	}
+	parts, errs, err = blobStream.GetBlobAt([]ImageSourceChunk{chunk})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var tocReader io.ReadCloser
+	select {
+	case r := <-parts:
+		tocReader = r
+	case err := <-errs:
+		return nil, 0, err
+	}
+	defer tocReader.Close()
+
+	r, err := pgzip.NewReader(tocReader)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer r.Close()
+
+	aTar := archivetar.NewReader(r)
+
+	header, err := aTar.Next()
+	if err != nil {
+		return nil, 0, err
+	}
+	// set a reasonable limit
+	if header.Size > (1<<20)*50 {
+		return nil, 0, errors.New("manifest too big")
+	}
+
+	manifestUncompressed := make([]byte, header.Size)
+	if _, err := io.ReadFull(aTar, manifestUncompressed); err != nil {
+		return nil, 0, err
+	}
+
+	manifestDigester := digest.Canonical.Digester()
+	manifestChecksum := manifestDigester.Hash()
+	if _, err := manifestChecksum.Write(manifestUncompressed); err != nil {
+		return nil, 0, err
+	}
+
+	d, err := digest.Parse(annotations[estargz.TOCJSONDigestAnnotation])
+	if err != nil {
+		return nil, 0, err
+	}
+	if manifestDigester.Digest() != d {
+		return nil, 0, errors.New("invalid manifest checksum")
+	}
+
+	return manifestUncompressed, tocOffset, nil
 }
 
 // readZstdChunkedManifest reads the zstd:chunked manifest from the seekable stream blobStream.  The blob total size must
 // be specified.
 // This function uses the io.containers.zstd-chunked. annotations when specified.
-func readZstdChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, annotations map[string]string) ([]byte, error) {
-	footerSize := int64(footerSizeSupported)
+func readZstdChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, annotations map[string]string) ([]byte, int64, error) {
+	footerSize := int64(internal.FooterSizeSupported)
 	if blobSize <= footerSize {
-		return nil, errors.New("blob too small")
+		return nil, 0, errors.New("blob too small")
 	}
 
-	manifestChecksumAnnotation := annotations[manifestChecksumKey]
+	manifestChecksumAnnotation := annotations[internal.ManifestChecksumKey]
 	if manifestChecksumAnnotation == "" {
-		return nil, fmt.Errorf("manifest checksum annotation %q not found", manifestChecksumKey)
+		return nil, 0, fmt.Errorf("manifest checksum annotation %q not found", internal.ManifestChecksumKey)
 	}
 
 	var offset, length, lengthUncompressed, manifestType uint64
 
-	if offsetMetadata := annotations[manifestInfoKey]; offsetMetadata != "" {
+	if offsetMetadata := annotations[internal.ManifestInfoKey]; offsetMetadata != "" {
 		if _, err := fmt.Sscanf(offsetMetadata, "%d:%d:%d:%d", &offset, &length, &lengthUncompressed, &manifestType); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	} else {
 		chunk := ImageSourceChunk{
@@ -150,18 +185,18 @@ func readZstdChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, ann
 		}
 		parts, errs, err := blobStream.GetBlobAt([]ImageSourceChunk{chunk})
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		var reader io.ReadCloser
 		select {
 		case r := <-parts:
 			reader = r
 		case err := <-errs:
-			return nil, err
+			return nil, 0, err
 		}
 		footer := make([]byte, footerSize)
 		if _, err := io.ReadFull(reader, footer); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		offset = binary.LittleEndian.Uint64(footer[0:8])
@@ -169,20 +204,20 @@ func readZstdChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, ann
 		lengthUncompressed = binary.LittleEndian.Uint64(footer[16:24])
 		manifestType = binary.LittleEndian.Uint64(footer[24:32])
 		if !isZstdChunkedFrameMagic(footer[32:40]) {
-			return nil, errors.New("invalid magic number")
+			return nil, 0, errors.New("invalid magic number")
 		}
 	}
 
-	if manifestType != manifestTypeCRFS {
-		return nil, errors.New("invalid manifest type")
+	if manifestType != internal.ManifestTypeCRFS {
+		return nil, 0, errors.New("invalid manifest type")
 	}
 
 	// set a reasonable limit
 	if length > (1<<20)*50 {
-		return nil, errors.New("manifest too big")
+		return nil, 0, errors.New("manifest too big")
 	}
 	if lengthUncompressed > (1<<20)*50 {
-		return nil, errors.New("manifest too big")
+		return nil, 0, errors.New("manifest too big")
 	}
 
 	chunk := ImageSourceChunk{
@@ -192,322 +227,51 @@ func readZstdChunkedManifest(blobStream ImageSourceSeekable, blobSize int64, ann
 
 	parts, errs, err := blobStream.GetBlobAt([]ImageSourceChunk{chunk})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	var reader io.ReadCloser
 	select {
 	case r := <-parts:
 		reader = r
 	case err := <-errs:
-		return nil, err
+		return nil, 0, err
 	}
 
 	manifest := make([]byte, length)
 	if _, err := io.ReadFull(reader, manifest); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	manifestDigester := digest.Canonical.Digester()
 	manifestChecksum := manifestDigester.Hash()
 	if _, err := manifestChecksum.Write(manifest); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	d, err := digest.Parse(manifestChecksumAnnotation)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if manifestDigester.Digest() != d {
-		return nil, errors.New("invalid manifest checksum")
+		return nil, 0, errors.New("invalid manifest checksum")
 	}
 
 	decoder, err := zstd.NewReader(nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer decoder.Close()
 
 	b := make([]byte, 0, lengthUncompressed)
 	if decoded, err := decoder.DecodeAll(manifest, b); err == nil {
-		return decoded, nil
+		return decoded, int64(offset), nil
 	}
 
-	return manifest, nil
-}
-
-func appendZstdSkippableFrame(dest io.Writer, data []byte) error {
-	if _, err := dest.Write(skippableFrameMagic); err != nil {
-		return err
-	}
-
-	var size []byte = make([]byte, 4)
-	binary.LittleEndian.PutUint32(size, uint32(len(data)))
-	if _, err := dest.Write(size); err != nil {
-		return err
-	}
-	if _, err := dest.Write(data); err != nil {
-		return err
-	}
-	return nil
-}
-
-func writeZstdChunkedManifest(dest io.Writer, outMetadata map[string]string, offset uint64, metadata []zstdFileMetadata, level int) error {
-	// 8 is the size of the zstd skippable frame header + the frame size
-	manifestOffset := offset + 8
-
-	toc := zstdTOC{
-		Version: 1,
-		Entries: metadata,
-	}
-
-	// Generate the manifest
-	manifest, err := json.Marshal(toc)
-	if err != nil {
-		return err
-	}
-
-	var compressedBuffer bytes.Buffer
-	zstdWriter, err := zstdWriterWithLevel(&compressedBuffer, level)
-	if err != nil {
-		return err
-	}
-	if _, err := zstdWriter.Write(manifest); err != nil {
-		zstdWriter.Close()
-		return err
-	}
-	if err := zstdWriter.Close(); err != nil {
-		return err
-	}
-	compressedManifest := compressedBuffer.Bytes()
-
-	manifestDigester := digest.Canonical.Digester()
-	manifestChecksum := manifestDigester.Hash()
-	if _, err := manifestChecksum.Write(compressedManifest); err != nil {
-		return err
-	}
-
-	outMetadata[manifestChecksumKey] = manifestDigester.Digest().String()
-	outMetadata[manifestInfoKey] = fmt.Sprintf("%d:%d:%d:%d", manifestOffset, len(compressedManifest), len(manifest), manifestTypeCRFS)
-	if err := appendZstdSkippableFrame(dest, compressedManifest); err != nil {
-		return err
-	}
-
-	// Store the offset to the manifest and its size in LE order
-	var manifestDataLE []byte = make([]byte, footerSizeSupported)
-	binary.LittleEndian.PutUint64(manifestDataLE, manifestOffset)
-	binary.LittleEndian.PutUint64(manifestDataLE[8:], uint64(len(compressedManifest)))
-	binary.LittleEndian.PutUint64(manifestDataLE[16:], uint64(len(manifest)))
-	binary.LittleEndian.PutUint64(manifestDataLE[24:], uint64(manifestTypeCRFS))
-	copy(manifestDataLE[32:], zstdChunkedFrameMagic)
-
-	return appendZstdSkippableFrame(dest, manifestDataLE)
-}
-
-func writeZstdChunkedStream(destFile io.Writer, outMetadata map[string]string, reader io.Reader, level int) error {
-	// total written so far.  Used to retrieve partial offsets in the file
-	dest := ioutils.NewWriteCounter(destFile)
-
-	tr := tar.NewReader(reader)
-	tr.RawAccounting = true
-
-	buf := make([]byte, 4096)
-
-	zstdWriter, err := zstdWriterWithLevel(dest, level)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if zstdWriter != nil {
-			zstdWriter.Close()
-			zstdWriter.Flush()
-		}
-	}()
-
-	restartCompression := func() (int64, error) {
-		var offset int64
-		if zstdWriter != nil {
-			if err := zstdWriter.Close(); err != nil {
-				return 0, err
-			}
-			if err := zstdWriter.Flush(); err != nil {
-				return 0, err
-			}
-			offset = dest.Count
-			zstdWriter.Reset(dest)
-		}
-		return offset, nil
-	}
-
-	var metadata []zstdFileMetadata
-	for {
-		hdr, err := tr.Next()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-
-		rawBytes := tr.RawBytes()
-		if _, err := zstdWriter.Write(rawBytes); err != nil {
-			return err
-		}
-		payloadDigester := digest.Canonical.Digester()
-		payloadChecksum := payloadDigester.Hash()
-
-		payloadDest := io.MultiWriter(payloadChecksum, zstdWriter)
-
-		// Now handle the payload, if any
-		var startOffset, endOffset int64
-		checksum := ""
-		for {
-			read, errRead := tr.Read(buf)
-			if errRead != nil && errRead != io.EOF {
-				return err
-			}
-
-			// restart the compression only if there is
-			// a payload.
-			if read > 0 {
-				if startOffset == 0 {
-					startOffset, err = restartCompression()
-					if err != nil {
-						return err
-					}
-				}
-				_, err := payloadDest.Write(buf[:read])
-				if err != nil {
-					return err
-				}
-			}
-			if errRead == io.EOF {
-				if startOffset > 0 {
-					endOffset, err = restartCompression()
-					if err != nil {
-						return err
-					}
-					checksum = payloadDigester.Digest().String()
-				}
-				break
-			}
-		}
-
-		typ, err := getType(hdr.Typeflag)
-		if err != nil {
-			return err
-		}
-		xattrs := make(map[string]string)
-		for k, v := range hdr.Xattrs {
-			xattrs[k] = base64.StdEncoding.EncodeToString([]byte(v))
-		}
-		m := zstdFileMetadata{
-			Type:       typ,
-			Name:       hdr.Name,
-			Linkname:   hdr.Linkname,
-			Mode:       hdr.Mode,
-			Size:       hdr.Size,
-			UID:        hdr.Uid,
-			GID:        hdr.Gid,
-			ModTime:    hdr.ModTime,
-			AccessTime: hdr.AccessTime,
-			ChangeTime: hdr.ChangeTime,
-			Devmajor:   hdr.Devmajor,
-			Devminor:   hdr.Devminor,
-			Xattrs:     xattrs,
-			Digest:     checksum,
-			Offset:     startOffset,
-			EndOffset:  endOffset,
-
-			// ChunkSize is 0 for the last chunk
-			ChunkSize:   0,
-			ChunkOffset: 0,
-			ChunkDigest: checksum,
-		}
-		metadata = append(metadata, m)
-	}
-
-	rawBytes := tr.RawBytes()
-	if _, err := zstdWriter.Write(rawBytes); err != nil {
-		return err
-	}
-	if err := zstdWriter.Flush(); err != nil {
-		return err
-	}
-	if err := zstdWriter.Close(); err != nil {
-		return err
-	}
-	zstdWriter = nil
-
-	return writeZstdChunkedManifest(dest, outMetadata, uint64(dest.Count), metadata, level)
-}
-
-type zstdChunkedWriter struct {
-	tarSplitOut *io.PipeWriter
-	tarSplitErr chan error
-}
-
-func (w zstdChunkedWriter) Close() error {
-	err := <-w.tarSplitErr
-	if err != nil {
-		w.tarSplitOut.Close()
-		return err
-	}
-	return w.tarSplitOut.Close()
-}
-
-func (w zstdChunkedWriter) Write(p []byte) (int, error) {
-	select {
-	case err := <-w.tarSplitErr:
-		w.tarSplitOut.Close()
-		return 0, err
-	default:
-		return w.tarSplitOut.Write(p)
-	}
-}
-
-// zstdChunkedWriterWithLevel writes a zstd compressed tarball where each file is
-// compressed separately so it can be addressed separately.  Idea based on CRFS:
-// https://github.com/google/crfs
-// The difference with CRFS is that the zstd compression is used instead of gzip.
-// The reason for it is that zstd supports embedding metadata ignored by the decoder
-// as part of the compressed stream.
-// A manifest json file with all the metadata is appended at the end of the tarball
-// stream, using zstd skippable frames.
-// The final file will look like:
-// [FILE_1][FILE_2]..[FILE_N][SKIPPABLE FRAME 1][SKIPPABLE FRAME 2]
-// Where:
-// [FILE_N]: [ZSTD HEADER][TAR HEADER][PAYLOAD FILE_N][ZSTD FOOTER]
-// [SKIPPABLE FRAME 1]: [ZSTD SKIPPABLE FRAME, SIZE=MANIFEST LENGTH][MANIFEST]
-// [SKIPPABLE FRAME 2]: [ZSTD SKIPPABLE FRAME, SIZE=16][MANIFEST_OFFSET][MANIFEST_LENGTH][MANIFEST_LENGTH_UNCOMPRESSED][MANIFEST_TYPE][CHUNKED_ZSTD_MAGIC_NUMBER]
-// MANIFEST_OFFSET, MANIFEST_LENGTH, MANIFEST_LENGTH_UNCOMPRESSED and CHUNKED_ZSTD_MAGIC_NUMBER are 64 bits unsigned in little endian format.
-func zstdChunkedWriterWithLevel(out io.Writer, metadata map[string]string, level int) (io.WriteCloser, error) {
-	ch := make(chan error, 1)
-	r, w := io.Pipe()
-
-	go func() {
-		ch <- writeZstdChunkedStream(out, metadata, r, level)
-		io.Copy(ioutil.Discard, r)
-		r.Close()
-		close(ch)
-	}()
-
-	return zstdChunkedWriter{
-		tarSplitOut: w,
-		tarSplitErr: ch,
-	}, nil
-}
-
-func zstdWriterWithLevel(dest io.Writer, level int) (*zstd.Encoder, error) {
-	el := zstd.EncoderLevelFromZstd(level)
-	return zstd.NewWriter(dest, zstd.WithEncoderLevel(el))
+	return manifest, int64(offset), nil
 }
 
 // ZstdCompressor is a CompressorFunc for the zstd compression algorithm.
+// Deprecated: Use pkg/chunked/compressor.ZstdCompressor.
 func ZstdCompressor(r io.Writer, metadata map[string]string, level *int) (io.WriteCloser, error) {
-	if level == nil {
-		l := 3
-		level = &l
-	}
-
-	return zstdChunkedWriterWithLevel(r, metadata, *level)
+	return compressor.ZstdCompressor(r, metadata, level)
 }

@@ -645,10 +645,13 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, L
 		}
 		file.Close()
 
-	case tar.TypeBlock, tar.TypeChar, tar.TypeFifo:
+	case tar.TypeBlock, tar.TypeChar:
 		if inUserns { // cannot create devices in a userns
+			logrus.Debugf("Tar: Can't create device %v while running in user namespace", path)
 			return nil
 		}
+		fallthrough
+	case tar.TypeFifo:
 		// Handle this is an OS-specific way
 		if err := handleTarTypeBlockCharFifo(hdr, path); err != nil {
 			return err
@@ -876,7 +879,7 @@ func TarWithOptions(srcPath string, options *TarOptions) (io.ReadCloser, error) 
 				if include != relFilePath {
 					matches, err := pm.IsMatch(relFilePath)
 					if err != nil {
-						logrus.Errorf("Error matching %s: %v", relFilePath, err)
+						logrus.Errorf("Matching %s: %v", relFilePath, err)
 						return err
 					}
 					skip = matches

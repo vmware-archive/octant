@@ -79,11 +79,10 @@ func (c *openshiftClient) doRequest(ctx context.Context, method, path string, re
 		logrus.Debugf("Will send body: %s", requestBody)
 		requestBodyReader = bytes.NewReader(requestBody)
 	}
-	req, err := http.NewRequest(method, url.String(), requestBodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, url.String(), requestBodyReader)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
 
 	if len(c.bearerToken) != 0 {
 		req.Header.Set("Authorization", "Bearer "+c.bearerToken)
@@ -137,7 +136,7 @@ func (c *openshiftClient) doRequest(ctx context.Context, method, path string, re
 func (c *openshiftClient) getImage(ctx context.Context, imageStreamImageName string) (*image, error) {
 	// FIXME: validate components per validation.IsValidPathSegmentName?
 	path := fmt.Sprintf("/oapi/v1/namespaces/%s/imagestreamimages/%s@%s", c.ref.namespace, c.ref.stream, imageStreamImageName)
-	body, err := c.doRequest(ctx, "GET", path, nil)
+	body, err := c.doRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +272,7 @@ func (s *openshiftImageSource) ensureImageIsResolved(ctx context.Context) error 
 
 	// FIXME: validate components per validation.IsValidPathSegmentName?
 	path := fmt.Sprintf("/oapi/v1/namespaces/%s/imagestreams/%s", s.client.ref.namespace, s.client.ref.stream)
-	body, err := s.client.doRequest(ctx, "GET", path, nil)
+	body, err := s.client.doRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
@@ -396,7 +395,7 @@ func (d *openshiftImageDestination) HasThreadSafePutBlob() bool {
 }
 
 // PutBlob writes contents of stream and returns data representing the result (with all data filled in).
-// inputInfo.Digest can be optionally provided if known; it is not mandatory for the implementation to verify it.
+// inputInfo.Digest can be optionally provided if known; if provided, and stream is read to the end without error, the digest MUST match the stream contents.
 // inputInfo.Size is the expected length of stream, if known.
 // May update cache.
 // WARNING: The contents of stream are being verified on the fly.  Until stream.Read() returns io.EOF, the contents of the data SHOULD NOT be available
@@ -496,7 +495,7 @@ sigExists:
 		if err != nil {
 			return err
 		}
-		_, err = d.client.doRequest(ctx, "POST", "/oapi/v1/imagesignatures", body)
+		_, err = d.client.doRequest(ctx, http.MethodPost, "/oapi/v1/imagesignatures", body)
 		if err != nil {
 			return err
 		}

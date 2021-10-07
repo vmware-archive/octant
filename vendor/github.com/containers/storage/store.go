@@ -23,6 +23,7 @@ import (
 	"github.com/containers/storage/pkg/parsers"
 	"github.com/containers/storage/pkg/stringid"
 	"github.com/containers/storage/pkg/stringutils"
+	"github.com/containers/storage/pkg/system"
 	"github.com/containers/storage/types"
 	"github.com/hashicorp/go-multierror"
 	digest "github.com/opencontainers/go-digest"
@@ -547,6 +548,15 @@ type LayerOptions struct {
 	// initialize this layer.  If set, it should be a child of the layer
 	// which we want to use as the parent of the new layer.
 	TemplateLayer string
+	// OriginalDigest specifies a digest of the tarstream (diff), if one is
+	// provided along with these LayerOptions, and reliably known by the caller.
+	// Use the default "" if this fields is not applicable or the value is not known.
+	OriginalDigest digest.Digest
+	// UncompressedDigest specifies a digest of the uncompressed version (“DiffID”)
+	// of the tarstream (diff), if one is provided along with these LayerOptions,
+	// and reliably known by the caller.
+	// Use the default "" if this fields is not applicable or the value is not known.
+	UncompressedDigest digest.Digest
 }
 
 // ImageOptions is used for passing options to a Store's CreateImage() method.
@@ -1031,20 +1041,21 @@ func (s *store) PutLayer(id, parent string, names []string, mountLabel string, w
 			gidMap = s.gidMap
 		}
 	}
-	var layerOptions *LayerOptions
+	layerOptions := LayerOptions{
+		OriginalDigest:     options.OriginalDigest,
+		UncompressedDigest: options.UncompressedDigest,
+	}
 	if s.canUseShifting(uidMap, gidMap) {
-		layerOptions = &LayerOptions{IDMappingOptions: types.IDMappingOptions{HostUIDMapping: true, HostGIDMapping: true, UIDMap: nil, GIDMap: nil}}
+		layerOptions.IDMappingOptions = types.IDMappingOptions{HostUIDMapping: true, HostGIDMapping: true, UIDMap: nil, GIDMap: nil}
 	} else {
-		layerOptions = &LayerOptions{
-			IDMappingOptions: types.IDMappingOptions{
-				HostUIDMapping: options.HostUIDMapping,
-				HostGIDMapping: options.HostGIDMapping,
-				UIDMap:         copyIDMap(uidMap),
-				GIDMap:         copyIDMap(gidMap),
-			},
+		layerOptions.IDMappingOptions = types.IDMappingOptions{
+			HostUIDMapping: options.HostUIDMapping,
+			HostGIDMapping: options.HostGIDMapping,
+			UIDMap:         copyIDMap(uidMap),
+			GIDMap:         copyIDMap(gidMap),
 		}
 	}
-	return rlstore.Put(id, parentLayer, names, mountLabel, nil, layerOptions, writeable, nil, diff)
+	return rlstore.Put(id, parentLayer, names, mountLabel, nil, &layerOptions, writeable, nil, diff)
 }
 
 func (s *store) CreateLayer(id, parent string, names []string, mountLabel string, writeable bool, options *LayerOptions) (*Layer, error) {
@@ -1120,10 +1131,6 @@ func (s *store) imageTopLayerForMapping(image *Image, ristore ROImageStore, crea
 		}
 		if options.HostGIDMapping && len(layer.GIDMap) != 0 {
 			return false
-		}
-		// If we don't care about the mapping, it's fine.
-		if len(options.UIDMap) == 0 && len(options.GIDMap) == 0 {
-			return true
 		}
 		// Compare the maps.
 		return reflect.DeepEqual(layer.UIDMap, options.UIDMap) && reflect.DeepEqual(layer.GIDMap, options.GIDMap)
@@ -2492,7 +2499,15 @@ func (s *store) DeleteContainer(id string) error {
 			gcpath := filepath.Join(s.GraphRoot(), middleDir, container.ID)
 			wg.Add(1)
 			go func() {
-				errChan <- os.RemoveAll(gcpath)
+				var err error
+				for attempts := 0; attempts < 50; attempts++ {
+					err = os.RemoveAll(gcpath)
+					if err == nil || !system.IsEBUSY(err) {
+						break
+					}
+					time.Sleep(time.Millisecond * 100)
+				}
+				errChan <- err
 				wg.Done()
 			}()
 
@@ -3044,10 +3059,15 @@ func (s *store) Layers() ([]Layer, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := lstore.LoadLocked(); err != nil {
-		return nil, err
-	}
-	layers, err := lstore.Layers()
+
+	layers, err := func() ([]Layer, error) {
+		lstore.Lock()
+		defer lstore.Unlock()
+		if err := lstore.Load(); err != nil {
+			return nil, err
+		}
+		return lstore.Layers()
+	}()
 	if err != nil {
 		return nil, err
 	}
