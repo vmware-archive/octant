@@ -299,7 +299,7 @@ type ImageDestination interface {
 	IgnoresEmbeddedDockerReference() bool
 
 	// PutBlob writes contents of stream and returns data representing the result.
-	// inputInfo.Digest can be optionally provided if known; it is not mandatory for the implementation to verify it.
+	// inputInfo.Digest can be optionally provided if known; if provided, and stream is read to the end without error, the digest MUST match the stream contents.
 	// inputInfo.Size is the expected length of stream, if known.
 	// inputInfo.MediaType describes the blob format, if known.
 	// May update cache.
@@ -636,6 +636,8 @@ type SystemContext struct {
 	// === dir.Transport overrides ===
 	// DirForceCompress compresses the image layers if set to true
 	DirForceCompress bool
+	// DirForceDecompress decompresses the image layers if set to true
+	DirForceDecompress bool
 
 	// CompressionFormat is the format to use for the compression of the blobs
 	CompressionFormat *compression.Algorithm

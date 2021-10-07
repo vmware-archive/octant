@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/containers/image/v5/internal/putblobdigest"
 	"github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
@@ -21,13 +22,26 @@ const version = "Directory Transport Version: 1.1\n"
 var ErrNotContainerImageDir = errors.New("not a containers image directory, don't want to overwrite important data")
 
 type dirImageDestination struct {
-	ref      dirReference
-	compress bool
+	ref                     dirReference
+	desiredLayerCompression types.LayerCompression
 }
 
 // newImageDestination returns an ImageDestination for writing to a directory.
-func newImageDestination(ref dirReference, compress bool) (types.ImageDestination, error) {
-	d := &dirImageDestination{ref: ref, compress: compress}
+func newImageDestination(sys *types.SystemContext, ref dirReference) (types.ImageDestination, error) {
+	desiredLayerCompression := types.PreserveOriginal
+	if sys != nil {
+		if sys.DirForceCompress {
+			desiredLayerCompression = types.Compress
+
+			if sys.DirForceDecompress {
+				return nil, errors.Errorf("Cannot compress and decompress at the same time")
+			}
+		}
+		if sys.DirForceDecompress {
+			desiredLayerCompression = types.Decompress
+		}
+	}
+	d := &dirImageDestination{ref: ref, desiredLayerCompression: desiredLayerCompression}
 
 	// If directory exists check if it is empty
 	// if not empty, check whether the contents match that of a container image directory and overwrite the contents
@@ -101,10 +115,7 @@ func (d *dirImageDestination) SupportsSignatures(ctx context.Context) error {
 }
 
 func (d *dirImageDestination) DesiredLayerCompression() types.LayerCompression {
-	if d.compress {
-		return types.Compress
-	}
-	return types.PreserveOriginal
+	return d.desiredLayerCompression
 }
 
 // AcceptsForeignLayerURLs returns false iff foreign layers in manifest should be actually
@@ -131,7 +142,7 @@ func (d *dirImageDestination) HasThreadSafePutBlob() bool {
 }
 
 // PutBlob writes contents of stream and returns data representing the result (with all data filled in).
-// inputInfo.Digest can be optionally provided if known; it is not mandatory for the implementation to verify it.
+// inputInfo.Digest can be optionally provided if known; if provided, and stream is read to the end without error, the digest MUST match the stream contents.
 // inputInfo.Size is the expected length of stream, if known.
 // May update cache.
 // WARNING: The contents of stream are being verified on the fly.  Until stream.Read() returns io.EOF, the contents of the data SHOULD NOT be available
@@ -153,17 +164,15 @@ func (d *dirImageDestination) PutBlob(ctx context.Context, stream io.Reader, inp
 		}
 	}()
 
-	digester := digest.Canonical.Digester()
-	tee := io.TeeReader(stream, digester.Hash())
-
+	digester, stream := putblobdigest.DigestIfCanonicalUnknown(stream, inputInfo)
 	// TODO: This can take quite some time, and should ideally be cancellable using ctx.Done().
-	size, err := io.Copy(blobFile, tee)
+	size, err := io.Copy(blobFile, stream)
 	if err != nil {
 		return types.BlobInfo{}, err
 	}
-	computedDigest := digester.Digest()
+	blobDigest := digester.Digest()
 	if inputInfo.Size != -1 && size != inputInfo.Size {
-		return types.BlobInfo{}, errors.Errorf("Size mismatch when copying %s, expected %d, got %d", computedDigest, inputInfo.Size, size)
+		return types.BlobInfo{}, errors.Errorf("Size mismatch when copying %s, expected %d, got %d", blobDigest, inputInfo.Size, size)
 	}
 	if err := blobFile.Sync(); err != nil {
 		return types.BlobInfo{}, err
@@ -179,7 +188,7 @@ func (d *dirImageDestination) PutBlob(ctx context.Context, stream io.Reader, inp
 		}
 	}
 
-	blobPath := d.ref.layerPath(computedDigest)
+	blobPath := d.ref.layerPath(blobDigest)
 	// need to explicitly close the file, since a rename won't otherwise not work on Windows
 	blobFile.Close()
 	explicitClosed = true
@@ -187,7 +196,7 @@ func (d *dirImageDestination) PutBlob(ctx context.Context, stream io.Reader, inp
 		return types.BlobInfo{}, err
 	}
 	succeeded = true
-	return types.BlobInfo{Digest: computedDigest, Size: size}, nil
+	return types.BlobInfo{Digest: blobDigest, Size: size}, nil
 }
 
 // TryReusingBlob checks whether the transport already contains, or can efficiently reuse, a blob, and if so, applies it to the current destination

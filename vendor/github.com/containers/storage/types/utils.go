@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -74,16 +75,19 @@ func getRootlessRuntimeDirIsolated(env rootlessRuntimeDirEnvironment) (string, e
 		return runtimeDir, nil
 	}
 
-	runUserDir := env.getRunUserDir()
-	if isRootlessRuntimeDirOwner(runUserDir, env) {
-		return runUserDir, nil
+	initCommand, err := ioutil.ReadFile(env.getProcCommandFile())
+	if err != nil || string(initCommand) == "systemd" {
+		runUserDir := env.getRunUserDir()
+		if isRootlessRuntimeDirOwner(runUserDir, env) {
+			return runUserDir, nil
+		}
 	}
 
 	tmpPerUserDir := env.getTmpPerUserDir()
 	if tmpPerUserDir != "" {
 		if _, err := env.systemLstat(tmpPerUserDir); os.IsNotExist(err) {
 			if err := os.Mkdir(tmpPerUserDir, 0700); err != nil {
-				logrus.Errorf("failed to create temp directory for user: %v", err)
+				logrus.Errorf("Failed to create temp directory for user: %v", err)
 			} else {
 				return tmpPerUserDir, nil
 			}
@@ -151,8 +155,14 @@ func getRootlessUID() int {
 }
 
 func expandEnvPath(path string, rootlessUID int) (string, error) {
+	var err error
 	path = strings.Replace(path, "$UID", strconv.Itoa(rootlessUID), -1)
-	return filepath.Clean(os.ExpandEnv(path)), nil
+	path = os.ExpandEnv(path)
+	newpath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		newpath = filepath.Clean(path)
+	}
+	return newpath, nil
 }
 
 func DefaultConfigFile(rootless bool) (string, error) {
