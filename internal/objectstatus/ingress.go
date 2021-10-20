@@ -257,15 +257,17 @@ func matchBackendPort(b networkingv1.IngressBackend, ports []corev1.ServicePort)
 	if len(ports) == 0 && b.Service.Port.Number > 0 {
 		return false
 	}
+
+	var isMatch bool
 	for _, p := range ports {
-		if b.Service.Port.Number != 0 && b.Service.Port.Number != p.Port {
-			return false
+		if b.Service.Port.Number != 0 && b.Service.Port.Number == p.Port {
+			isMatch = true
 		}
 
-		if b.Service.Port.Name != "" && b.Service.Port.Name != p.Name {
-			return false
+		if b.Service.Port.Name != "" && b.Service.Port.Name == p.Name {
+			isMatch = true
 		}
 	}
 
-	return true
+	return isMatch
 }

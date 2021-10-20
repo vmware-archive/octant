@@ -135,6 +135,19 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 			isErr: true,
 		},
+		{
+			name: "service multiple port service",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				mockServiceInCache(t, o, "default", "multiple-port-service", "service_multiple_port_service.yaml")
+				objectFile := "ingress_multiple_port_service.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+
+			},
+			expected: ObjectStatus{
+				Details:    []component.Component{component.NewText("Ingress is OK")},
+				Properties: []component.Property{{Label: "Default Backend", Value: component.NewText("multiple-port-service")}},
+			},
+		},
 	}
 
 	for _, tc := range cases {
