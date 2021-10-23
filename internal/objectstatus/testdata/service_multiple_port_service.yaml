@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: multiple-port-service
+spec:
+  ports:
+    - name: port1
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+    - name: port2
+      protocol: TCP
+      port: 8080
+      targetPort: 9377
