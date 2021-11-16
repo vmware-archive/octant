@@ -22,7 +22,7 @@ The survey mentioned above collected a mix of qualitative and quantitative infor
 
 #### User Profiles
 
-Most respondents work at organizations that have 1-50 developers, though we’ve interacted with many users who work at larger organizations (1000+ developers). Almost all survey respondents have deployed in production with Kubernetes, which tells us about their organizational maturity and level of Kuberenetes knowledge.
+Most respondents work at organizations that have 1-50 developers, though we’ve interacted with many users who work at larger organizations (1000+ developers). Almost all survey respondents have deployed in production with Kubernetes, which tells us about their organizational maturity and level of Kubernetes knowledge.
 
 ![](/img/posts/2020/11/19/org-size.png)
 
