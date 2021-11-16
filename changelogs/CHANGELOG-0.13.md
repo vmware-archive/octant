@@ -18,7 +18,7 @@
   * Added resource editing
   * Added datagrid actions
   * Added resource deleting indicators
-  * Added storybook for UI prototying and exploring
+  * Added storybook for UI prototyping and exploring
   * Added Electron prototype
   * Upgraded client-go and remove k8s.io/kubernetes imports
   * Upgraded to Angular 9.1.9 and Clarity 3.1.3
@@ -39,7 +39,7 @@
   * Fixed Terminal window resizing issues
   * Added Datagrid actions
   * Added Resource deleting indicators
-  * Added Storybook for UI prototying and exploring
+  * Added Storybook for UI prototyping and exploring
   * Added Electron prototype
   * Upgraded client-go and remove k8s.io/kubernetes imports
   * Upgraded to Angular 9.1.9 and Clarity 3.1.3
