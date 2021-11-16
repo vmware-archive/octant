@@ -32,7 +32,7 @@ describe('GraphvizComponent', () => {
     component = fixture.componentInstance;
     component.view = {
       config: { dot: 'digraph {a -> b}' },
-      metadata: { type: 'graphwiz' },
+      metadata: { type: 'graphviz' },
     };
     fixture.detectChanges();
   });
