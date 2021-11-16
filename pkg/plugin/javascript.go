@@ -677,7 +677,7 @@ func extractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("unable to get capabilites for plugin class")
+		return nil, fmt.Errorf("unable to get capabilities for plugin class")
 	}
 
 	return metadata, nil
