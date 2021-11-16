@@ -274,7 +274,7 @@ type horizontalPodAutoscalerHandler struct {
 	object                  *Object
 }
 
-// Create creates a horizontalpodautoscaler configuration sumamry
+// Create creates a horizontalpodautoscaler configuration summary
 func (hc *HorizontalPodAutoscalerConfiguration) Create(ctx context.Context, options Options) (*component.Summary, error) {
 	if hc.horizontalPodAutoscaler == nil {
 		return nil, errors.New("horizontalpodautoscaler is nil")
