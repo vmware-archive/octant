@@ -22,7 +22,7 @@ func PrintObject(object runtime.Object) (s string) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			s = fmt.Sprintf("print object paniced: %v; print accessor: %s", r, spew.Sdump(accessor, object))
+			s = fmt.Sprintf("print object panicked: %v; print accessor: %s", r, spew.Sdump(accessor, object))
 		}
 
 	}()
