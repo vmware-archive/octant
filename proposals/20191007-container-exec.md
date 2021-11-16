@@ -44,7 +44,7 @@ The backend component will include the stream name for the component which will 
 
 Create an Executor using https://github.com/kubernetes/client-go/blob/master/tools/remotecommand/remotecommand.go
 
-We will create a factory that assembles `SPDYExector` given a desired container and command to execute.
+We will create a factory that assembles `SPDYExecutor` given a desired container and command to execute.
 
 More specifically that factory will use `remotecommand.NewSPDYExecutor` to create a `SPDYExecutor` and create unique stream names for each executor. Calling the `Stream` method we will send output to our `TerminalComponent` using websockets.
 
