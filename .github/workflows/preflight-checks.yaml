@@ -133,7 +133,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [bundle_assets, verify_tag]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.180.3
+    container: goreleaser/goreleaser:v1.0.0
     steps:
       - uses: actions/checkout@v2
         with:

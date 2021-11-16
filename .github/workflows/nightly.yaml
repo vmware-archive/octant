@@ -47,7 +47,7 @@ jobs:
     name: Run goreleaser
     needs: [nightly-build]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.180.3
+    container: goreleaser/goreleaser:v1.0.0
     steps:
       - uses: actions/checkout@v2
         with:
@@ -59,8 +59,7 @@ jobs:
       - name: Run goreleaser
         run: |
           git fetch --tags
-          git tag -d nightly || :
-          git tag nightly
+          git tag "$(git describe --abbrev=0)+dev"
           echo "$GOOGLE_APPLICATION_JSON" > /tmp/gs.json
           goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
         env:
