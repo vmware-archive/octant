@@ -4,10 +4,11 @@
 
 ## Current release:
 
-- [CHANGELOG-0.24.md][24]
+- [CHANGELOG-0.25.md][25]
 
 ## Older releases:
 
+- [CHANGELOG-0.24.md][24]
 - [CHANGELOG-0.23.md][23]
 - [CHANGELOG-0.22.md][22]
 - [CHANGELOG-0.21.md][21]
@@ -51,3 +52,4 @@
 [22]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.22.md
 [23]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.23.md
 [24]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.24.md
+[25]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.25.md
