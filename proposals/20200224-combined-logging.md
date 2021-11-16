@@ -74,7 +74,7 @@ tab and also ensure we are calling `stream.Close` using a `defer`.
         // pods and containers that are part of this logging stream.
         Names() map[string]string
         // Stream wraps the client-go GetLogs().Stream call for the configured
-        // pods. Stream is resonsible for aggergating the logs for all the
+        // pods. Stream is resonsible for aggregating the logs for all the
         // containers.
         Stream(Context) logCh <-chan logEntry
         // Close closes all of the streams.
