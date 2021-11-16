@@ -52,7 +52,7 @@ These executors will have contexts to ensure they are cleaned up properly when t
 
 #### User Interface
 
-Add a listing page of all currently open temrinals. This page will allow you easily jump to an open terminal as well as close open terminals (including disconnected terminals).
+Add a listing page of all currently open terminals. This page will allow you easily jump to an open terminal as well as close open terminals (including disconnected terminals).
 
 Execute tab will be added to Pod resource. Add executes are run, new, nested terminal windows will be opened in this tab.
 The terminal tabs will be named: container_name_%(count) where count is the number of exec commands currently open for a given container.
