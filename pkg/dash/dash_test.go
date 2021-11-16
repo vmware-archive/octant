@@ -123,21 +123,21 @@ func (iml *inMemoryListener) Close() error {
 }
 func (iml *inMemoryListener) Dial(network, addr string) (net.Conn, error) {
 	server, client := net.Pipe()
-	iml.conns <- AddrOverriddingConn{server}
-	return AddrOverriddingConn{client}, nil
+	iml.conns <- AddrOverridingConn{server}
+	return AddrOverridingConn{client}, nil
 }
 func (iml *inMemoryListener) Addr() net.Addr {
 	return localhostAddr{}
 }
 
-type AddrOverriddingConn struct {
+type AddrOverridingConn struct {
 	net.Conn
 }
 
-func (AddrOverriddingConn) LocalAddr() net.Addr {
+func (AddrOverridingConn) LocalAddr() net.Addr {
 	return localhostAddr{}
 }
-func (AddrOverriddingConn) RemoteAddr() net.Addr {
+func (AddrOverridingConn) RemoteAddr() net.Addr {
 	return localhostAddr{}
 }
 
