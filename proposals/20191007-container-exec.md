@@ -52,7 +52,7 @@ These executors will have contexts to ensure they are cleaned up properly when t
 
 #### User Interface
 
-Add a listing page of all currently open temrinals. This page will allow you easily jump to an open terminal as well as close open terminals (including disconncted terminals).
+Add a listing page of all currently open temrinals. This page will allow you easily jump to an open terminal as well as close open terminals (including disconnected terminals).
 
 Execute tab will be added to Pod resource. Add executes are run, new, nested terminal windows will be opened in this tab.
 The terminal tabs will be named: container_name_%(count) where count is the number of exec commands currently open for a given container.
@@ -67,6 +67,6 @@ An Execute icon/button will be placed on the container card. Clicking this icon 
 
 #### Disconnects and Timeouts
 
-Terminals will timeout after a set idle period of 300 seconds. Alerts will be used to notify a user of when a terminal has timed out or disconnceted. Terminals that are disconnceted due to timeout or communication error will remain present in the UI.
+Terminals will timeout after a set idle period of 300 seconds. Alerts will be used to notify a user of when a terminal has timed out or disconnected. Terminals that are disconnected due to timeout or communication error will remain present in the UI.
 
 This will also include containers that go away.
