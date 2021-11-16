@@ -26,7 +26,7 @@ An action that holds the details of the command to execute will be created.
 
 This action will be generated from the Pod view and include the container(s), the command to run, and if the resulting terminal should be interactive interactive.
 
-The result of the action will be rendered as TerminalComponent(s). These will be displaed as new nested tabs on the Pod views Execute tab.
+The result of the action will be rendered as TerminalComponent(s). These will be displayed as new nested tabs on the Pod views Execute tab.
 
 The tabs will be flagged closable and have a close action that will end the context for interactive sessions.
 
