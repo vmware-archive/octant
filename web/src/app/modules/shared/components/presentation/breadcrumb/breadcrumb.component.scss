@@ -3,11 +3,11 @@
  */
 
 :host-context(body) {
-  --creadcrumb-link-color: #0079b8;
+  --breadcrumb-link-color: #0079b8;
 }
 
 :host-context(body.dark) {
-  --creadcrumb-link-color: #49afd9;
+  --breadcrumb-link-color: #49afd9;
 }
 
 :host ::ng-deep .breadcrumb .dropdown {
@@ -52,6 +52,6 @@
   }
 
   a {
-    color: var(--creadcrumb-link-color);
+    color: var(--breadcrumb-link-color);
   }
 }

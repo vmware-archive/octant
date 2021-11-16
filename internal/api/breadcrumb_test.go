@@ -410,7 +410,7 @@ func Test_CreateNavigationBreadcrumbApplications(t *testing.T) {
 		expectedItems int
 	}{
 		{
-			name:          "Applications Detail Breadcumb",
+			name:          "Applications Detail Breadcrumb",
 			path:          "workloads/namespace/milan/detail/simple-app",
 			expectedTitle: component.NewLink("", "Applications", "/workloads/namespace/milan"),
 			expectedItems: 1,
