@@ -103,7 +103,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 	return o.ToComponent(ctx, options)
 }
 
-// PersistentVolumeClaimConfiguration generates a persistenvolumeclaim configuration
+// PersistentVolumeClaimConfiguration generates a persistentvolumeclaim configuration
 type PersistentVolumeClaimConfiguration struct {
 	persistentVolumeClaim *corev1.PersistentVolumeClaim
 }
