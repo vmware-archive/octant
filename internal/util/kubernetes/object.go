@@ -38,7 +38,7 @@ func ReadObject(r io.Reader) (*unstructured.Unstructured, error) {
 
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
-		return nil, fmt.Errorf("obect is not unstructured (%T)", obj)
+		return nil, fmt.Errorf("object is not unstructured (%T)", obj)
 	}
 
 	return u, nil

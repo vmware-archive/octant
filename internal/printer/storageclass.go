@@ -134,7 +134,7 @@ func NewStorageClassConfiguration(sc *storagev1.StorageClass) *StorageClassConfi
 	}
 }
 
-// Create the Configuration Summary component for a Stoage Class
+// Create the Configuration Summary component for a Storage Class
 func (scc *StorageClassConfiguration) Create(options Options) (*component.Summary, error) {
 	if scc.storageClass == nil {
 		return nil, errors.New("Storage Class is nil")

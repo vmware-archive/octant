@@ -76,14 +76,14 @@ func Test_ClusterRoleBindingConfiguration(t *testing.T) {
 	clusterRoleBinding.Namespace = "namespace"
 
 	cases := []struct {
-		name              string
-		clusteRoleBinding *rbacv1.ClusterRoleBinding
-		isErr             bool
-		expected          *component.Summary
+		name               string
+		clusterRoleBinding *rbacv1.ClusterRoleBinding
+		isErr              bool
+		expected           *component.Summary
 	}{
 		{
-			name:              "general",
-			clusteRoleBinding: clusterRoleBinding,
+			name:               "general",
+			clusterRoleBinding: clusterRoleBinding,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Role kind",
@@ -96,9 +96,9 @@ func Test_ClusterRoleBindingConfiguration(t *testing.T) {
 			}...),
 		},
 		{
-			name:              "clusterrolebinding is nil",
-			clusteRoleBinding: nil,
-			isErr:             true,
+			name:               "clusterrolebinding is nil",
+			clusterRoleBinding: nil,
+			isErr:              true,
 		},
 	}
 
@@ -118,7 +118,7 @@ func Test_ClusterRoleBindingConfiguration(t *testing.T) {
 
 			ctx := context.Background()
 
-			rc := NewClusterRoleBindingConfiguration(tc.clusteRoleBinding)
+			rc := NewClusterRoleBindingConfiguration(tc.clusterRoleBinding)
 
 			summary, err := rc.Create(ctx, printOptions)
 			if tc.isErr {

@@ -6,6 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 /*
-This package is used when embedding the Frontend assests directly in to the Octant binary.
+This package is used when embedding the Frontend assets directly in to the Octant binary.
 This requires compiling Octant with `-tags embedded`
 */

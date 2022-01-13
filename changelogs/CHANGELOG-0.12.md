@@ -40,7 +40,7 @@
   * Decrease link latency
   * Fix truncation issues with namespace and context selectors
   * Fix logs console errors when no timestamp
-  * Update ngx-highlightjx to ivy compatible version
+  * Update ngx-highlightjs to ivy compatible version
   * Remove setup-go path steps and bump setup-node versions
   * Update karma and protractor versions
   * Add unit tests for navigation service

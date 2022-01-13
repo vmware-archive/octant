@@ -5,12 +5,12 @@ import (
 	"k8s.io/client-go/informers"
 )
 
-type interuptibleInformer struct {
+type interruptibleInformer struct {
 	stopCh   chan struct{}
 	informer informers.GenericInformer
 	gvr      schema.GroupVersionResource
 }
 
-func (i interuptibleInformer) Stop() {
+func (i interruptibleInformer) Stop() {
 	close(i.stopCh)
 }

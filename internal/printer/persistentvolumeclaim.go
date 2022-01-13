@@ -103,7 +103,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 	return o.ToComponent(ctx, options)
 }
 
-// PersistentVolumeClaimConfiguration generates a persistenvolumeclaim configuration
+// PersistentVolumeClaimConfiguration generates a persistentvolumeclaim configuration
 type PersistentVolumeClaimConfiguration struct {
 	persistentVolumeClaim *corev1.PersistentVolumeClaim
 }
@@ -303,7 +303,7 @@ func newPersistentVolumeClaimHandler(pvc *corev1.PersistentVolumeClaim, object *
 	ph := &persistentVolumeClaimHandler{
 		persistentVolumeClaim: pvc,
 		configFunc:            defaultPersistentVolumeClaimConfig,
-		statusFunc:            defaultPersistentVolumClaimStatus,
+		statusFunc:            defaultPersistentVolumeClaimStatus,
 		mountedPodListFunc:    defaultPersistentVolumeMountedPodList,
 		object:                object,
 	}
@@ -332,7 +332,7 @@ func (p *persistentVolumeClaimHandler) Status(ctx context.Context, options Optio
 	return nil
 }
 
-func defaultPersistentVolumClaimStatus(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
+func defaultPersistentVolumeClaimStatus(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
 	return createPersistentVolumeClaimStatusView(ctx, pvc, options)
 }
 

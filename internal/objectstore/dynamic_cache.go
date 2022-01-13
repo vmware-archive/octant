@@ -307,7 +307,7 @@ func (d *DynamicCache) WaitForCacheSync(ctx context.Context) bool {
 
 	var ret bool
 	d.knownInformers.Range(func(k, v interface{}) bool {
-		ii := v.(interuptibleInformer)
+		ii := v.(interruptibleInformer)
 		ret = cache.WaitForCacheSync(ii.stopCh, ii.informer.Informer().HasSynced)
 		return ret
 	})
@@ -352,7 +352,7 @@ func (d *DynamicCache) worker() {
 			d.unwatched.Store(gvr, true)
 			v, ok := d.knownInformers.LoadAndDelete(gvr)
 			if ok {
-				ii := v.(interuptibleInformer)
+				ii := v.(interruptibleInformer)
 				ii.Stop()
 			}
 		case <-time.After(time.Millisecond * 500):
@@ -363,7 +363,7 @@ func (d *DynamicCache) worker() {
 
 func (d *DynamicCache) stopAllInformers() {
 	d.knownInformers.Range(func(k, v interface{}) bool {
-		ii := v.(interuptibleInformer)
+		ii := v.(interruptibleInformer)
 		ii.Stop()
 		return true
 	})
@@ -398,7 +398,7 @@ func (d *DynamicCache) CheckResourceAccess(ctx context.Context, gvr schema.Group
 	return resp.Status.Allowed
 }
 
-func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionResource, namespace string, handler cache.ResourceEventHandler) interuptibleInformer {
+func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionResource, namespace string, handler cache.ResourceEventHandler) interruptibleInformer {
 	_, span := trace.StartSpan(ctx, "dynamicCache:forResource")
 	defer span.End()
 
@@ -424,7 +424,7 @@ func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionR
 			logger.Debugf("stopping informer for %s", gvr)
 		}()
 
-		ii := interuptibleInformer{
+		ii := interruptibleInformer{
 			stopCh,
 			i,
 			gvr,
@@ -432,7 +432,7 @@ func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionR
 		d.knownInformers.Store(gvr, ii)
 		return ii
 	}
-	ii := v.(interuptibleInformer)
+	ii := v.(interruptibleInformer)
 	if handler != nil {
 		ii.informer.Informer().AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
 	}

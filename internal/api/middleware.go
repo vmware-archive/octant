@@ -80,7 +80,7 @@ func checkSameOrigin(r *http.Request) bool {
 	return false
 }
 
-// shouldAllowHost returns true if the incoming request.Host shuold be allowed
+// shouldAllowHost returns true if the incoming request.Host should be allowed
 // to access the API otherwise false.
 func ShouldAllowHost(host string, acceptedHosts []string) bool {
 	if dashstrings.Contains("0.0.0.0", acceptedHosts) {

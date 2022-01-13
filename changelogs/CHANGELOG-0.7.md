@@ -17,7 +17,7 @@
   * Fixed bug where tabs generated from plugins would switch back to summary (#240, @GuessWhoSamFoo)
   * CI now runs TS linting (#224, @wwitzel3)
   * Show pod resource limit/requests (#215, @bryanl)
-  * Fixed error where capabilites for a plugin are not shown (#212, @bryanl)
+  * Fixed error where capabilities for a plugin are not shown (#212, @bryanl)
   * Fixed bug where port forward states were active after pod is deleted (#209, @GuessWhoSamFoo)
   * 0.0.0.0 as listener/accepted will allow all hosts (#199, @wwitzel3)
   * Namespace drop down not refreshing on context change (#206, @bryanl)

@@ -34,7 +34,7 @@ func ConvertToComponent(name string, i interface{}) (component.Component, error)
 
 	metadata := component.Metadata{}
 	if err := json.Unmarshal(metadataJSON, &metadata); err != nil {
-		return nil, fmt.Errorf("unable to unmarhal metadata from %s: %w", name, err)
+		return nil, fmt.Errorf("unable to unmarshal metadata from %s: %w", name, err)
 	}
 
 	config, ok := rawComponent["config"]

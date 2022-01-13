@@ -673,11 +673,11 @@ func extractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 				}
 				metadata.Capabilities.ActionNames = append(metadata.Capabilities.ActionNames, actions...)
 			default:
-				fmt.Printf("unknown capabilitiy: %s\n", k)
+				fmt.Printf("unknown capability: %s\n", k)
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("unable to get capabilites for plugin class")
+		return nil, fmt.Errorf("unable to get capabilities for plugin class")
 	}
 
 	return metadata, nil

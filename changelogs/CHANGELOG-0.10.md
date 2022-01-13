@@ -48,7 +48,7 @@
 ### All Changes
   * Moved internal/dash to pkg/dash (#396, @wwitzel3)
   * Sorted events in a more stable manner (#404, @bryanl)
-  * Fixed bug where container ports used for active port fowards used an incorrect state id (#409, @GuessWhoSamFoo)
+  * Fixed bug where container ports used for active port forwards used an incorrect state id (#409, @GuessWhoSamFoo)
   * Added iframe component (#431, @GarySmith)
   * Updated service printer to show service port instead of target port (#435, @alexbrand)
   * Created slider component (#440, @bryanl)

@@ -27,7 +27,7 @@ type Config interface {
 	Home() string
 	// Fs is the afero filesystem
 	Fs() afero.Fs
-	// OS is the opertating system
+	// OS is the operating system
 	OS() string
 }
 
