@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2018 gRPC authors.
+ * Copyright 2021 gRPC authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,13 @@
  *
  */
 
-// Package envconfig contains grpc settings configured by environment variables.
-package envconfig
+package grpcutil
 
-import (
-	"os"
-	"strings"
-)
+import "regexp"
 
-const (
-	prefix          = "GRPC_GO_"
-	txtErrIgnoreStr = prefix + "IGNORE_TXT_ERRORS"
-)
-
-var (
-	// TXTErrIgnore is set if TXT errors should be ignored ("GRPC_GO_IGNORE_TXT_ERRORS" is not "false").
-	TXTErrIgnore = !strings.EqualFold(os.Getenv(txtErrIgnoreStr), "false")
-)
+// FullMatchWithRegex returns whether the full string matches the regex provided.
+func FullMatchWithRegex(re *regexp.Regexp, string string) bool {
+	re.Longest()
+	rem := re.FindString(string)
+	return len(rem) == len(string)
+}
