@@ -7,7 +7,9 @@ package printer
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -106,7 +108,11 @@ func describeSecretData(secret corev1.Secret) (*component.Table, error) {
 	for key, value := range secret.Data {
 		row := component.TableRow{}
 		keyText := component.NewText(key)
-		keyText.AddClipboard(string(value))
+		if utf8.Valid(value) {
+			keyText.AddClipboard(string(value))
+		} else {
+			keyText.AddClipboard(base64.StdEncoding.EncodeToString(value))
+		}
 		row["Key"] = keyText
 		table.Add(row)
 	}
