@@ -2,7 +2,7 @@
   action="{{ style }}"
   status="{{ status }}"
   size="{{ size }}"
-  disabled="{{ disabled }}"
+  [attr.disabled]="disabled"
   block="{{ block }}"
   (click)="onClick(v?.config?.payload, v?.config?.confirmation, v?.config?.modal)">
   {{ v?.config?.name }}
