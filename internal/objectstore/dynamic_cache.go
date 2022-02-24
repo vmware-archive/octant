@@ -498,7 +498,8 @@ func (d *DynamicCache) gvrFromKey(ctx context.Context, key store.Key) (schema.Gr
 
 	v, ok := d.gvrCache.Load(gk)
 	if !ok {
-		gvr, _, err := d.client.Resource(gk)
+		var err error
+		gvr, _, err = d.client.Resource(gk)
 		if err != nil {
 			return schema.GroupVersionResource{}, err
 		}
