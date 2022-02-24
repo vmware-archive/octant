@@ -1,3 +1,16 @@
+## v0.25.1
+
+#### 2022-2-24
+
+### Download
+
+- https://github.com/vmware-tanzu/octant/releases/v0.25.1
+
+### All Changes
+
+- Fixed disabled buttons (#3057, @GuessWhoSamFoo)
+- Fixed uncached GVR DynamicCache returning as nil (#3177, @liys87x)
+
 ## v0.25.0
 
 #### 2021-11-16
