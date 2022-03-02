@@ -16,7 +16,7 @@ import (
 
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/internal/iolimits"
-	internalTypes "github.com/containers/image/v5/internal/types"
+	"github.com/containers/image/v5/internal/private"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/pkg/sysregistriesv2"
 	"github.com/containers/image/v5/types"
@@ -147,6 +147,11 @@ func (s *dockerImageSource) Close() error {
 	return nil
 }
 
+// SupportsGetBlobAt() returns true if GetBlobAt (BlobChunkAccessor) is supported.
+func (s *dockerImageSource) SupportsGetBlobAt() bool {
+	return true
+}
+
 // LayerInfosForCopy returns either nil (meaning the values in the manifest are fine), or updated values for the layer
 // blobsums that are listed in the image's manifest.  If values are returned, they should be used when using GetBlob()
 // to read the image's layers.
@@ -236,6 +241,9 @@ func (s *dockerImageSource) ensureManifestIsLoaded(ctx context.Context) error {
 	return nil
 }
 
+// getExternalBlob returns the reader of the first available blob URL from urls, which must not be empty.
+// This function can return nil reader when no url is supported by this function. In this case, the caller
+// should fallback to fetch the non-external blob (i.e. pull from the registry).
 func (s *dockerImageSource) getExternalBlob(ctx context.Context, urls []string) (io.ReadCloser, int64, error) {
 	var (
 		resp *http.Response
@@ -244,20 +252,26 @@ func (s *dockerImageSource) getExternalBlob(ctx context.Context, urls []string) 
 	if len(urls) == 0 {
 		return nil, 0, errors.New("internal error: getExternalBlob called with no URLs")
 	}
-	for _, url := range urls {
+	for _, u := range urls {
+		if u, err := url.Parse(u); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			continue // unsupported url. skip this url.
+		}
 		// NOTE: we must not authenticate on additional URLs as those
 		//       can be abused to leak credentials or tokens.  Please
 		//       refer to CVE-2020-15157 for more information.
-		resp, err = s.c.makeRequestToResolvedURL(ctx, http.MethodGet, url, nil, nil, -1, noAuth, nil)
+		resp, err = s.c.makeRequestToResolvedURL(ctx, http.MethodGet, u, nil, nil, -1, noAuth, nil)
 		if err == nil {
 			if resp.StatusCode != http.StatusOK {
-				err = errors.Errorf("error fetching external blob from %q: %d (%s)", url, resp.StatusCode, http.StatusText(resp.StatusCode))
+				err = errors.Errorf("error fetching external blob from %q: %d (%s)", u, resp.StatusCode, http.StatusText(resp.StatusCode))
 				logrus.Debug(err)
 				resp.Body.Close()
 				continue
 			}
 			break
 		}
+	}
+	if resp == nil && err == nil {
+		return nil, 0, nil // fallback to non-external blob
 	}
 	if err != nil {
 		return nil, 0, err
@@ -279,7 +293,7 @@ func (s *dockerImageSource) HasThreadSafeGetBlob() bool {
 }
 
 // splitHTTP200ResponseToPartial splits a 200 response in multiple streams as specified by the chunks
-func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, body io.ReadCloser, chunks []internalTypes.ImageSourceChunk) {
+func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, body io.ReadCloser, chunks []private.ImageSourceChunk) {
 	defer close(streams)
 	defer close(errs)
 	currentOffset := uint64(0)
@@ -313,7 +327,7 @@ func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, 
 }
 
 // handle206Response reads a 206 response and send each part as a separate ReadCloser to the streams chan.
-func handle206Response(streams chan io.ReadCloser, errs chan error, body io.ReadCloser, chunks []internalTypes.ImageSourceChunk, mediaType string, params map[string]string) {
+func handle206Response(streams chan io.ReadCloser, errs chan error, body io.ReadCloser, chunks []private.ImageSourceChunk, mediaType string, params map[string]string) {
 	defer close(streams)
 	defer close(errs)
 	if !strings.HasPrefix(mediaType, "multipart/") {
@@ -348,9 +362,12 @@ func handle206Response(streams chan io.ReadCloser, errs chan error, body io.Read
 	}
 }
 
-// GetBlobAt returns a stream for the specified blob.
+// GetBlobAt returns a sequential channel of readers that contain data for the requested
+// blob chunks, and a channel that might get a single error value.
 // The specified chunks must be not overlapping and sorted by their offset.
-func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, chunks []internalTypes.ImageSourceChunk) (chan io.ReadCloser, chan error, error) {
+// The readers must be fully consumed, in the order they are returned, before blocking
+// to read the next chunk.
+func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, chunks []private.ImageSourceChunk) (chan io.ReadCloser, chan error, error) {
 	headers := make(map[string][]string)
 
 	var rangeVals []string
@@ -392,7 +409,7 @@ func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, 
 		return streams, errs, nil
 	case http.StatusBadRequest:
 		res.Body.Close()
-		return nil, nil, internalTypes.BadPartialRequestError{Status: res.Status}
+		return nil, nil, private.BadPartialRequestError{Status: res.Status}
 	default:
 		err := httpResponseToError(res, "Error fetching partial blob")
 		if err == nil {
@@ -408,7 +425,12 @@ func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, 
 // May update BlobInfoCache, preferably after it knows for certain that a blob truly exists at a specific location.
 func (s *dockerImageSource) GetBlob(ctx context.Context, info types.BlobInfo, cache types.BlobInfoCache) (io.ReadCloser, int64, error) {
 	if len(info.URLs) != 0 {
-		return s.getExternalBlob(ctx, info.URLs)
+		r, s, err := s.getExternalBlob(ctx, info.URLs)
+		if err != nil {
+			return nil, 0, err
+		} else if r != nil {
+			return r, s, nil
+		}
 	}
 
 	path := fmt.Sprintf(blobsPath, reference.Path(s.physicalRef.ref), info.Digest.String())
