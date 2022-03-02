@@ -20,7 +20,7 @@ jobs:
       - name: Install libraries
         run: sudo apt-get update && sudo apt install -y libgpgme-dev libassuan-dev libdevmapper-dev libbtrfs-dev
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Verify generated code
         run: ci/check-generated-mocks.sh
       - name: Verify npm registry

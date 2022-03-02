@@ -12,7 +12,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     container: goreleaser/goreleaser:v1.0.0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v2

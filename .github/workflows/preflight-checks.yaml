@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: 1.17.x
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get tag
         run: echo "GITHUB_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Verify tag
@@ -61,7 +61,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Karma tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
@@ -81,7 +81,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     container: goreleaser/goreleaser:v1.0.0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v2
@@ -155,7 +155,7 @@ jobs:
     needs: [goreleaser, bundle_assets]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v2
         with:
           name: binary-artifacts
