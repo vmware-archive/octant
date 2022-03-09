@@ -339,7 +339,7 @@ github.com/gregjones/httpcache/diskcache
 # github.com/hashicorp/errwrap v1.0.0
 ## explicit
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-hclog v0.16.2
+# github.com/hashicorp/go-hclog v1.2.0
 ## explicit; go 1.13
 github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.1
