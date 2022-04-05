@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"hash"
 	"io"
@@ -40,7 +41,6 @@ import (
 
 	"github.com/containerd/stargz-snapshotter/estargz/errorutil"
 	digest "github.com/opencontainers/go-digest"
-	"github.com/pkg/errors"
 	"github.com/vbatts/tar-split/archive/tar"
 )
 
@@ -107,7 +107,7 @@ type Telemetry struct {
 }
 
 // Open opens a stargz file for reading.
-// The behaviour is configurable using options.
+// The behavior is configurable using options.
 //
 // Note that each entry name is normalized as the path that is relative to root.
 func Open(sr *io.SectionReader, opt ...OpenOption) (*Reader, error) {
@@ -118,7 +118,7 @@ func Open(sr *io.SectionReader, opt ...OpenOption) (*Reader, error) {
 		}
 	}
 
-	gzipCompressors := []Decompressor{new(GzipDecompressor), new(legacyGzipDecompressor)}
+	gzipCompressors := []Decompressor{new(GzipDecompressor), new(LegacyGzipDecompressor)}
 	decompressors := append(gzipCompressors, opts.decompressors...)
 
 	// Determine the size to fetch. Try to fetch as many bytes as possible.
@@ -184,7 +184,7 @@ func OpenFooter(sr *io.SectionReader) (tocOffset int64, footerSize int64, rErr e
 		return 0, 0, fmt.Errorf("error reading footer: %v", err)
 	}
 	var allErr []error
-	for _, d := range []Decompressor{new(GzipDecompressor), new(legacyGzipDecompressor)} {
+	for _, d := range []Decompressor{new(GzipDecompressor), new(LegacyGzipDecompressor)} {
 		fSize := d.FooterSize()
 		fOffset := positive(int64(len(footer)) - fSize)
 		_, tocOffset, _, err := d.ParseFooter(footer[fOffset:])
@@ -279,12 +279,12 @@ func (r *Reader) initFields() error {
 		pdir := r.getOrCreateDir(pdirName)
 		ent.NumLink++ // at least one name(ent.Name) references this entry.
 		if ent.Type == "hardlink" {
-			if org, ok := r.m[cleanEntryName(ent.LinkName)]; ok {
-				org.NumLink++ // original entry is referenced by this ent.Name.
-				ent = org
-			} else {
-				return fmt.Errorf("%q is a hardlink but the linkname %q isn't found", ent.Name, ent.LinkName)
+			org, err := r.getSource(ent)
+			if err != nil {
+				return err
 			}
+			org.NumLink++ // original entry is referenced by this ent.Name.
+			ent = org
 		}
 		pdir.addChild(path.Base(name), ent)
 	}
@@ -301,6 +301,20 @@ func (r *Reader) initFields() error {
 	}
 
 	return nil
+}
+
+func (r *Reader) getSource(ent *TOCEntry) (_ *TOCEntry, err error) {
+	if ent.Type == "hardlink" {
+		org, ok := r.m[cleanEntryName(ent.LinkName)]
+		if !ok {
+			return nil, fmt.Errorf("%q is a hardlink but the linkname %q isn't found", ent.Name, ent.LinkName)
+		}
+		ent, err = r.getSource(org)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ent, nil
 }
 
 func parentDir(p string) string {
@@ -371,8 +385,7 @@ func (r *Reader) Verifiers() (TOCEntryVerifier, error) {
 			if e.Digest != "" {
 				d, err := digest.Parse(e.Digest)
 				if err != nil {
-					return nil, errors.Wrapf(err,
-						"failed to parse regular file digest %q", e.Digest)
+					return nil, fmt.Errorf("failed to parse regular file digest %q: %w", e.Digest, err)
 				}
 				regDigestMap[e.Offset] = d
 			} else {
@@ -387,8 +400,7 @@ func (r *Reader) Verifiers() (TOCEntryVerifier, error) {
 		if e.ChunkDigest != "" {
 			d, err := digest.Parse(e.ChunkDigest)
 			if err != nil {
-				return nil, errors.Wrapf(err,
-					"failed to parse chunk digest %q", e.ChunkDigest)
+				return nil, fmt.Errorf("failed to parse chunk digest %q: %w", e.ChunkDigest, err)
 			}
 			chunkDigestMap[e.Offset] = d
 		} else {
@@ -464,7 +476,11 @@ func (r *Reader) Lookup(path string) (e *TOCEntry, ok bool) {
 	}
 	e, ok = r.m[path]
 	if ok && e.Type == "hardlink" {
-		e, ok = r.m[e.LinkName]
+		var err error
+		e, err = r.getSource(e)
+		if err != nil {
+			return nil, false
+		}
 	}
 	return
 }
@@ -629,7 +645,7 @@ func Unpack(sr *io.SectionReader, c Decompressor) (io.ReadCloser, error) {
 	}
 	blobPayloadSize, _, _, err := c.ParseFooter(footer)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse footer")
+		return nil, fmt.Errorf("failed to parse footer: %w", err)
 	}
 	return c.Reader(io.LimitReader(sr, blobPayloadSize))
 }

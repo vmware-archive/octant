@@ -43,6 +43,16 @@ const builtinRegistriesConfDirPath = "/etc/containers/registries.conf.d"
 // helper.
 const AuthenticationFileHelper = "containers-auth.json"
 
+const (
+	// configuration values for "pull-from-mirror"
+	// mirrors will be used for both digest pulls and tag pulls
+	MirrorAll = "all"
+	// mirrors will only be used for digest pulls
+	MirrorByDigestOnly = "digest-only"
+	// mirrors will only be used for tag pulls
+	MirrorByTagOnly = "tag-only"
+)
+
 // Endpoint describes a remote location of a registry.
 type Endpoint struct {
 	// The endpoint's remote location. Can be empty iff Prefix contains
@@ -53,6 +63,18 @@ type Endpoint struct {
 	// If true, certs verification will be skipped and HTTP (non-TLS)
 	// connections will be allowed.
 	Insecure bool `toml:"insecure,omitempty"`
+	// PullFromMirror is used for adding restrictions to image pull through the mirror.
+	// Set to "all", "digest-only", or "tag-only".
+	// If "digest-only"， mirrors will only be used for digest pulls. Pulling images by
+	// tag can potentially yield different images, depending on which endpoint
+	// we pull from.  Restricting mirrors to pulls by digest avoids that issue.
+	// If "tag-only", mirrors will only be used for tag pulls.  For a more up-to-date and expensive mirror
+	// that it is less likely to be out of sync if tags move, it should not be unnecessarily
+	// used for digest references.
+	// Default is "all" (or left empty), mirrors will be used for both digest pulls and tag pulls unless the mirror-by-digest-only is set for the primary registry.
+	// This can only be set in a registry's Mirror field, not in the registry's primary Endpoint.
+	// This per-mirror setting is allowed only when mirror-by-digest-only is not configured for the primary registry.
+	PullFromMirror string `toml:"pull-from-mirror,omitempty"`
 }
 
 // userRegistriesFile is the path to the per user registry configuration file.
@@ -80,7 +102,7 @@ func (e *Endpoint) rewriteReference(ref reference.Named, prefix string) (referen
 	// be dropped.
 	// https://github.com/containers/image/pull/1191#discussion_r610621608
 	if e.Location == "" {
-		if prefix[:2] != "*." {
+		if !strings.HasPrefix(prefix, "*.") {
 			return nil, fmt.Errorf("invalid prefix '%v' for empty location, should be in the format: *.example.com", prefix)
 		}
 		return ref, nil
@@ -115,7 +137,7 @@ type Registry struct {
 	Blocked bool `toml:"blocked,omitempty"`
 	// If true, mirrors will only be used for digest pulls. Pulling images by
 	// tag can potentially yield different images, depending on which endpoint
-	// we pull from.  Forcing digest-pulls for mirrors avoids that issue.
+	// we pull from.  Restricting mirrors to pulls by digest avoids that issue.
 	MirrorByDigestOnly bool `toml:"mirror-by-digest-only,omitempty"`
 }
 
@@ -130,17 +152,29 @@ type PullSource struct {
 // reference.
 func (r *Registry) PullSourcesFromReference(ref reference.Named) ([]PullSource, error) {
 	var endpoints []Endpoint
-
+	_, isDigested := ref.(reference.Canonical)
 	if r.MirrorByDigestOnly {
-		// Only use mirrors when the reference is a digest one.
-		if _, isDigested := ref.(reference.Canonical); isDigested {
-			endpoints = append(r.Mirrors, r.Endpoint)
-		} else {
-			endpoints = []Endpoint{r.Endpoint}
+		// Only use mirrors when the reference is a digested one.
+		if isDigested {
+			endpoints = append(endpoints, r.Mirrors...)
 		}
 	} else {
-		endpoints = append(r.Mirrors, r.Endpoint)
+		for _, mirror := range r.Mirrors {
+			// skip the mirror if per mirror setting exists but reference does not match the restriction
+			switch mirror.PullFromMirror {
+			case MirrorByDigestOnly:
+				if !isDigested {
+					continue
+				}
+			case MirrorByTagOnly:
+				if isDigested {
+					continue
+				}
+			}
+			endpoints = append(endpoints, mirror)
+		}
 	}
+	endpoints = append(endpoints, r.Endpoint)
 
 	sources := []PullSource{}
 	for _, ep := range endpoints {
@@ -369,11 +403,15 @@ func (config *V2RegistriesConf) postProcessRegistries() error {
 			}
 			// FIXME: allow config authors to always use Prefix.
 			// https://github.com/containers/image/pull/1191#discussion_r610622495
-			if reg.Prefix[:2] != "*." && reg.Location == "" {
+			if !strings.HasPrefix(reg.Prefix, "*.") && reg.Location == "" {
 				return &InvalidRegistries{s: "invalid condition: location is unset and prefix is not in the format: *.example.com"}
 			}
 		}
 
+		// validate the mirror usage settings does not apply to primary registry
+		if reg.PullFromMirror != "" {
+			return fmt.Errorf("pull-from-mirror must not be set for a non-mirror registry %q", reg.Prefix)
+		}
 		// make sure mirrors are valid
 		for _, mir := range reg.Mirrors {
 			mir.Location, err = parseLocation(mir.Location)
@@ -386,6 +424,14 @@ func (config *V2RegistriesConf) postProcessRegistries() error {
 			// https://github.com/containers/image/pull/1191#discussion_r610623216
 			if mir.Location == "" {
 				return &InvalidRegistries{s: "invalid condition: mirror location is unset"}
+			}
+
+			if reg.MirrorByDigestOnly && mir.PullFromMirror != "" {
+				return &InvalidRegistries{s: fmt.Sprintf("cannot set mirror usage mirror-by-digest-only for the registry (%q) and pull-from-mirror for per-mirror (%q) at the same time", reg.Prefix, mir.Location)}
+			}
+			if mir.PullFromMirror != "" && mir.PullFromMirror != MirrorAll &&
+				mir.PullFromMirror != MirrorByDigestOnly && mir.PullFromMirror != MirrorByTagOnly {
+				return &InvalidRegistries{s: fmt.Sprintf("unsupported pull-from-mirror value %q for mirror %q", mir.PullFromMirror, mir.Location)}
 			}
 		}
 		if reg.Location == "" {
@@ -804,7 +850,7 @@ func refMatchingSubdomainPrefix(ref, prefix string) int {
 // (This is split from the caller primarily to make testing easier.)
 func refMatchingPrefix(ref, prefix string) int {
 	switch {
-	case prefix[0:2] == "*.":
+	case strings.HasPrefix(prefix, "*."):
 		return refMatchingSubdomainPrefix(ref, prefix)
 	case len(ref) < len(prefix):
 		return -1
@@ -877,9 +923,12 @@ func loadConfigFile(path string, forceV2 bool) (*parsedConfig, error) {
 
 	// Load the tomlConfig. Note that `DecodeFile` will overwrite set fields.
 	var combinedTOML tomlConfig
-	_, err := toml.DecodeFile(path, &combinedTOML)
+	meta, err := toml.DecodeFile(path, &combinedTOML)
 	if err != nil {
 		return nil, err
+	}
+	if keys := meta.Undecoded(); len(keys) > 0 {
+		logrus.Debugf("Failed to decode keys %q from %q", keys, path)
 	}
 
 	if combinedTOML.V1RegistriesConf.Nonempty() {
@@ -924,7 +973,7 @@ func loadConfigFile(path string, forceV2 bool) (*parsedConfig, error) {
 	// https://github.com/containers/image/pull/1191#discussion_r610623829
 	for i := range res.partialV2.Registries {
 		prefix := res.partialV2.Registries[i].Prefix
-		if prefix[:2] == "*." && strings.ContainsAny(prefix, "/@:") {
+		if strings.HasPrefix(prefix, "*.") && strings.ContainsAny(prefix, "/@:") {
 			msg := fmt.Sprintf("Wildcarded prefix should be in the format: *.example.com. Current prefix %q is incorrectly formatted", prefix)
 			return nil, &InvalidRegistries{s: msg}
 		}

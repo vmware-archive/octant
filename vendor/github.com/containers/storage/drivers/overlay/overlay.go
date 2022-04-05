@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package overlay
@@ -153,6 +154,15 @@ func hasMetacopyOption(opts []string) bool {
 		}
 	}
 	return false
+}
+
+func stripOption(opts []string, option string) []string {
+	for i, s := range opts {
+		if s == option {
+			return stripOption(append(opts[:i], opts[i+1:]...), option)
+		}
+	}
+	return opts
 }
 
 func hasVolatileOption(opts []string) bool {
@@ -881,11 +891,18 @@ func (d *Driver) create(id, parent string, opts *graphdriver.CreateOpts, disable
 	if err != nil {
 		return err
 	}
+
+	idPair := idtools.IDPair{
+		UID: rootUID,
+		GID: rootGID,
+	}
+
 	// Make the link directory if it does not exist
-	if err := idtools.MkdirAllAs(path.Join(d.home, linkDir), 0700, rootUID, rootGID); err != nil {
+	if err := idtools.MkdirAllAndChownNew(path.Join(d.home, linkDir), 0700, idPair); err != nil {
 		return err
 	}
-	if err := idtools.MkdirAllAs(path.Dir(dir), 0700, rootUID, rootGID); err != nil {
+
+	if err := idtools.MkdirAllAndChownNew(path.Dir(dir), 0700, idPair); err != nil {
 		return err
 	}
 	if parent != "" {
@@ -896,14 +913,16 @@ func (d *Driver) create(id, parent string, opts *graphdriver.CreateOpts, disable
 		rootUID = int(st.UID())
 		rootGID = int(st.GID())
 	}
-	if err := idtools.MkdirAs(dir, 0700, rootUID, rootGID); err != nil {
+	if err := idtools.MkdirAllAndChownNew(dir, 0700, idPair); err != nil {
 		return err
 	}
 
 	defer func() {
 		// Clean up on failure
 		if retErr != nil {
-			os.RemoveAll(dir)
+			if err2 := os.RemoveAll(dir); err2 != nil {
+				logrus.Errorf("While recovering from a failure creating a layer, error deleting %#v: %v", dir, err2)
+			}
 		}
 	}()
 
@@ -1039,17 +1058,22 @@ func (d *Driver) getLower(parent string) (string, error) {
 }
 
 func (d *Driver) dir(id string) string {
+	p, _ := d.dir2(id)
+	return p
+}
+
+func (d *Driver) dir2(id string) (string, bool) {
 	newpath := path.Join(d.home, id)
 	if _, err := os.Stat(newpath); err != nil {
 		for _, p := range d.AdditionalImageStores() {
 			l := path.Join(p, d.name, id)
 			_, err = os.Stat(l)
 			if err == nil {
-				return l
+				return l, true
 			}
 		}
 	}
-	return newpath
+	return newpath, false
 }
 
 func (d *Driver) getLowerDirs(id string) ([]string, error) {
@@ -1145,6 +1169,9 @@ func (d *Driver) Remove(id string) error {
 // under each layer has a symlink created for it under the linkDir. If the symlink does not
 // exist, it creates them
 func (d *Driver) recreateSymlinks() error {
+	// We have at most 3 corrective actions per layer, so 10 iterations is plenty.
+	const maxIterations = 10
+
 	// List all the directories under the home directory
 	dirs, err := ioutil.ReadDir(d.home)
 	if err != nil {
@@ -1162,6 +1189,7 @@ func (d *Driver) recreateSymlinks() error {
 	// Keep looping as long as we take some corrective action in each iteration
 	var errs *multierror.Error
 	madeProgress := true
+	iterations := 0
 	for madeProgress {
 		errs = nil
 		madeProgress = false
@@ -1175,7 +1203,7 @@ func (d *Driver) recreateSymlinks() error {
 			// Read the "link" file under each layer to get the name of the symlink
 			data, err := ioutil.ReadFile(path.Join(d.dir(dir.Name()), "link"))
 			if err != nil {
-				errs = multierror.Append(errs, errors.Wrapf(err, "reading name of symlink for %q", dir))
+				errs = multierror.Append(errs, errors.Wrapf(err, "reading name of symlink for %q", dir.Name()))
 				continue
 			}
 			linkPath := path.Join(d.home, linkDir, strings.Trim(string(data), "\n"))
@@ -1212,7 +1240,12 @@ func (d *Driver) recreateSymlinks() error {
 			if len(targetComponents) != 3 || targetComponents[0] != ".." || targetComponents[2] != "diff" {
 				errs = multierror.Append(errs, errors.Errorf("link target of %q looks weird: %q", link, target))
 				// force the link to be recreated on the next pass
-				os.Remove(filepath.Join(linksDir, link.Name()))
+				if err := os.Remove(filepath.Join(linksDir, link.Name())); err != nil {
+					if !os.IsNotExist(err) {
+						errs = multierror.Append(errs, errors.Wrapf(err, "removing link %q", link))
+					} // else don’t report any error, but also don’t set madeProgress.
+					continue
+				}
 				madeProgress = true
 				continue
 			}
@@ -1222,12 +1255,19 @@ func (d *Driver) recreateSymlinks() error {
 			linkFile := filepath.Join(d.dir(targetID), "link")
 			data, err := ioutil.ReadFile(linkFile)
 			if err != nil || string(data) != link.Name() {
+				// NOTE: If two or more links point to the same target, we will update linkFile
+				// with every value of link.Name(), and set madeProgress = true every time.
 				if err := ioutil.WriteFile(linkFile, []byte(link.Name()), 0644); err != nil {
 					errs = multierror.Append(errs, errors.Wrapf(err, "correcting link for layer %s", targetID))
 					continue
 				}
 				madeProgress = true
 			}
+		}
+		iterations++
+		if iterations >= maxIterations {
+			errs = multierror.Append(errs, fmt.Errorf("Reached %d iterations in overlay graph driver’s recreateSymlink, giving up", iterations))
+			break
 		}
 	}
 	if errs != nil {
@@ -1244,16 +1284,20 @@ func (d *Driver) Get(id string, options graphdriver.MountOpts) (_ string, retErr
 func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountOpts) (_ string, retErr error) {
 	d.locker.Lock(id)
 	defer d.locker.Unlock(id)
-	dir := d.dir(id)
+	dir, inAdditionalStore := d.dir2(id)
 	if _, err := os.Stat(dir); err != nil {
 		return "", err
 	}
-	readWrite := true
+	readWrite := !inAdditionalStore
 
 	if !d.SupportsShifting() || options.DisableShifting {
 		disableShifting = true
 	}
 
+	logLevel := logrus.WarnLevel
+	if unshare.IsRootless() {
+		logLevel = logrus.DebugLevel
+	}
 	optsList := options.Options
 	if len(optsList) == 0 {
 		optsList = strings.Split(d.options.mountOptions, ",")
@@ -1262,16 +1306,18 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 		// options otherwise the kernel refuses to follow the metacopy xattr.
 		if hasMetacopyOption(strings.Split(d.options.mountOptions, ",")) && !hasMetacopyOption(options.Options) {
 			if d.usingMetacopy {
+				logrus.StandardLogger().Logf(logrus.DebugLevel, "Adding metacopy option, configured globally")
 				optsList = append(optsList, "metacopy=on")
-			} else {
-				logLevel := logrus.WarnLevel
-				if unshare.IsRootless() {
-					logLevel = logrus.DebugLevel
-				}
-				logrus.StandardLogger().Logf(logLevel, "Ignoring metacopy option from storage.conf, not supported with booted kernel")
 			}
 		}
 	}
+	if !d.usingMetacopy {
+		if hasMetacopyOption(optsList) {
+			logrus.StandardLogger().Logf(logLevel, "Ignoring global metacopy option, not supported with booted kernel")
+		}
+		optsList = stripOption(optsList, "metacopy=on")
+	}
+
 	for _, o := range optsList {
 		if o == "ro" {
 			readWrite = false
@@ -1416,6 +1462,21 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 
 	workdir := path.Join(dir, "work")
 
+	if d.options.mountProgram == "" && unshare.IsRootless() {
+		optsList = append(optsList, "userxattr")
+	}
+
+	if options.Volatile && !hasVolatileOption(optsList) {
+		supported, err := d.getSupportsVolatile()
+		if err != nil {
+			return "", err
+		}
+		// If "volatile" is not supported by the file system, just ignore the request
+		if supported {
+			optsList = append(optsList, "volatile")
+		}
+	}
+
 	var opts string
 	if readWrite {
 		opts = fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", strings.Join(absLowers, ":"), diffDir, workdir)
@@ -1423,22 +1484,7 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 		opts = fmt.Sprintf("lowerdir=%s:%s", diffDir, strings.Join(absLowers, ":"))
 	}
 	if len(optsList) > 0 {
-		opts = fmt.Sprintf("%s,%s", strings.Join(optsList, ","), opts)
-	}
-
-	if d.options.mountProgram == "" && unshare.IsRootless() {
-		opts = fmt.Sprintf("%s,userxattr", opts)
-	}
-
-	// If "volatile" is not supported by the file system, just ignore the request
-	if options.Volatile && !hasVolatileOption(strings.Split(opts, ",")) {
-		supported, err := d.getSupportsVolatile()
-		if err != nil {
-			return "", err
-		}
-		if supported {
-			opts = fmt.Sprintf("%s,volatile", opts)
-		}
+		opts = fmt.Sprintf("%s,%s", opts, strings.Join(optsList, ","))
 	}
 
 	mountData := label.FormatMountLabel(opts, options.MountLabel)
@@ -1447,10 +1493,6 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 
 	pageSize := unix.Getpagesize()
 
-	// Use relative paths and mountFrom when the mount data has exceeded
-	// the page size. The mount syscall fails if the mount data cannot
-	// fit within a page and relative links make the mount data much
-	// smaller at the expense of requiring a fork exec to chroot.
 	if d.options.mountProgram != "" {
 		mountFunc = func(source string, target string, mType string, flags uintptr, label string) error {
 			if !disableShifting {
@@ -1477,13 +1519,21 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 			return nil
 		}
 	} else if len(mountData) > pageSize {
+		// Use relative paths and mountFrom when the mount data has exceeded
+		// the page size. The mount syscall fails if the mount data cannot
+		// fit within a page and relative links make the mount data much
+		// smaller at the expense of requiring a fork exec to chroot.
+
 		workdir = path.Join(id, "work")
 		//FIXME: We need to figure out to get this to work with additional stores
 		if readWrite {
 			diffDir := path.Join(id, "diff")
 			opts = fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", strings.Join(relLowers, ":"), diffDir, workdir)
 		} else {
-			opts = fmt.Sprintf("lowerdir=%s", strings.Join(absLowers, ":"))
+			opts = fmt.Sprintf("lowerdir=%s", strings.Join(relLowers, ":"))
+		}
+		if len(optsList) > 0 {
+			opts = fmt.Sprintf("%s,%s", opts, strings.Join(optsList, ","))
 		}
 		mountData = label.FormatMountLabel(opts, options.MountLabel)
 		if len(mountData) > pageSize {
