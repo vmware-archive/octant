@@ -93,7 +93,7 @@ jobs:
       - name: Build web assets
         run: |
           go run build.go web-build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: bundle
           path: web/dist
@@ -123,7 +123,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           package_root: 'web'
           build_script_name: 'build-electron'
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           name: electron-artifacts
@@ -145,7 +145,7 @@ jobs:
       - name: Run GoReleaser
         run: |
           goreleaser --skip-publish
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: binary-artifacts
           path: dist
