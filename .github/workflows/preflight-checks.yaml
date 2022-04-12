@@ -22,7 +22,7 @@ jobs:
     name: Golang tests on ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/setup-node@v3.1.1
         with:
           node-version: '16'
           cache: 'npm'
@@ -62,7 +62,7 @@ jobs:
     name: Karma tests on ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/setup-node@v3.1.1
         with:
           node-version: '16'
           cache: 'npm'
@@ -82,7 +82,7 @@ jobs:
     name: Build on ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/setup-node@v3.1.1
         with:
           node-version: '16'
           cache: 'npm'
