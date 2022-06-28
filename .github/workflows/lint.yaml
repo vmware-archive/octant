@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.4.1
-        with:git
+        with:
           node-version: '14'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
