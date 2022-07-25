@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"github.com/containers/storage/pkg/stringid"
 	"github.com/containers/storage/pkg/truncindex"
 	digest "github.com/opencontainers/go-digest"
-	"github.com/pkg/errors"
 )
 
 // A Container is a reference to a read-write layer with metadata.
@@ -84,7 +84,16 @@ type ContainerStore interface {
 
 	// SetNames updates the list of names associated with the container
 	// with the specified ID.
+	// Deprecated: Prone to race conditions, suggested alternatives are `AddNames` and `RemoveNames`.
 	SetNames(id string, names []string) error
+
+	// AddNames adds the supplied values to the list of names associated with the container with
+	// the specified id.
+	AddNames(id string, names []string) error
+
+	// RemoveNames removes the supplied values from the list of names associated with the container with
+	// the specified id.
+	RemoveNames(id string, names []string) error
 
 	// Get retrieves information about a container given an ID or name.
 	Get(id string) (*Container, error)
@@ -320,9 +329,14 @@ func (r *containerStore) Create(id string, names []string, image, layer, metadat
 	names = dedupeNames(names)
 	for _, name := range names {
 		if _, nameInUse := r.byname[name]; nameInUse {
-			return nil, errors.Wrapf(ErrDuplicateName,
-				fmt.Sprintf("the container name \"%s\" is already in use by \"%s\". You have to remove that container to be able to reuse that name.", name, r.byname[name].ID))
+			return nil, fmt.Errorf("the container name %q is already in use by %s. You have to remove that container to be able to reuse that name: %w", name, r.byname[name].ID, ErrDuplicateName)
 		}
+	}
+	if err := hasOverlappingRanges(options.UIDMap); err != nil {
+		return nil, err
+	}
+	if err := hasOverlappingRanges(options.GIDMap); err != nil {
+		return nil, err
 	}
 	if err == nil {
 		container = &Container{
@@ -371,22 +385,40 @@ func (r *containerStore) removeName(container *Container, name string) {
 	container.Names = stringSliceWithoutValue(container.Names, name)
 }
 
+// Deprecated: Prone to race conditions, suggested alternatives are `AddNames` and `RemoveNames`.
 func (r *containerStore) SetNames(id string, names []string) error {
-	names = dedupeNames(names)
-	if container, ok := r.lookup(id); ok {
-		for _, name := range container.Names {
-			delete(r.byname, name)
-		}
-		for _, name := range names {
-			if otherContainer, ok := r.byname[name]; ok {
-				r.removeName(otherContainer, name)
-			}
-			r.byname[name] = container
-		}
-		container.Names = names
-		return r.Save()
+	return r.updateNames(id, names, setNames)
+}
+
+func (r *containerStore) AddNames(id string, names []string) error {
+	return r.updateNames(id, names, addNames)
+}
+
+func (r *containerStore) RemoveNames(id string, names []string) error {
+	return r.updateNames(id, names, removeNames)
+}
+
+func (r *containerStore) updateNames(id string, names []string, op updateNameOperation) error {
+	container, ok := r.lookup(id)
+	if !ok {
+		return ErrContainerUnknown
 	}
-	return ErrContainerUnknown
+	oldNames := container.Names
+	names, err := applyNameOperation(oldNames, names, op)
+	if err != nil {
+		return err
+	}
+	for _, name := range oldNames {
+		delete(r.byname, name)
+	}
+	for _, name := range names {
+		if otherContainer, ok := r.byname[name]; ok {
+			r.removeName(otherContainer, name)
+		}
+		r.byname[name] = container
+	}
+	container.Names = names
+	return r.Save()
 }
 
 func (r *containerStore) Delete(id string) error {
@@ -446,7 +478,7 @@ func (r *containerStore) Exists(id string) bool {
 
 func (r *containerStore) BigData(id, key string) ([]byte, error) {
 	if key == "" {
-		return nil, errors.Wrapf(ErrInvalidBigDataName, "can't retrieve container big data value for empty name")
+		return nil, fmt.Errorf("can't retrieve container big data value for empty name: %w", ErrInvalidBigDataName)
 	}
 	c, ok := r.lookup(id)
 	if !ok {
@@ -457,7 +489,7 @@ func (r *containerStore) BigData(id, key string) ([]byte, error) {
 
 func (r *containerStore) BigDataSize(id, key string) (int64, error) {
 	if key == "" {
-		return -1, errors.Wrapf(ErrInvalidBigDataName, "can't retrieve size of container big data with empty name")
+		return -1, fmt.Errorf("can't retrieve size of container big data with empty name: %w", ErrInvalidBigDataName)
 	}
 	c, ok := r.lookup(id)
 	if !ok {
@@ -487,7 +519,7 @@ func (r *containerStore) BigDataSize(id, key string) (int64, error) {
 
 func (r *containerStore) BigDataDigest(id, key string) (digest.Digest, error) {
 	if key == "" {
-		return "", errors.Wrapf(ErrInvalidBigDataName, "can't retrieve digest of container big data value with empty name")
+		return "", fmt.Errorf("can't retrieve digest of container big data value with empty name: %w", ErrInvalidBigDataName)
 	}
 	c, ok := r.lookup(id)
 	if !ok {
@@ -525,7 +557,7 @@ func (r *containerStore) BigDataNames(id string) ([]string, error) {
 
 func (r *containerStore) SetBigData(id, key string, data []byte) error {
 	if key == "" {
-		return errors.Wrapf(ErrInvalidBigDataName, "can't set empty name for container big data item")
+		return fmt.Errorf("can't set empty name for container big data item: %w", ErrInvalidBigDataName)
 	}
 	c, ok := r.lookup(id)
 	if !ok {

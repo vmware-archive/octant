@@ -51,13 +51,16 @@ sources := $(wildcard *.go cmd/containers-storage/*.go drivers/*.go drivers/*/*.
 containers-storage: $(sources) ## build using gc on the host
 	$(GO) build $(MOD_VENDOR) -compiler gc $(BUILDFLAGS) ./cmd/containers-storage
 
+codespell:
+	codespell -S Makefile,build,buildah,buildah.spec,imgtype,copy,AUTHORS,bin,vendor,.git,go.sum,CHANGELOG.md,changelog.txt,seccomp.json,.cirrus.yml,"*.xz,*.gz,*.tar,*.tgz,*ico,*.png,*.1,*.5,*.orig,*.rej" -L flate,uint,iff,od,ERRO -w
+
 binary local-binary: containers-storage
 
 local-gccgo: ## build using gccgo on the host
 	GCCGO=$(PWD)/hack/gccgo-wrapper.sh $(GO) build $(MOD_VENDOR) -compiler gccgo $(BUILDFLAGS) -o containers-storage.gccgo ./cmd/containers-storage
 
-local-cross: ## cross build the binaries for arm, darwin, and\nfreebsd
-	@for target in linux/amd64 linux/386 linux/arm linux/arm64 linux/ppc64 linux/ppc64le darwin/amd64 windows/amd64 ; do \
+local-cross: ## cross build the binaries for arm, darwin, and freebsd
+	@for target in linux/amd64 linux/386 linux/arm linux/arm64 linux/ppc64 linux/ppc64le darwin/amd64 windows/amd64 freebsd/amd64 freebsd/arm64 ; do \
 		os=`echo $${target} | cut -f1 -d/` ; \
 		arch=`echo $${target} | cut -f2 -d/` ; \
 		suffix=$${os}.$${arch} ; \
@@ -66,44 +69,44 @@ local-cross: ## cross build the binaries for arm, darwin, and\nfreebsd
 	done
 
 cross: ## cross build the binaries for arm, darwin, and\nfreebsd using VMs
-	$(RUNINVM) make local-$@
+	$(RUNINVM) $(MAKE) local-$@
 
 docs: install.tools ## build the docs on the host
 	$(MAKE) -C docs docs
 
 gccgo: ## build using gccgo using VMs
-	$(RUNINVM) make local-$@
+	$(RUNINVM) $(MAKE) local-$@
 
 test: local-binary ## build the binaries and run the tests using VMs
-	$(RUNINVM) make local-binary local-cross local-test-unit local-test-integration
+	$(RUNINVM) $(MAKE) local-binary local-cross local-test-unit local-test-integration
 
 local-test-unit: local-binary ## run the unit tests on the host (requires\nsuperuser privileges)
 	@$(GO) test $(MOD_VENDOR) $(BUILDFLAGS) $(TESTFLAGS) $(shell $(GO) list ./... | grep -v ^$(PACKAGE)/vendor)
 
 test-unit: local-binary ## run the unit tests using VMs
-	$(RUNINVM) make local-$@
+	$(RUNINVM) $(MAKE) local-$@
 
 local-test-integration: local-binary ## run the integration tests on the host (requires\nsuperuser privileges)
 	@cd tests; ./test_runner.bash
 
 test-integration: local-binary ## run the integration tests using VMs
-	$(RUNINVM) make local-$@
+	$(RUNINVM) $(MAKE) local-$@
 
 local-validate: ## validate DCO and gofmt on the host
 	@./hack/git-validation.sh
 	@./hack/gofmt.sh
 
 validate: ## validate DCO, gofmt, ./pkg/ isolation, golint,\ngo vet and vendor using VMs
-	$(RUNINVM) make local-$@
+	$(RUNINVM) $(MAKE) local-$@
 
 install.tools:
-	make -C tests/tools
+	$(MAKE) -C tests/tools
 
 $(FFJSON):
-	make -C tests/tools
+	$(MAKE) -C tests/tools
 
 install.docs: docs
-	make -C docs install
+	$(MAKE) -C docs install
 
 install: install.docs
 

@@ -117,7 +117,7 @@ func (e *fastGen) addBlock(src []byte) int32 {
 // hash4 returns the hash of u to fit in a hash table with h bits.
 // Preferably h should be a constant and should always be <32.
 func hash4u(u uint32, h uint8) uint32 {
-	return (u * prime4bytes) >> ((32 - h) & reg8SizeMask32)
+	return (u * prime4bytes) >> (32 - h)
 }
 
 type tableEntryPrev struct {
@@ -179,7 +179,7 @@ func (e *fastGen) matchlen(s, t int32, src []byte) int32 {
 // matchlenLong will return the match length between offsets and t in src.
 // It is assumed that s > t, that t >=0 and s < len(src).
 func (e *fastGen) matchlenLong(s, t int32, src []byte) int32 {
-	if debugDecode {
+	if debugDeflate {
 		if t >= s {
 			panic(fmt.Sprint("t >=s:", t, s))
 		}
@@ -213,11 +213,9 @@ func (e *fastGen) Reset() {
 // matchLen returns the maximum length.
 // 'a' must be the shortest of the two.
 func matchLen(a, b []byte) int {
-	b = b[:len(a)]
 	var checked int
 
 	for len(a) >= 8 {
-		b = b[:len(a)]
 		if diff := binary.LittleEndian.Uint64(a) ^ binary.LittleEndian.Uint64(b); diff != 0 {
 			return checked + (bits.TrailingZeros64(diff) >> 3)
 		}
