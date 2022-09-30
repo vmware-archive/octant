@@ -1,8 +1,8 @@
 package types
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/containers/storage/pkg/homedir"
 	"github.com/containers/storage/pkg/system"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,7 +21,7 @@ func GetRootlessRuntimeDir(rootlessUID int) (string, error) {
 	}
 	path = filepath.Join(path, "containers")
 	if err := os.MkdirAll(path, 0700); err != nil {
-		return "", errors.Wrapf(err, "unable to make rootless runtime")
+		return "", fmt.Errorf("unable to make rootless runtime: %w", err)
 	}
 	return path, nil
 }
@@ -75,7 +74,7 @@ func getRootlessRuntimeDirIsolated(env rootlessRuntimeDirEnvironment) (string, e
 		return runtimeDir, nil
 	}
 
-	initCommand, err := ioutil.ReadFile(env.getProcCommandFile())
+	initCommand, err := os.ReadFile(env.getProcCommandFile())
 	if err != nil || string(initCommand) == "systemd" {
 		runUserDir := env.getRunUserDir()
 		if isRootlessRuntimeDirOwner(runUserDir, env) {
@@ -132,7 +131,7 @@ func getRootlessDirInfo(rootlessUID int) (string, string, error) {
 
 	home := homedir.Get()
 	if home == "" {
-		return "", "", errors.Wrapf(err, "neither XDG_DATA_HOME nor HOME was set non-empty")
+		return "", "", fmt.Errorf("neither XDG_DATA_HOME nor HOME was set non-empty: %w", err)
 	}
 	// runc doesn't like symlinks in the rootfs path, and at least
 	// on CoreOS /home is a symlink to /var/home, so resolve any symlink.
@@ -170,7 +169,7 @@ func DefaultConfigFile(rootless bool) (string, error) {
 		return defaultConfigFile, nil
 	}
 
-	if path, ok := os.LookupEnv("CONTAINERS_STORAGE_CONF"); ok {
+	if path, ok := os.LookupEnv(storageConfEnv); ok {
 		return path, nil
 	}
 	if !rootless {

@@ -4,9 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
-	"github.com/docker/distribution/registry/client"
-	perrors "github.com/pkg/errors"
 )
 
 var (
@@ -36,21 +33,21 @@ func httpResponseToError(res *http.Response, context string) error {
 	case http.StatusTooManyRequests:
 		return ErrTooManyRequests
 	case http.StatusUnauthorized:
-		err := client.HandleErrorResponse(res)
+		err := handleErrorResponse(res)
 		return ErrUnauthorizedForCredentials{Err: err}
 	default:
 		if context != "" {
 			context = context + ": "
 		}
-		return perrors.Errorf("%sinvalid status code from registry %d (%s)", context, res.StatusCode, http.StatusText(res.StatusCode))
+		return fmt.Errorf("%sinvalid status code from registry %d (%s)", context, res.StatusCode, http.StatusText(res.StatusCode))
 	}
 }
 
 // registryHTTPResponseToError creates a Go error from an HTTP error response of a docker/distribution
 // registry
 func registryHTTPResponseToError(res *http.Response) error {
-	err := client.HandleErrorResponse(res)
-	if e, ok := err.(*client.UnexpectedHTTPResponseError); ok {
+	err := handleErrorResponse(res)
+	if e, ok := err.(*unexpectedHTTPResponseError); ok {
 		response := string(e.Response)
 		if len(response) > 50 {
 			response = response[:50] + "..."

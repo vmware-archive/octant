@@ -9,14 +9,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/bits-and-blooms/bitset"
 	"golang.org/x/sys/unix"
 )
 
@@ -44,7 +45,7 @@ type selinuxState struct {
 
 type level struct {
 	sens uint
-	cats *bitset.BitSet
+	cats *big.Int
 }
 
 type mlsRange struct {
@@ -316,8 +317,9 @@ func classIndex(class string) (int, error) {
 	return index, nil
 }
 
-// setFileLabel sets the SELinux label for this path or returns an error.
-func setFileLabel(fpath string, label string) error {
+// lSetFileLabel sets the SELinux label for this path, not following symlinks,
+// or returns an error.
+func lSetFileLabel(fpath string, label string) error {
 	if fpath == "" {
 		return ErrEmptyPath
 	}
@@ -334,8 +336,46 @@ func setFileLabel(fpath string, label string) error {
 	return nil
 }
 
-// fileLabel returns the SELinux label for this path or returns an error.
+// setFileLabel sets the SELinux label for this path, following symlinks,
+// or returns an error.
+func setFileLabel(fpath string, label string) error {
+	if fpath == "" {
+		return ErrEmptyPath
+	}
+	for {
+		err := unix.Setxattr(fpath, xattrNameSelinux, []byte(label), 0)
+		if err == nil {
+			break
+		}
+		if err != unix.EINTR { //nolint:errorlint // unix errors are bare
+			return &os.PathError{Op: "setxattr", Path: fpath, Err: err}
+		}
+	}
+
+	return nil
+}
+
+// fileLabel returns the SELinux label for this path, following symlinks,
+// or returns an error.
 func fileLabel(fpath string) (string, error) {
+	if fpath == "" {
+		return "", ErrEmptyPath
+	}
+
+	label, err := getxattr(fpath, xattrNameSelinux)
+	if err != nil {
+		return "", &os.PathError{Op: "getxattr", Path: fpath, Err: err}
+	}
+	// Trim the NUL byte at the end of the byte buffer, if present.
+	if len(label) > 0 && label[len(label)-1] == '\x00' {
+		label = label[:len(label)-1]
+	}
+	return string(label), nil
+}
+
+// lFileLabel returns the SELinux label for this path, not following symlinks,
+// or returns an error.
+func lFileLabel(fpath string) (string, error) {
 	if fpath == "" {
 		return "", ErrEmptyPath
 	}
@@ -455,8 +495,8 @@ func computeCreateContext(source string, target string, class string) (string, e
 }
 
 // catsToBitset stores categories in a bitset.
-func catsToBitset(cats string) (*bitset.BitSet, error) {
-	bitset := &bitset.BitSet{}
+func catsToBitset(cats string) (*big.Int, error) {
+	bitset := new(big.Int)
 
 	catlist := strings.Split(cats, ",")
 	for _, r := range catlist {
@@ -471,14 +511,14 @@ func catsToBitset(cats string) (*bitset.BitSet, error) {
 				return nil, err
 			}
 			for i := catstart; i <= catend; i++ {
-				bitset.Set(i)
+				bitset.SetBit(bitset, int(i), 1)
 			}
 		} else {
 			cat, err := parseLevelItem(ranges[0], category)
 			if err != nil {
 				return nil, err
 			}
-			bitset.Set(cat)
+			bitset.SetBit(bitset, int(cat), 1)
 		}
 	}
 
@@ -548,37 +588,30 @@ func rangeStrToMLSRange(rangeStr string) (*mlsRange, error) {
 
 // bitsetToStr takes a category bitset and returns it in the
 // canonical selinux syntax
-func bitsetToStr(c *bitset.BitSet) string {
+func bitsetToStr(c *big.Int) string {
 	var str string
-	i, e := c.NextSet(0)
-	len := 0
-	for e {
-		if len == 0 {
+
+	length := 0
+	for i := int(c.TrailingZeroBits()); i < c.BitLen(); i++ {
+		if c.Bit(i) == 0 {
+			continue
+		}
+		if length == 0 {
 			if str != "" {
 				str += ","
 			}
-			str += "c" + strconv.Itoa(int(i))
+			str += "c" + strconv.Itoa(i)
 		}
-
-		next, e := c.NextSet(i + 1)
-		if e {
-			// consecutive cats
-			if next == i+1 {
-				len++
-				i = next
-				continue
-			}
+		if c.Bit(i+1) == 1 {
+			length++
+			continue
 		}
-		if len == 1 {
-			str += ",c" + strconv.Itoa(int(i))
-		} else if len > 1 {
-			str += ".c" + strconv.Itoa(int(i))
+		if length == 1 {
+			str += ",c" + strconv.Itoa(i)
+		} else if length > 1 {
+			str += ".c" + strconv.Itoa(i)
 		}
-		if !e {
-			break
-		}
-		len = 0
-		i = next
+		length = 0
 	}
 
 	return str
@@ -591,13 +624,16 @@ func (l1 *level) equal(l2 *level) bool {
 	if l1.sens != l2.sens {
 		return false
 	}
-	return l1.cats.Equal(l2.cats)
+	if l2.cats == nil || l1.cats == nil {
+		return l2.cats == l1.cats
+	}
+	return l1.cats.Cmp(l2.cats) == 0
 }
 
 // String returns an mlsRange as a string.
 func (m mlsRange) String() string {
 	low := "s" + strconv.Itoa(int(m.low.sens))
-	if m.low.cats != nil && m.low.cats.Count() > 0 {
+	if m.low.cats != nil && m.low.cats.BitLen() > 0 {
 		low += ":" + bitsetToStr(m.low.cats)
 	}
 
@@ -606,7 +642,7 @@ func (m mlsRange) String() string {
 	}
 
 	high := "s" + strconv.Itoa(int(m.high.sens))
-	if m.high.cats != nil && m.high.cats.Count() > 0 {
+	if m.high.cats != nil && m.high.cats.BitLen() > 0 {
 		high += ":" + bitsetToStr(m.high.cats)
 	}
 
@@ -656,10 +692,12 @@ func calculateGlbLub(sourceRange, targetRange string) (string, error) {
 
 	/* find the intersecting categories */
 	if s.low.cats != nil && t.low.cats != nil {
-		outrange.low.cats = s.low.cats.Intersection(t.low.cats)
+		outrange.low.cats = new(big.Int)
+		outrange.low.cats.And(s.low.cats, t.low.cats)
 	}
 	if s.high.cats != nil && t.high.cats != nil {
-		outrange.high.cats = s.high.cats.Intersection(t.high.cats)
+		outrange.high.cats = new(big.Int)
+		outrange.high.cats.And(s.high.cats, t.high.cats)
 	}
 
 	return outrange.String(), nil
@@ -1035,21 +1073,6 @@ func copyLevel(src, dest string) (string, error) {
 	return tcon.Get(), nil
 }
 
-// Prevent users from relabeling system files
-func badPrefix(fpath string) error {
-	if fpath == "" {
-		return ErrEmptyPath
-	}
-
-	badPrefixes := []string{"/usr"}
-	for _, prefix := range badPrefixes {
-		if strings.HasPrefix(fpath, prefix) {
-			return fmt.Errorf("relabeling content in %s is not allowed", prefix)
-		}
-	}
-	return nil
-}
-
 // chcon changes the fpath file object to the SELinux label label.
 // If fpath is a directory and recurse is true, then chcon walks the
 // directory tree setting the label.
@@ -1060,12 +1083,70 @@ func chcon(fpath string, label string, recurse bool) error {
 	if label == "" {
 		return nil
 	}
-	if err := badPrefix(fpath); err != nil {
-		return err
+
+	exclude_paths := map[string]bool{
+		"/":           true,
+		"/bin":        true,
+		"/boot":       true,
+		"/dev":        true,
+		"/etc":        true,
+		"/etc/passwd": true,
+		"/etc/pki":    true,
+		"/etc/shadow": true,
+		"/home":       true,
+		"/lib":        true,
+		"/lib64":      true,
+		"/media":      true,
+		"/opt":        true,
+		"/proc":       true,
+		"/root":       true,
+		"/run":        true,
+		"/sbin":       true,
+		"/srv":        true,
+		"/sys":        true,
+		"/tmp":        true,
+		"/usr":        true,
+		"/var":        true,
+		"/var/lib":    true,
+		"/var/log":    true,
+	}
+
+	if home := os.Getenv("HOME"); home != "" {
+		exclude_paths[home] = true
+	}
+
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+		if usr, err := user.Lookup(sudoUser); err == nil {
+			exclude_paths[usr.HomeDir] = true
+		}
+	}
+
+	if fpath != "/" {
+		fpath = strings.TrimSuffix(fpath, "/")
+	}
+	if exclude_paths[fpath] {
+		return fmt.Errorf("SELinux relabeling of %s is not allowed", fpath)
 	}
 
 	if !recurse {
-		return setFileLabel(fpath, label)
+		err := lSetFileLabel(fpath, label)
+		if err != nil {
+			// Check if file doesn't exist, must have been removed
+			if errors.Is(err, os.ErrNotExist) {
+				return nil
+			}
+			// Check if current label is correct on disk
+			flabel, nerr := lFileLabel(fpath)
+			if nerr == nil && flabel == label {
+				return nil
+			}
+			// Check if file doesn't exist, must have been removed
+			if errors.Is(nerr, os.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		return nil
 	}
 
 	return rchcon(fpath, label)
