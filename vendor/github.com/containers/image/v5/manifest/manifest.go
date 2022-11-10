@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	internalManifest "github.com/containers/image/v5/internal/manifest"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/libtrust"
 	digest "github.com/opencontainers/go-digest"
@@ -33,6 +34,10 @@ const (
 	// DockerV2Schema2ForeignLayerMediaType is the MIME type used for gzipped schema 2 foreign layers.
 	DockerV2Schema2ForeignLayerMediaTypeGzip = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )
+
+// NonImageArtifactError (detected via errors.As) is used when asking for an image-specific operation
+// on an object which is not a “container image” in the standard sense (e.g. an OCI artifact)
+type NonImageArtifactError = internalManifest.NonImageArtifactError
 
 // SupportedSchema2MediaType checks if the specified string is a supported Docker v2s2 media type.
 func SupportedSchema2MediaType(m string) error {
@@ -110,7 +115,8 @@ func GuessMIMEType(manifest []byte) string {
 	}
 
 	switch meta.MediaType {
-	case DockerV2Schema2MediaType, DockerV2ListMediaType: // A recognized type.
+	case DockerV2Schema2MediaType, DockerV2ListMediaType,
+		imgspecv1.MediaTypeImageManifest, imgspecv1.MediaTypeImageIndex: // A recognized type.
 		return meta.MediaType
 	}
 	// this is the only way the function can return DockerV2Schema1MediaType, and recognizing that is essential for stripping the JWS signatures = computing the correct manifest digest.
@@ -121,9 +127,9 @@ func GuessMIMEType(manifest []byte) string {
 		}
 		return DockerV2Schema1MediaType
 	case 2:
-		// best effort to understand if this is an OCI image since mediaType
-		// isn't in the manifest for OCI anymore
-		// for docker v2s2 meta.MediaType should have been set. But given the data, this is our best guess.
+		// Best effort to understand if this is an OCI image since mediaType
+		// wasn't in the manifest for OCI image-spec < 1.0.2.
+		// For docker v2s2 meta.MediaType should have been set. But given the data, this is our best guess.
 		ociMan := struct {
 			Config struct {
 				MediaType string `json:"mediaType"`

@@ -2,6 +2,7 @@ package graphdriver
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 
@@ -50,11 +51,14 @@ func chownByMapsMain() {
 	if len(toHost.UIDs()) == 0 && len(toHost.GIDs()) == 0 {
 		toHost = nil
 	}
+
+	chowner := newLChowner()
+
 	chown := func(path string, info os.FileInfo, _ error) error {
 		if path == "." {
 			return nil
 		}
-		return platformLChown(path, info, toHost, toContainer)
+		return chowner.LChown(path, info, toHost, toContainer)
 	}
 	if err := pwalk.Walk(".", chown); err != nil {
 		fmt.Fprintf(os.Stderr, "error during chown: %v", err)
@@ -84,13 +88,13 @@ func ChownPathByMaps(path string, toContainer, toHost *idtools.IDMappings) error
 	cmd.Stdin = bytes.NewReader(config)
 	output, err := cmd.CombinedOutput()
 	if len(output) > 0 && err != nil {
-		return fmt.Errorf("%v: %s", err, string(output))
+		return fmt.Errorf("%s: %w", string(output), err)
 	}
 	if err != nil {
 		return err
 	}
 	if len(output) > 0 {
-		return fmt.Errorf("%s", string(output))
+		return errors.New(string(output))
 	}
 
 	return nil
