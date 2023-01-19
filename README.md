@@ -1,3 +1,5 @@
+# VMware has ended active development of this project, this repository will no longer be updated.
+
 ![Logo][octant-logo]
 
 [![Build Status](https://github.com/vmware-tanzu/octant/workflows/preflight-checks/badge.svg)](https://github.com/vmware-tanzu/octant/workflows/preflight-checks/badge.svg)
