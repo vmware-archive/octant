@@ -11,7 +11,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -54,9 +53,9 @@ func initNamespacedCRD() *CRDSection {
 func initNamespacedOverview() *Section {
 	workloadsCronJobs := NewResource(ResourceOptions{
 		Path:           "/workloads/cron-jobs",
-		ObjectStoreKey: store.Key{APIVersion: "batch/v1beta1", Kind: "CronJob"},
-		ListType:       &batchv1beta1.CronJobList{},
-		ObjectType:     &batchv1beta1.CronJob{},
+		ObjectStoreKey: store.Key{APIVersion: "batch/v1", Kind: "CronJob"},
+		ListType:       &batchv1.CronJobList{},
+		ObjectType:     &batchv1.CronJob{},
 		Titles:         ResourceTitle{List: "Cron Jobs", Object: "Cron Jobs"},
 	})
 
