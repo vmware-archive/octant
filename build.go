@@ -337,7 +337,20 @@ func goFmt(update bool) {
 	}
 }
 
+func webInstall() {
+	args := append([]string{"i"})
+	cmd := newCmd("npm", nil, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Dir = "./web"
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("web-install: %s", err)
+	}
+}
+
 func webDeps(opts ...string) {
+	webInstall()
 	args := append([]string{"ci"}, opts...)
 	cmd := newCmd("npm", nil, args...)
 	cmd.Stdout = os.Stdout

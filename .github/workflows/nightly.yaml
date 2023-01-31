@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.4.1
         with:
-          node-version: '16'
+          node-version: '14'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
       - uses: actions/setup-go@v2
