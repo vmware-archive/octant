@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: bundle
           path: web/dist
@@ -156,11 +156,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: binary-artifacts
           path: dist
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: electron-artifacts
           path: web/release
