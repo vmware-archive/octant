@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
+	"github.com/containers/image/v5/internal/imagesource/impl"
+	"github.com/containers/image/v5/internal/imagesource/stubs"
 	"github.com/containers/image/v5/types"
 	"github.com/klauspost/pgzip"
 	digest "github.com/opencontainers/go-digest"
@@ -20,6 +21,12 @@ import (
 )
 
 type tarballImageSource struct {
+	impl.Compat
+	impl.PropertyMethodsInitialize
+	impl.NoSignatures
+	impl.DoesNotAffectLayerInfosForCopy
+	stubs.NoGetBlobAtInitialize
+
 	reference  tarballReference
 	filenames  []string
 	diffIDs    []digest.Digest
@@ -87,7 +94,7 @@ func (r *tarballReference) NewImageSource(ctx context.Context, sys *types.System
 			uncompressed = nil
 		}
 		// TODO: This can take quite some time, and should ideally be cancellable using ctx.Done().
-		n, err := io.Copy(ioutil.Discard, reader)
+		n, err := io.Copy(io.Discard, reader)
 		if err != nil {
 			return nil, fmt.Errorf("error reading %q: %v", filename, err)
 		}
@@ -186,6 +193,11 @@ func (r *tarballReference) NewImageSource(ctx context.Context, sys *types.System
 
 	// Return the image.
 	src := &tarballImageSource{
+		PropertyMethodsInitialize: impl.PropertyMethods(impl.Properties{
+			HasThreadSafeGetBlob: false,
+		}),
+		NoGetBlobAtInitialize: stubs.NoGetBlobAt(r),
+
 		reference:  *r,
 		filenames:  filenames,
 		diffIDs:    diffIDs,
@@ -198,6 +210,7 @@ func (r *tarballReference) NewImageSource(ctx context.Context, sys *types.System
 		configSize: configSize,
 		manifest:   manifestBytes,
 	}
+	src.Compat = impl.AddCompat(src)
 
 	return src, nil
 }
@@ -206,25 +219,20 @@ func (is *tarballImageSource) Close() error {
 	return nil
 }
 
-// HasThreadSafeGetBlob indicates whether GetBlob can be executed concurrently.
-func (is *tarballImageSource) HasThreadSafeGetBlob() bool {
-	return false
-}
-
 // GetBlob returns a stream for the specified blob, and the blob’s size (or -1 if unknown).
 // The Digest field in BlobInfo is guaranteed to be provided, Size may be -1 and MediaType may be optionally provided.
 // May update BlobInfoCache, preferably after it knows for certain that a blob truly exists at a specific location.
 func (is *tarballImageSource) GetBlob(ctx context.Context, blobinfo types.BlobInfo, cache types.BlobInfoCache) (io.ReadCloser, int64, error) {
 	// We should only be asked about things in the manifest.  Maybe the configuration blob.
 	if blobinfo.Digest == is.configID {
-		return ioutil.NopCloser(bytes.NewBuffer(is.config)), is.configSize, nil
+		return io.NopCloser(bytes.NewBuffer(is.config)), is.configSize, nil
 	}
 	// Maybe one of the layer blobs.
 	for i := range is.blobIDs {
 		if blobinfo.Digest == is.blobIDs[i] {
 			// We want to read that layer: open the file or memory block and hand it back.
 			if is.filenames[i] == "-" {
-				return ioutil.NopCloser(bytes.NewBuffer(is.reference.stdin)), int64(len(is.reference.stdin)), nil
+				return io.NopCloser(bytes.NewBuffer(is.reference.stdin)), int64(len(is.reference.stdin)), nil
 			}
 			reader, err := os.Open(is.filenames[i])
 			if err != nil {
@@ -247,28 +255,6 @@ func (is *tarballImageSource) GetManifest(ctx context.Context, instanceDigest *d
 	return is.manifest, imgspecv1.MediaTypeImageManifest, nil
 }
 
-// GetSignatures returns the image's signatures.  It may use a remote (= slow) service.
-// This source implementation does not support manifest lists, so the passed-in instanceDigest should always be nil,
-// as there can be no secondary manifests.
-func (*tarballImageSource) GetSignatures(ctx context.Context, instanceDigest *digest.Digest) ([][]byte, error) {
-	if instanceDigest != nil {
-		return nil, fmt.Errorf("manifest lists are not supported by the %q transport", transportName)
-	}
-	return nil, nil
-}
-
 func (is *tarballImageSource) Reference() types.ImageReference {
 	return &is.reference
-}
-
-// LayerInfosForCopy returns either nil (meaning the values in the manifest are fine), or updated values for the layer
-// blobsums that are listed in the image's manifest.  If values are returned, they should be used when using GetBlob()
-// to read the image's layers.
-// If instanceDigest is not nil, it contains a digest of the specific manifest instance to retrieve BlobInfos for
-// (when the primary manifest is a manifest list); this never happens if the primary manifest is not a manifest list
-// (e.g. if the source never returns manifest lists).
-// The Digest field is guaranteed to be provided; Size may be -1.
-// WARNING: The list may contain duplicates, and they are semantically relevant.
-func (*tarballImageSource) LayerInfosForCopy(context.Context, *digest.Digest) ([]types.BlobInfo, error) {
-	return nil, nil
 }
